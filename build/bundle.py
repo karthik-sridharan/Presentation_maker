@@ -1,140 +1,130 @@
 #!/usr/bin/env python3
 """
-Bundle all modular files back into a single HTML file for distribution.
+Bundle the current modular Lumina Presenter into a single HTML file.
 
-Usage:
-    python bundle.py
+This bundler supports the incremental migration strategy used by the app:
+- inline local CSS files referenced by index.html
+- preserve external CDN scripts
+- inline local JavaScript module entrypoints
+- recursively inline static local ES module imports such as:
+    import './legacy-app.js';
+    import { showToast } from './utils.js';
 
-Output:
-    lumina-presenter-bundle.html
+It intentionally handles the simple static import/export patterns used in this
+project, not every possible JavaScript module syntax.
 """
 
 from pathlib import Path
 import re
 
-def read_file(filepath):
-    """Read file content."""
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return f.read()
-    except FileNotFoundError:
-        print(f"Warning: {filepath} not found")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+OUTPUT_FILE = PROJECT_ROOT / "build" / "lumina-presenter-bundle.html"
+
+LOCAL_IMPORT_RE = re.compile(
+    r"^\s*import\s+(?:[\s\S]*?\s+from\s+)?[\"'](\.[^\"']+)[\"'];\s*",
+    flags=re.MULTILINE,
+)
+
+
+def read_local(rel_path: str) -> str:
+    path = (PROJECT_ROOT / rel_path).resolve()
+    root = PROJECT_ROOT.resolve()
+    if root not in path.parents and path != root:
+        raise ValueError(f"Refusing to read outside project: {rel_path}")
+    return path.read_text(encoding="utf-8")
+
+
+def project_relative(path: Path) -> str:
+    return path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+
+
+def strip_module_exports(js: str) -> str:
+    """Convert the subset of ESM exports used here into plain declarations."""
+    js = re.sub(r"^\s*export\s+default\s+", "", js, flags=re.MULTILINE)
+    js = re.sub(r"^\s*export\s+(async\s+function|function|class)\s+", r"\1 ", js, flags=re.MULTILINE)
+    js = re.sub(r"^\s*export\s+(const|let|var)\s+", r"\1 ", js, flags=re.MULTILINE)
+    js = re.sub(r"^\s*export\s*\{[^}]*\};?\s*", "", js, flags=re.MULTILINE)
+    return js
+
+
+def bundle_js_module(rel_path: str, seen: set[str] | None = None) -> str:
+    """Return a local JS module and its local dependency graph as one script."""
+    seen = seen or set()
+    abs_path = (PROJECT_ROOT / rel_path).resolve()
+    rel_key = project_relative(abs_path)
+    if rel_key in seen:
+        return f"\n/* skipped duplicate module {rel_key} */\n"
+    seen.add(rel_key)
+
+    js = abs_path.read_text(encoding="utf-8")
+    chunks: list[str] = []
+
+    def collect_import(match: re.Match) -> str:
+        spec = match.group(1)
+        imported_abs = (abs_path.parent / spec).resolve()
+        imported_rel = project_relative(imported_abs)
+        chunks.append(bundle_js_module(imported_rel, seen))
         return ""
 
-def bundle():
-    """Create single-file bundle."""
-    
-    project_root = Path(__file__).parent.parent
-    
-    print("📦 Bundling Lumina Presenter...")
-    
-    # Read CSS files
-    styles_css = read_file(project_root / 'css' / 'styles.css')
-    slides_css = read_file(project_root / 'css' / 'slides.css')
-    copilot_css = read_file(project_root / 'css' / 'copilot.css')
-    
-    # Read JS files
-    utils_js = read_file(project_root / 'js' / 'utils.js')
-    state_js = read_file(project_root / 'js' / 'state.js')
-    renderer_js = read_file(project_root / 'js' / 'renderer.js')
-    editor_js = read_file(project_root / 'js' / 'editor.js')
-    animate_js = read_file(project_root / 'js' / 'animate.js')
-    import_js = read_file(project_root / 'js' / 'import.js')
-    export_js = read_file(project_root / 'js' / 'export.js')
-    copilot_js = read_file(project_root / 'js' / 'copilot.js')
-    main_js = read_file(project_root / 'js' / 'main.js')
-    
-    # Read HTML body
-    index_html = read_file(project_root / 'index.html')
-    
-    # Extract body content
-    body_match = re.search(r'<body[^>]*>(.*?)</body>', index_html, re.DOTALL)
-    body_content = body_match.group(1) if body_match else ""
-    
-    # Combine all CSS
-    combined_css = f"""
-{styles_css}
+    body = LOCAL_IMPORT_RE.sub(collect_import, js)
+    body = strip_module_exports(body)
+    chunks.append(f"\n/* bundled from {rel_key} */\n{body}\n")
+    return "".join(chunks)
 
-{slides_css}
 
-{copilot_css}
-""".strip()
-    
-    # Combine all JS (remove import/export statements)
-    def strip_modules(js_code):
-        # Remove import statements
-        js_code = re.sub(r'import\s+.*?from\s+[\'"].*?[\'"];?\s*', '', js_code)
-        # Remove export statements
-        js_code = re.sub(r'export\s+(function|const|let|var|class|default)\s+', r'\1 ', js_code)
-        return js_code
-    
-    combined_js = f"""
-// === utils.js ===
-{strip_modules(utils_js)}
+def bundle() -> None:
+    html = (PROJECT_ROOT / "index.html").read_text(encoding="utf-8")
 
-// === state.js ===
-{strip_modules(state_js)}
+    def inline_css(match: re.Match) -> str:
+        tag = match.group(0)
+        href_match = re.search(r'href=["\']([^"\']+)["\']', tag, flags=re.IGNORECASE)
+        if not href_match:
+            return tag
+        href = href_match.group(1)
+        if re.match(r"^[a-z]+://", href) or href.startswith("//"):
+            return tag
+        try:
+            css = read_local(href)
+        except FileNotFoundError:
+            print(f"Warning: CSS file not found: {href}")
+            return tag
+        return f"<style>\n/* bundled from {href} */\n{css}\n</style>"
 
-// === renderer.js ===
-{strip_modules(renderer_js)}
+    html = re.sub(
+        r'<link\b(?=[^>]*\brel=["\']stylesheet["\'])(?=[^>]*\bhref=["\'][^"\']+["\'])[^>]*>',
+        inline_css,
+        html,
+        flags=re.IGNORECASE,
+    )
 
-// === editor.js ===
-{strip_modules(editor_js)}
+    def inline_js(match: re.Match) -> str:
+        tag_open = match.group(1)
+        tag = match.group(0)
+        src_match = re.search(r'src=["\']([^"\']+)["\']', tag_open, flags=re.IGNORECASE)
+        if not src_match:
+            return tag
+        src = src_match.group(1)
+        if re.match(r"^[a-z]+://", src) or src.startswith("//"):
+            return tag
+        try:
+            js = bundle_js_module(src)
+        except FileNotFoundError:
+            print(f"Warning: JS file not found: {src}")
+            return tag
+        open_without_src = re.sub(r'\s+src=["\'][^"\']+["\']', '', tag_open, flags=re.IGNORECASE)
+        return f"{open_without_src}>\n{js}\n</script>"
 
-// === animate.js ===
-{strip_modules(animate_js)}
+    html = re.sub(
+        r'(<script\b[^>]*\bsrc=["\'][^"\']+["\'][^>]*)>([\s\S]*?)(</script>)',
+        inline_js,
+        html,
+        flags=re.IGNORECASE,
+    )
 
-// === import.js ===
-{strip_modules(import_js)}
+    OUTPUT_FILE.write_text(html, encoding="utf-8")
+    print(f"✓ Bundle created: {OUTPUT_FILE}")
+    print(f"  Size: {len(html):,} bytes")
 
-// === export.js ===
-{strip_modules(export_js)}
 
-// === copilot.js ===
-{strip_modules(copilot_js)}
-
-// === main.js ===
-{strip_modules(main_js)}
-""".strip()
-    
-    # Create bundled HTML
-    bundled_html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Lumina Presenter</title>
-<style>
-{combined_css}
-</style>
-
-<script>
-window.MathJax = {{
-  tex: {{ inlineMath: [['$','$'], ['\\\\(','\\\\)']], displayMath: [['$$','$$'], ['\\\\[','\\\\]']] }},
-  svg: {{ fontCache: 'global' }}
-}};
-</script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-</head>
-<body>
-{body_content}
-
-<script>
-{combined_js}
-</script>
-</body>
-</html>
-"""
-    
-    # Write output
-    output_file = project_root / 'build' / 'lumina-presenter-bundle.html'
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(bundled_html)
-    
-    print(f"✓ Bundle created: {output_file}")
-    print(f"  Size: {len(bundled_html):,} bytes")
-    
-if __name__ == '__main__':
+if __name__ == "__main__":
     bundle()
