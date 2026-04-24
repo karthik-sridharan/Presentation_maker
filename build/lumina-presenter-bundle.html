@@ -1617,7 +1617,6 @@ function deleteSelectedLibraryBlock(){
   renderBlockLibrary();
   showToast('Deleted saved reusable block.');
 }
-}
 function themeFieldValue(name, fallback=''){
   const el = themeFields[name];
   return el ? el.value : fallback;
@@ -1668,9 +1667,9 @@ function applyPresentationOptions(options){
 function currentStyleClass(){
   const t = currentThemeFromFields();
   return 'style-' + String(t.beamerStyle || 'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();
+}
 function buildSlideStyle(slide){
   return buildSlideStyleForTheme(slide, currentThemeFromFields());
-}
 }
 function applyStylePreset(name){
   const merged = normalizeTheme({...currentThemeFromFields(), ...beamerPresetTheme(name)});
