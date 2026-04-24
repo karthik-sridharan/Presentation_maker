@@ -7,21 +7,6 @@
  * import.js, export.js, animate.js, and copilot.js.
  */
 
-import {
-  showToast,
-  clone,
-  defaultReusableBlock,
-  escapeHtml,
-  escapeAttr,
-  preserveMathTokens,
-  restoreMathTokens,
-  hexToRgb,
-  rgbaFromHex,
-  randomHexColor
-} from "./utils.js";
-import { normalizeTheme, buildSlideStyleForTheme, beamerPresetTheme } from "./theme.js";
-
-
 const fields = {
   deckTitle: document.getElementById('deckTitle'),
   slideType: document.getElementById('slideType'),
@@ -117,9 +102,28 @@ let autosaveDirtyCount = 0;
 let blockLibrary = [];
 
 
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove('show'), 1400);
+}
 function setAutosaveStatus(msg){
   const el = document.getElementById('autosaveStatus');
   if(el) el.textContent = msg;
+}
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+function defaultReusableBlock(kind){
+  const presets = {
+    theorem: { mode:'panel', title:'Theorem', content:'\\begin{card}{Theorem}\\nState the theorem clearly here.\\n\\end{card}' },
+    proof: { mode:'panel', title:'Proof', content:'\\begin{card}{Proof}\\nSketch the argument here.\\n\\end{card}' },
+    recap: { mode:'panel', title:'Recap', content:'\\begin{card}{Recap}\\n\\begin{itemize}\\n\\item First takeaway\\n\\item Second takeaway\\n\\end{itemize}\\n\\end{card}' },
+    algorithm: { mode:'pseudocode-latex', title:'Algorithm', content:'Input: \\(x\\)\\n\\nfor \\(t = 1\\) to \\(T\\) do\\n  step\\nend\\n\\nreturn output' },
+    citation: { mode:'panel', title:'Citation', content:'\\begin{card}{Citation}\\nAuthor, Title, Venue, Year.\\n\\end{card}' },
+    reminder: { mode:'panel', title:'Speaker reminder', content:'\\begin{card}{Speaker reminder}\\nMention the intuition before the formal statement.\\n\\end{card}' }
+  };
+  return clone(presets[kind] || presets.recap);
 }
 function builtinLibraryEntries(){
   return [
@@ -198,6 +202,57 @@ function deleteSelectedLibraryBlock(){
   renderBlockLibrary();
   showToast('Deleted saved reusable block.');
 }
+
+function escapeHtml(str){
+  return String(str ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escapeAttr(str){ return escapeHtml(str).replace(/\n/g,'&#10;'); }
+function preserveMathTokens(str){
+  const tokens = [];
+  let out = String(str ?? '');
+  const patterns = [/\$\$[\s\S]+?\$\$/g,/\\\[[\s\S]+?\\\]/g,/\\\([\s\S]+?\\\)/g,/\$(?!\s)[^$\n]+?\$/g];
+  patterns.forEach((pattern)=>{
+    out = out.replace(pattern, (m)=>{
+      const key = '@@MATH' + tokens.length + '@@';
+      tokens.push(m);
+      return key;
+    });
+  });
+  return { out, tokens };
+}
+function restoreMathTokens(str, tokens){
+  return String(str).replace(/@@MATH(\d+)@@/g, (_, i)=>tokens[Number(i)] ?? '');
+}
+function hexToRgb(hex){
+  const clean = String(hex || '').trim().replace('#','');
+  if(!/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(clean)) return null;
+  const full = clean.length === 3 ? clean.split('').map(c=>c+c).join('') : clean;
+  const num = parseInt(full, 16);
+  return { r:(num>>16)&255, g:(num>>8)&255, b:num&255 };
+}
+function rgbaFromHex(hex, alpha){
+  const rgb = hexToRgb(hex);
+  if(!rgb) return 'rgba(0,0,0,' + alpha + ')';
+  return 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
+}
+function normalizeTheme(theme){
+  const t = theme || {};
+  return {
+    name: t.name || 'Default theme',
+    bgColor: t.bgColor || '#ffffff',
+    fontColor: t.fontColor || '#111111',
+    accentColor: t.accentColor || '#2f6fed',
+    panelRadius: Number.isFinite(Number(t.panelRadius)) ? Number(t.panelRadius) : 22,
+    titleScale: Number.isFinite(Number(t.titleScale)) ? Number(t.titleScale) : 1,
+    beamerStyle: t.beamerStyle || 'classic',
+    chromeColor: t.chromeColor || '#17365d',
+    chromeTextColor: t.chromeTextColor || '#ffffff',
+    sidebarWidth: Number.isFinite(Number(t.sidebarWidth)) ? Number(t.sidebarWidth) : 118,
+    titleCaps: String(t.titleCaps || '0')
+  };
+}
 function themeFieldValue(name, fallback=''){
   const el = themeFields[name];
   return el ? el.value : fallback;
@@ -250,7 +305,50 @@ function currentStyleClass(){
   return 'style-' + String(t.beamerStyle || 'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();
 }
 function buildSlideStyle(slide){
-  return buildSlideStyleForTheme(slide, currentThemeFromFields());
+  const theme = currentThemeFromFields();
+  const useTheme = slide.inheritTheme !== false;
+  const bg = useTheme ? theme.bgColor : (slide.bgColor || theme.bgColor);
+  const font = useTheme ? theme.fontColor : (slide.fontColor || theme.fontColor);
+  const muted = rgbaFromHex(font, 0.72);
+  const line = rgbaFromHex(font, 0.14);
+  const titleTransform = String(theme.titleCaps) === '1' ? 'uppercase' : 'none';
+  const titleLetterSpacing = String(theme.titleCaps) === '1' ? '.04em' : 'normal';
+  let extra = '';
+  const styleId = String(theme.beamerStyle || 'classic').toLowerCase();
+  if(styleId === 'berkeley'){
+    extra += 'padding-left:calc(3.3rem + ' + theme.sidebarWidth + 'px);';
+    extra += 'background-image:linear-gradient(90deg,' + theme.chromeColor + ' 0 ' + theme.sidebarWidth + 'px, transparent ' + theme.sidebarWidth + 'px 100%),linear-gradient(180deg,' + theme.accentColor + ' 0 18px, transparent 18px 100%);';
+    extra += 'background-repeat:no-repeat;';
+  } else if(styleId === 'madrid'){
+    extra += 'padding-top:5rem;padding-bottom:5.2rem;';
+    extra += 'background-image:linear-gradient(180deg,' + theme.chromeColor + ' 0 58px, transparent 58px calc(100% - 24px),' + theme.accentColor + ' calc(100% - 24px) 100%);';
+    extra += 'background-repeat:no-repeat;';
+  } else if(styleId === 'annarbor'){
+    extra += 'padding-top:4.8rem;padding-bottom:5rem;';
+    extra += 'background-image:linear-gradient(180deg,' + theme.chromeColor + ' 0 64px, transparent 64px calc(100% - 18px),' + theme.accentColor + ' calc(100% - 18px) 100%);';
+    extra += 'background-repeat:no-repeat;';
+  } else if(styleId === 'cambridgeus'){
+    extra += 'padding-top:4.7rem;padding-bottom:5rem;';
+    extra += 'background-image:linear-gradient(180deg,transparent 0 56px, transparent 56px calc(100% - 18px),' + theme.chromeColor + ' calc(100% - 18px) 100%),linear-gradient(90deg,' + theme.accentColor + ' 0 18px,' + theme.chromeColor + ' 18px 100%);';
+    extra += 'background-size:100% 100%,100% 56px;background-repeat:no-repeat;';
+  } else if(styleId === 'pittsburgh'){
+    extra += 'padding-top:4.2rem;';
+    extra += 'background-image:linear-gradient(180deg,' + theme.chromeColor + ' 0 16px, transparent 16px 100%);';
+    extra += 'background-repeat:no-repeat;';
+  }
+  return 'background-color:' + bg + ';color:' + font + ';--text:' + font + ';--muted:' + muted + ';--line:' + line + ';--accent:' + theme.accentColor + ';--radius:' + theme.panelRadius + 'px;--title-scale:' + theme.titleScale + ';--chrome-fill:' + theme.chromeColor + ';--chrome-text:' + theme.chromeTextColor + ';--sidebar-width:' + theme.sidebarWidth + 'px;--title-transform:' + titleTransform + ';--title-letter-spacing:' + titleLetterSpacing + ';' + extra;
+}
+function beamerPresetTheme(name){
+  const id = String(name || 'classic').toLowerCase();
+  const presets = {
+    classic: {name:'Classic', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:22, titleScale:1, beamerStyle:'classic', chromeColor:'#17365d', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
+    berkeley: {name:'Berkeley', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#d4a017', panelRadius:18, titleScale:1, beamerStyle:'berkeley', chromeColor:'#17365d', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
+    madrid: {name:'Madrid', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:20, titleScale:1, beamerStyle:'madrid', chromeColor:'#1f4e79', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
+    annarbor: {name:'AnnArbor', bgColor:'#fffaf0', fontColor:'#2f2410', accentColor:'#7a4f01', panelRadius:18, titleScale:1, beamerStyle:'annarbor', chromeColor:'#c99a06', chromeTextColor:'#111111', sidebarWidth:118, titleCaps:'0'},
+    cambridgeus: {name:'CambridgeUS', bgColor:'#ffffff', fontColor:'#10233b', accentColor:'#c53030', panelRadius:16, titleScale:1, beamerStyle:'cambridgeus', chromeColor:'#0f4c81', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'1'},
+    pittsburgh: {name:'Pittsburgh', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:22, titleScale:1.02, beamerStyle:'pittsburgh', chromeColor:'#2f6fed', chromeTextColor:'#ffffff', sidebarWidth:96, titleCaps:'0'}
+  };
+  return normalizeTheme(presets[id] || presets.classic);
 }
 function applyStylePreset(name){
   const merged = normalizeTheme({...currentThemeFromFields(), ...beamerPresetTheme(name)});
@@ -259,6 +357,10 @@ function applyStylePreset(name){
   renderDeckList();
   scheduleAutosave('Autosaved after style preset change.');
   showToast('Applied ' + merged.name + ' style.');
+}
+function randomHexColor(){
+  const n = Math.floor(Math.random() * 0xffffff);
+  return '#' + n.toString(16).padStart(6, '0');
 }
 function applyStyleBuilder(){
   const merged = currentThemeFromFields();
