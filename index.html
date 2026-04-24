@@ -1,59 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lumina Presenter | Pro HTML Decks</title>
-    
-    <link rel="stylesheet" href="css/styles.css">
-    
-    <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
-            svg: { fontCache: 'global' }
-        };
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumina Presenter</title>
 
-    <script type="module" src="js/main.js"></script>
+<!-- Stylesheets -->
+<link rel="stylesheet" href="css/styles.css" />
+<link rel="stylesheet" href="css/slides.css" />
+<link rel="stylesheet" href="css/copilot.css" />
+
+<!-- External dependencies -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<!-- Application modules -->
+<script type="module" src="js/main.js"></script>
 </head>
 <body>
-    <div class="page">
-        <aside class="panel stack editor-shell">
-            <div class="editor-intro">
-                <div class="smallcaps">Presentation Generator</div>
-                <h1>Deck Editor</h1>
-                <p class="help">Create technical presentations with LaTeX, SVG diagrams, and AI assistance.</p>
-            </div>
-
-            <nav class="left-tabs mode-bar" id="leftTabs">
-                <button class="left-tab" data-left-tab="files">Files</button>
-                <button class="left-tab active" data-left-tab="edit">Slides</button>
-                <button class="left-tab" data-left-tab="styles">Design</button>
-                <button class="left-tab" data-left-tab="copilot">Copilot</button>
-                <button class="left-tab" data-left-tab="tools">Present</button>
-            </nav>
-
-            <div id="paneContainer">
-                </div>
-        </aside>
-
-        <main class="preview-wrap">
-            <div class="preview-header">
-                <h2>Live Preview</h2>
-                <div class="toolbar">
-                    <button class="btn mini" id="toggleGrid">Grid</button>
-                    <button class="btn mini primary" id="downloadBtn">Export HTML</button>
-                </div>
-            </div>
-            <div class="preview-viewport">
-                <div id="previewStage" class="preview-stage">
-                    </div>
-            </div>
-        </main>
+<div class="page">
+  <!-- Left Panel: Editor -->
+  <div class="panel stack editor-shell">
+    <div class="editor-intro">
+      <div class="smallcaps">Presentation generator</div>
+      <h1>Deck editor</h1>
+      <p class="help">Work in focused modes on the left, keep preview and inspector on the right.</p>
     </div>
-    <div id="copyToast" class="copy-toast">Action successful</div>
+
+    <!-- Mode tabs -->
+    <div class="left-tabs mode-bar" id="leftTabs">
+      <button class="left-tab" type="button" data-left-tab="files">Files</button>
+      <button class="left-tab active" type="button" data-left-tab="edit">Slides</button>
+      <button class="left-tab" type="button" data-left-tab="presets">Insert</button>
+      <button class="left-tab" type="button" data-left-tab="styles">Design</button>
+      <button class="left-tab" type="button" data-left-tab="animate">Animate</button>
+      <button class="left-tab" type="button" data-left-tab="tools">Present</button>
+      <button class="left-tab" type="button" data-left-tab="slides">Organize</button>
+      <button class="left-tab" type="button" data-left-tab="copilot">Copilot</button>
+      <button class="left-tab" type="button" data-left-tab="help">Help</button>
+    </div>
+
+    <!-- Edit pane -->
+    <div class="left-pane active" data-left-pane="edit">
+      <div class="subtabs" data-subtab-group="edit">
+        <button class="subtab active" type="button" data-subtab="edit:slide">Slide</button>
+        <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
+      </div>
+
+      <div class="subpane active" data-subpane="edit:slide">
+        <div class="field-grid">
+          <div class="field full">
+            <label for="deckTitle">Presentation title</label>
+            <input id="deckTitle" value="My HTML Presentation" />
+          </div>
+          <div class="field">
+            <label for="slideType">Slide type</label>
+            <select id="slideType">
+              <option value="title-center">Centered title slide</option>
+              <option value="single" selected>Single-column content slide</option>
+              <option value="two-col">Two-column body</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bgColor">Background color</label>
+            <select id="bgColor">
+              <option value="#ffffff" selected>White</option>
+              <option value="#f7f1e3">Warm cream</option>
+              <option value="#121212">Charcoal</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="subpane" data-subpane="edit:blocks">
+        <div class="toolbar">
+          <button class="btn" id="addBlockBtn">Add Block</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other panes (Files, Insert, Design, etc.) -->
+    <div class="left-pane" data-left-pane="files">
+      <h2>File Operations</h2>
+      <div class="toolbar">
+        <button class="btn" id="importJsonBtn">Import JSON</button>
+        <button class="btn" id="exportJsonBtn">Export JSON</button>
+        <button class="btn" id="exportHtmlBtn">Export HTML</button>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="copilot">
+      <h2>AI Copilot</h2>
+      <p class="help">Use AI to generate and improve slides.</p>
+      <div class="toolbar">
+        <button class="btn primary" id="copilotChatBtn">Send Message</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Panel: Preview -->
+  <div class="panel stack preview-wrap">
+    <div class="preview-header">
+      <h2>Preview</h2>
+    </div>
+    <div class="preview-viewport">
+      <div class="preview-stage">
+        <div class="preview-frame">
+          <div class="preview-scale" style="transform: scale(0.5);">
+            <!-- Slide preview will be rendered here -->
+            <div class="slide single" style="background: #ffffff; color: #111111;">
+              <h2>Welcome to Lumina</h2>
+              <div class="slide-body">
+                <div class="placeholder">Your presentation starts here</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
