@@ -1,10 +1,7 @@
 /**
  * legacy-app.js
- *
- * Stage-1 extraction from index-working.html.
- * This preserves the working application while moving JavaScript out of the HTML file.
- * Future passes should split this file into state.js, renderer.js, editor.js,
- * import.js, export.js, animate.js, and copilot.js.
+ * Exact runtime JS extracted from index-working.html.
+ * Safe stage-1 reset: no imports, no ES modules.
  */
 
 const fields = {
@@ -4132,3 +4129,4 @@ if(!restoreAutosave()){
 initUiCleanupLayout();
 window.addEventListener('beforeunload', ()=>{ try{ persistAutosaveNow('Autosaved.'); }catch(e){} });
 window.addEventListener('resize', ()=>updatePreviewScale());
+
