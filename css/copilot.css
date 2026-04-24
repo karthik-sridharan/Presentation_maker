@@ -1,0 +1,49 @@
+/**
+ * copilot.css - Copilot Panel Styling
+ */
+
+.copilot-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.copilot-status {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  border-radius: 14px;
+  padding: 0.75rem 0.85rem;
+  line-height: 1.45;
+}
+
+.copilot-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.copilot-actions .full {
+  grid-column: 1 / -1;
+}
+
+.copilot-json {
+  min-height: 170px;
+  font-size: 0.86rem;
+}
+
+.copilot-key-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+@media (max-width: 700px) {
+  .copilot-actions {
+    grid-template-columns: 1fr;
+  }
+  
+  .copilot-key-row {
+    grid-template-columns: 1fr;
+  }
+}
