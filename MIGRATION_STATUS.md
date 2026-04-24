@@ -46,3 +46,14 @@ The cleanest version of that pass is to create `js/block-library.js` and pass it
 - `state.js`, `renderer.js`, `editor.js`, `export.js`, `import.js`, and `copilot.js` still contain scaffold/stub code from the target architecture.
 - The main production behavior still lives mostly in `legacy-app.js`.
 - No large behavioral rewrite was attempted in this stage.
+
+## Stage 2 hotfix - preview/buttons regression
+
+Fixed a regression introduced during the stage-2 extraction. The original helper extraction accidentally left `currentStyleClass()` and `buildSlideStyle()` with mismatched braces in `js/legacy-app.js`. That made `buildSlideStyle()` unavailable to the renderer, so the initial preview build and several button actions failed after the app loaded.
+
+Validation performed:
+- `node --check js/main.js`
+- `node --check js/legacy-app.js`
+- `node --check js/utils.js`
+- `node --check js/theme.js`
+- regenerated `build/lumina-presenter-bundle.html` with `/usr/bin/python3 build/bundle.py`
