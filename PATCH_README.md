@@ -1,23 +1,38 @@
-# Stage 4 block-library migration patch
+# Lumina Presenter stage 6 patch
 
-Overwrite these files in your existing lumina-presenter folder:
+This patch continues from the working stage-5 version.
 
-- index.html
-- js/legacy-app.js
-- js/block-library.js
+Overwrite these files in your existing `lumina-presenter` project:
 
-This patch keeps the stable non-module runtime path. It adds a classic-script
-`js/block-library.js` and moves the reusable block-library workflow out of
-`legacy-app.js`.
+```text
+index.html
+js/copilot.js
+js/legacy-app.js
+```
 
-Test URL:
+## What changed
 
-http://localhost:8000/index.html?v=stage4a
+- Added `js/copilot.js` as a classic browser script.
+- Moved the Copilot/OpenAI workflow out of `js/legacy-app.js`.
+- Kept the stable non-module startup path.
+- Updated cache-busting query strings to `stage6a`.
 
-Main things to verify:
+`index.html` now loads scripts in this order:
 
-1. The app loads and preview renders.
-2. Left tabs/buttons still work.
-3. In the reusable block library, select a built-in block and insert it.
-4. Save the current block to the library, reload, and confirm it persists.
-5. Delete a saved custom reusable block. Built-in blocks should not delete.
+```html
+<script defer src="js/utils.js?v=stage6a"></script>
+<script defer src="js/block-library.js?v=stage6a"></script>
+<script defer src="js/theme.js?v=stage6a"></script>
+<script defer src="js/copilot.js?v=stage6a"></script>
+<script defer src="js/legacy-app.js?v=stage6a"></script>
+```
+
+## Test URL
+
+Run a local server and open:
+
+```text
+http://localhost:8000/index.html?v=stage6a
+```
+
+Use a hard refresh or keep DevTools open with Disable cache checked if you see stale behavior.
