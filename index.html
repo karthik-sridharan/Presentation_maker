@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lumina Presenter | Pro HTML Decks</title>
+    
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+    <script type="module" src="js/main.js"></script>
+</head>
+<body>
+    <div class="page">
+        <aside class="panel stack editor-shell">
+            <div class="editor-intro">
+                <div class="smallcaps">Presentation Generator</div>
+                <h1>Deck Editor</h1>
+                <p class="help">Create technical presentations with LaTeX, SVG diagrams, and AI assistance.</p>
+            </div>
+
+            <nav class="left-tabs mode-bar" id="leftTabs">
+                <button class="left-tab" data-left-tab="files">Files</button>
+                <button class="left-tab active" data-left-tab="edit">Slides</button>
+                <button class="left-tab" data-left-tab="styles">Design</button>
+                <button class="left-tab" data-left-tab="copilot">Copilot</button>
+                <button class="left-tab" data-left-tab="tools">Present</button>
+            </nav>
+
+            <div id="paneContainer">
+                </div>
+        </aside>
+
+        <main class="preview-wrap">
+            <div class="preview-header">
+                <h2>Live Preview</h2>
+                <div class="toolbar">
+                    <button class="btn mini" id="toggleGrid">Grid</button>
+                    <button class="btn mini primary" id="downloadBtn">Export HTML</button>
+                </div>
+            </div>
+            <div class="preview-viewport">
+                <div id="previewStage" class="preview-stage">
+                    </div>
+            </div>
+        </main>
+    </div>
+    <div id="copyToast" class="copy-toast">Action successful</div>
+</body>
+</html>
