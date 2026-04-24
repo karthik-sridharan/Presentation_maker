@@ -1,5 +1,5 @@
-/* Extracted from index-working.html during stage-1 modularization. */
-:root{
+
+  :root{
     --bg:#0b1020;
     --panel:#121933;
     --text:#eef3ff;
@@ -403,3 +403,4 @@
     .slide h1{font-size:2.3rem}
     .slide h2{font-size:1.9rem}
   }
+
