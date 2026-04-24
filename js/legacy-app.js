@@ -128,94 +128,38 @@ function setAutosaveStatus(msg){
   const el = document.getElementById('autosaveStatus');
   if(el) el.textContent = msg;
 }
-function defaultReusableBlock(kind){
-  const presets = {
-    theorem: { mode:'panel', title:'Theorem', content:'\\begin{card}{Theorem}\\nState the theorem clearly here.\\n\\end{card}' },
-    proof: { mode:'panel', title:'Proof', content:'\\begin{card}{Proof}\\nSketch the argument here.\\n\\end{card}' },
-    recap: { mode:'panel', title:'Recap', content:'\\begin{card}{Recap}\\n\\begin{itemize}\\n\\item First takeaway\\n\\item Second takeaway\\n\\end{itemize}\\n\\end{card}' },
-    algorithm: { mode:'pseudocode-latex', title:'Algorithm', content:'Input: \\(x\\)\\n\\nfor \\(t = 1\\) to \\(T\\) do\\n  step\\nend\\n\\nreturn output' },
-    citation: { mode:'panel', title:'Citation', content:'\\begin{card}{Citation}\\nAuthor, Title, Venue, Year.\\n\\end{card}' },
-    reminder: { mode:'panel', title:'Speaker reminder', content:'\\begin{card}{Speaker reminder}\\nMention the intuition before the formal statement.\\n\\end{card}' }
-  };
-  return clone(presets[kind] || presets.recap);
+const LuminaBlockLibrary = window.LuminaBlockLibrary;
+if(!LuminaBlockLibrary){
+  throw new Error('LuminaBlockLibrary failed to load. Check that js/block-library.js is included before js/legacy-app.js.');
 }
-function builtinLibraryEntries(){
-  return [
-    {id:'builtin-theorem', name:'Theorem box', builtin:true, block:defaultReusableBlock('theorem')},
-    {id:'builtin-proof', name:'Proof box', builtin:true, block:defaultReusableBlock('proof')},
-    {id:'builtin-recap', name:'Recap box', builtin:true, block:defaultReusableBlock('recap')},
-    {id:'builtin-algorithm', name:'Algorithm box', builtin:true, block:defaultReusableBlock('algorithm')},
-    {id:'builtin-citation', name:'Citation box', builtin:true, block:defaultReusableBlock('citation')},
-    {id:'builtin-reminder', name:'Speaker reminder box', builtin:true, block:defaultReusableBlock('reminder')}
-  ];
-}
-function loadBlockLibrary(){
-  try{
-    const raw = localStorage.getItem(BLOCK_LIBRARY_KEY);
-    const saved = raw ? JSON.parse(raw) : [];
-    blockLibrary = builtinLibraryEntries().concat(Array.isArray(saved) ? saved : []);
-  }catch(err){
-    blockLibrary = builtinLibraryEntries();
-  }
-}
-function persistBlockLibrary(){
-  const custom = blockLibrary.filter(item => !item.builtin);
-  localStorage.setItem(BLOCK_LIBRARY_KEY, JSON.stringify(custom));
-}
-function renderBlockLibrary(){
-  if(!blockLibraryList) return;
-  blockLibraryList.innerHTML = blockLibrary.map((item, idx)=>`<button class="library-item ${idx===renderBlockLibrary.selectedIndex?'active':''}" data-lib-index="${idx}">${escapeHtml(item.name || 'Reusable block')}<small>${escapeHtml(item.block?.mode || 'panel')}${item.builtin ? ' · built-in' : ''}</small></button>`).join('');
-  blockLibraryList.querySelectorAll('[data-lib-index]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      renderBlockLibrary.selectedIndex = Number(btn.dataset.libIndex);
-      renderBlockLibrary();
-    });
-  });
-}
-renderBlockLibrary.selectedIndex = 0;
-function saveCurrentBlockToLibrary(){
-  const block = currentBlockFromEditor();
-  const suggested = block.title || 'Reusable block';
-  const name = prompt('Save reusable block as', suggested);
-  if(!name) return;
-  blockLibrary.push({
-    id:'saved-' + Date.now(),
-    name,
-    builtin:false,
-    block: clone(block)
-  });
-  renderBlockLibrary.selectedIndex = blockLibrary.length - 1;
-  persistBlockLibrary();
-  renderBlockLibrary();
-  showToast('Saved reusable block.');
-}
-function insertSelectedLibraryBlock(){
-  const item = blockLibrary[renderBlockLibrary.selectedIndex];
-  if(!item) return;
-  const name = currentColumnName();
-  const arr = blockArray(name);
-  const idx = selectedIndex(name);
-  const insertAt = idx >= 0 ? idx + 1 : arr.length;
-  arr.splice(insertAt, 0, clone(item.block));
-  setSelectedIndex(name, insertAt);
-  loadSelectedBlockIntoEditor();
-  renderBlockList();
-  buildPreview();
-  scheduleAutosave('Autosaved after inserting reusable block.');
-  showToast('Inserted reusable block.');
-}
-function deleteSelectedLibraryBlock(){
-  const item = blockLibrary[renderBlockLibrary.selectedIndex];
-  if(!item || item.builtin){
-    showToast('Built-in reusable blocks cannot be deleted.');
-    return;
-  }
-  blockLibrary.splice(renderBlockLibrary.selectedIndex, 1);
-  renderBlockLibrary.selectedIndex = Math.max(0, Math.min(renderBlockLibrary.selectedIndex, blockLibrary.length - 1));
-  persistBlockLibrary();
-  renderBlockLibrary();
-  showToast('Deleted saved reusable block.');
-}
+const blockLibraryApi = LuminaBlockLibrary.createApi({
+  clone,
+  escapeHtml,
+  showToast,
+  getBlockLibrary: () => blockLibrary,
+  setBlockLibrary: value => { blockLibrary = value; },
+  getBlockLibraryList: () => blockLibraryList,
+  getBlockLibraryKey: () => BLOCK_LIBRARY_KEY,
+  currentBlockFromEditor: () => currentBlockFromEditor(),
+  currentColumnName: () => currentColumnName(),
+  blockArray: name => blockArray(name),
+  selectedIndex: name => selectedIndex(name),
+  setSelectedIndex: (name, idx) => setSelectedIndex(name, idx),
+  loadSelectedBlockIntoEditor: () => loadSelectedBlockIntoEditor(),
+  renderBlockList: () => renderBlockList(),
+  buildPreview: () => buildPreview(),
+  scheduleAutosave: reason => scheduleAutosave(reason)
+});
+const {
+  defaultReusableBlock,
+  builtinLibraryEntries,
+  loadBlockLibrary,
+  persistBlockLibrary,
+  renderBlockLibrary,
+  saveCurrentBlockToLibrary,
+  insertSelectedLibraryBlock,
+  deleteSelectedLibraryBlock
+} = blockLibraryApi;
 
 function themeFieldValue(name, fallback=''){
   const el = themeFields[name];
