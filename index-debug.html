@@ -8,6 +8,33 @@
 <link rel="stylesheet" href="css/styles.css" />
 
 <script>
+(function(){
+  function show(msg){
+    var box=document.getElementById('lumina-debug-errors');
+    if(!box){
+      box=document.createElement('pre');
+      box.id='lumina-debug-errors';
+      box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;max-height:40vh;overflow:auto;z-index:999999;background:#2b0d0d;color:#fff;border:2px solid #ff7373;border-radius:10px;padding:12px;font:13px/1.4 ui-monospace,monospace;white-space:pre-wrap;';
+      document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(box);});
+      if(document.body) document.body.appendChild(box);
+    }
+    box.textContent += msg + '\n';
+  }
+  window.addEventListener('error',function(e){show('[JS ERROR] '+e.message+'\n'+(e.filename||'')+':'+(e.lineno||'')+':'+(e.colno||''));});
+  window.addEventListener('unhandledrejection',function(e){show('[PROMISE ERROR] '+(e.reason && (e.reason.stack || e.reason.message) || e.reason));});
+  window.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){
+      var preview=document.getElementById('previewScale')||document.getElementById('preview');
+      var tabs=document.querySelectorAll('[data-left-tab]').length;
+      if(!preview) show('[DIAGNOSTIC] No preview container found. Tabs found: '+tabs);
+      else if(!preview.innerHTML.trim()) show('[DIAGNOSTIC] Preview container exists but is empty. Tabs found: '+tabs);
+    },800);
+  });
+})();
+</script>
+
+
+<script>
 
 window.MathJax = {
   tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },

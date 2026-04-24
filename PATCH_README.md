@@ -1,16 +1,26 @@
-# Stage 2 Safe Runtime Patch
+# Lumina Presenter stage-1 reset patch
 
-This patch intentionally restores the known-working stage-1 runtime path.
-
-Overwrite these files:
+Overwrite these files in your existing `lumina-presenter` folder:
 
 - `index.html`
+- `css/styles.css`
 - `js/legacy-app.js`
 
-Optional:
+This patch intentionally removes the fragile stage-2 ES-module startup path and restores the known-working stage-1 runtime:
 
-- `build/lumina-presenter-bundle.html`
+`index.html` → `css/styles.css` + `js/legacy-app.js`
 
-Why: the previous stage-2 patch made `legacy-app.js` depend on ES module imports (`main.js`, `theme.js`, `utils.js`). If the project is opened from `file://`, or if any import path/MIME behavior fails, the app stops before preview, hide rail, main tabs, and many buttons are bound. This patch makes `legacy-app.js` self-contained again and loads it as a plain deferred script.
+For testing, run from the project folder:
 
-After this is confirmed working, the next modularization pass should split one feature at a time behind a browser-tested entry point.
+```bash
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000/`.
+
+I also included `index-working.html` as an emergency reference copy of the original monolithic working file. If `index.html` still fails after overwriting the three files above, open `index-working.html` directly to confirm the browser/environment is still able to run the original app.
+
+
+Optional diagnostic:
+
+- Open `index-debug.html` if the normal `index.html` still appears blank. It shows browser JavaScript errors directly on the page.
