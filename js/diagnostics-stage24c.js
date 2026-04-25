@@ -22,6 +22,7 @@
     'LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRendererApi','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor','LuminaCopilotCore','LuminaCopilotGuardStatus','LuminaCommands'
   ]).slice(); }
   function expectedDomIds() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.domIds ? W.LuminaModuleManifest.domIds : ['leftTabs','slideType','preview','deckList','blockList','deckTitle']).slice(); }
+  function esmStatus(esm) { return esm ? (esm.status || (esm.ok === true ? 'passed' : 'failed')) : 'not-started'; }
   function collectReport() {
     var assets = expectedAssets();
     var missingAssets = assets.filter(function (asset) {
@@ -32,7 +33,11 @@
     var missingDom = expectedDomIds().filter(function (id) { return !document.getElementById(id); });
     var bootErrors = (W.LUMINA_BOOT_ERRORS || []).slice();
     return {
-      stage: D.stage,
+      stage: W.LUMINA_STAGE || D.stage,
+      diagnosticScriptStage: D.stage,
+      stageFromWindow: W.LUMINA_STAGE || null,
+      indexStageSignature: W.LUMINA_STAGE_SIGNATURE || null,
+      indexDatasetStage: document.documentElement ? document.documentElement.getAttribute('data-lumina-stage') : null,
       url: location.href,
       userAgent: navigator.userAgent,
       startedAt: D.startedAt,
@@ -64,6 +69,9 @@
       bootErrors: bootErrors,
       capturedErrors: D.errors.map(function (e) { return e.message || String(e); }),
       esModuleDiagnostics: W.LuminaEsModuleDiagnostics || null,
+      esModuleSmokePassed: !!(W.LuminaEsModuleDiagnostics && W.LuminaEsModuleDiagnostics.ok === true),
+      esModuleSmokeStatus: esmStatus(W.LuminaEsModuleDiagnostics || null),
+      optionalEsmAssets: ((W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || W.LUMINA_OPTIONAL_ESM_ASSETS || [])).slice(),
       optionalEsmAssetCount: ((W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || W.LUMINA_OPTIONAL_ESM_ASSETS || [])).length
     };
   }
