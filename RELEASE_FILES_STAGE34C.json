@@ -1,5 +1,5 @@
 {
-  "stage": "stage34c-20260425-1",
+  "stage": "stage34c-20260425-2",
   "files": [
     "index.html",
     "js/esm/block-editor-stage34c.js",
@@ -22,5 +22,7 @@
     "STAGE34C_NOTES.md",
     "RELEASE_NOTES_STAGE34C.md",
     "RELEASE_FILES_STAGE34C.json"
-  ]
+  ],
+  "indexStageSignature": "index-inline-stage34c-live-esm-commands-diagram-editor-hotfix-20260425-2",
+  "hotfix": "non-blocking optional live ESM import fallback for commands and diagram editor"
 }
