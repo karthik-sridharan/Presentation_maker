@@ -1,4 +1,6 @@
-/* Stage 34K: Copilot core as a side-effect-free ES module.
+/* Stage 34N: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
+   Stage 34K filename retained for cache-compatible loader continuity.
+
    It receives a narrow dependency bridge from legacy-app-stage24c.js and keeps
    the main editor protected by the Stage 24C/34K guarded binder. */
 function safeString(value){ return String(value == null ? '' : value); }
@@ -19,12 +21,16 @@ function createApi(deps){
   const COPILOT_API_KEY_STORAGE = deps.apiKeyStorage || 'html-presentation-generator-openai-api-key-v1';
   const COPILOT_SETTINGS_STORAGE = deps.settingsStorage || 'html-presentation-generator-copilot-settings-v1';
   const COPILOT_DEFAULT_ENDPOINT = deps.defaultEndpoint || 'https://api.openai.com/v1/responses';
+  const COPILOT_DEV_PROMPT_FILE = deps.devPromptFile || 'prompts/dev.txt';
   const COPILOT_DECK_PROMPT_FILE = deps.deckPromptFile || 'prompts/deck.txt';
   const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
     'Deck-level generation instructions:',
+    'Treat these as deck-only developer instructions.',
     'Create a coherent complete presentation, not a loose collection of slides.',
     'Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.',
     'Make slide titles specific and informative.',
+    'When the user provides reference lecture notes, pasted excerpts, or URLs, follow that source structure closely instead of giving a generic topic overview.',
+    'When the request or these instructions ask for figures, include explicit placeholder figure blocks with concrete figure descriptions, even if no image file is available.',
     'Use speaker notes to explain transitions, emphasis, and teaching guidance.',
     'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
   ].join('\n');
@@ -36,14 +42,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34m-20260425-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34n-20260425-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage34m-20260425-1', lastRuntimeLoadedAt:new Date().toISOString(), deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage34n-20260425-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -131,6 +137,7 @@ function createApi(deps){
       if(copilotEls.model && s.model) copilotEls.model.value = s.model;
       if(copilotEls.endpoint && s.endpoint) copilotEls.endpoint.value = s.endpoint;
       if(copilotEls.tone && s.tone) copilotEls.tone.value = s.tone;
+      if(copilotEls.webSearch && typeof s.webSearch === 'boolean') copilotEls.webSearch.checked = s.webSearch;
       const key = getStorageItem(COPILOT_API_KEY_STORAGE);
       if(copilotEls.apiKey && key) copilotEls.apiKey.value = key;
       updateCopilotKeyWarning();
@@ -219,7 +226,9 @@ function createApi(deps){
       'Set inheritTheme to true unless the user explicitly asks for custom colors.',
       'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
       'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
-      'Do not invent citations, URLs, or image files. Use placeholder blocks when a figure is needed.'
+      'Do not invent citations, URLs, or image files. Use placeholder blocks when a figure is needed.',
+      'If the user asks to follow lecture notes or a reference link, do not answer as a generic topic summary; organize the deck around the referenced material and say in the summary when reference content could not be accessed.',
+      'If the instructions mention figures, diagrams, plots, pictures, or visuals, include placeholder blocks titled Figure or Diagram with concrete descriptions of what should be drawn.'
     ].join('\n');
   }
   function compactDeckForCopilot(){
@@ -240,48 +249,61 @@ function createApi(deps){
       }))
     };
   }
-  function deckPromptUrl(){
-    const base = safeString(COPILOT_DECK_PROMPT_FILE || 'prompts/deck.txt').trim() || 'prompts/deck.txt';
-    const version = safeString(deps.stage || runtimeStatus.stage || 'stage34m-20260425-1');
-    if(/^data:/i.test(base)) return base;
+  function cacheBustedPromptUrl(fileName){
+    const base = safeString(fileName || '').trim();
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage34n-20260425-1');
+    if(!base || /^data:/i.test(base)) return base;
     return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
+  }
+  async function fetchPromptFile(fileName){
+    const name = safeString(fileName || '').trim();
+    if(!name || typeof fetchImpl !== 'function') return { text:'', source:name, status: typeof fetchImpl === 'function' ? 'empty-file-name' : 'fetch-unavailable' };
+    try{
+      const res = await fetchImpl(cacheBustedPromptUrl(name), { cache:'no-store' });
+      if(res && res.ok){
+        const text = safeString(await res.text()).trim();
+        return { text, source:name, status: text ? 'loaded-file' : 'blank-file' };
+      }
+      return { text:'', source:name, status: res ? ('file-http-' + res.status) : 'file-no-response' };
+    }catch(err){
+      return { text:'', source:name, status:'file-load-error', error:(err && err.message) || safeString(err) };
+    }
   }
   async function loadDeckPromptPrefix(){
     if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
-    let fileText = '';
-    let source = 'builtin-default';
-    let status = 'builtin-default';
-    try{
-      if(typeof fetchImpl === 'function'){
-        const url = deckPromptUrl();
-        const res = await fetchImpl(url, { cache:'no-store' });
-        if(res && res.ok){
-          fileText = safeString(await res.text()).trim();
-          if(fileText){
-            source = COPILOT_DECK_PROMPT_FILE;
-            status = 'loaded-file';
-          }else{
-            status = 'blank-file-used-builtin-default';
-          }
-        }else if(res){
-          status = 'file-http-' + res.status + '-used-builtin-default';
-        }
-      }else{
-        status = 'fetch-unavailable-used-builtin-default';
-      }
-    }catch(err){
-      status = 'file-load-error-used-builtin-default';
-      updateCopilotRuntime({ deckPromptLastError: (err && err.message) || safeString(err) });
+    const attempts = [];
+    const dev = await fetchPromptFile(COPILOT_DEV_PROMPT_FILE);
+    attempts.push(dev);
+    let chosen = dev;
+    if(!chosen.text){
+      const deck = await fetchPromptFile(COPILOT_DECK_PROMPT_FILE);
+      attempts.push(deck);
+      if(deck.text) chosen = deck;
     }
-    deckPromptPrefixCache = fileText || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
+    const lastError = attempts.map(a=>a.error).filter(Boolean).join('\n');
+    if(lastError) updateCopilotRuntime({ deckPromptLastError:lastError });
+    deckPromptPrefixCache = chosen.text || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
+    const status = chosen.text ? chosen.status : attempts.map(a=>a.source + ':' + a.status).join(';') + ';used-builtin-default';
+    const source = chosen.text ? chosen.source : 'builtin-default';
     updateCopilotRuntime({
+      devPromptFile: COPILOT_DEV_PROMPT_FILE,
       deckPromptFile: COPILOT_DECK_PROMPT_FILE,
       deckPromptSource: source,
       deckPromptStatus: status,
+      deckPromptAttempts: attempts.map(a=>({ source:a.source, status:a.status })),
       deckPromptAppliesTo: 'deck-only',
       deckPromptLoadedAt: new Date().toISOString()
     });
     return deckPromptPrefixCache;
+  }
+  function textHasUrl(text){ return /https?:\/\/\S+/i.test(safeString(text)); }
+  function shouldUseOpenAiWebSearch(kind, endpoint, promptText, deckPromptPrefix){
+    const enabled = !!(copilotEls.webSearch && copilotEls.webSearch.checked);
+    if(kind !== 'deck') return { use:false, status:'deck-only' };
+    if(!enabled) return { use:false, status:'disabled' };
+    if(!isDefaultOpenAiEndpoint(endpoint)) return { use:false, status:'custom-endpoint-disabled' };
+    if(!textHasUrl(promptText + '\n' + deckPromptPrefix)) return { use:false, status:'no-url-detected' };
+    return { use:true, status:'enabled-url-detected' };
   }
   async function buildCopilotUserPrompt(kind){
     const prompt = (copilotEls.prompt?.value || '').trim();
@@ -290,12 +312,6 @@ function createApi(deps){
     const tone = copilotEls.tone?.value || 'clear and concise';
     const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
     const parts = [mode];
-    if(kind === 'deck'){
-      const deckPromptPrefix = await loadDeckPromptPrefix();
-      if(deckPromptPrefix){
-        parts.push('Deck prompt file instructions (from prompts/deck.txt, or built-in fallback if missing/blank):\n' + deckPromptPrefix);
-      }
-    }
     parts.push(
       'User request: ' + prompt,
       'Target slide count: ' + (kind === 'deck' ? count : 1),
@@ -327,16 +343,27 @@ function createApi(deps){
     updateCopilotKeyWarning();
     const headers = { 'Content-Type':'application/json' };
     if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
+    const deckPromptPrefix = kind === 'deck' ? await loadDeckPromptPrefix() : '';
     const userPrompt = await buildCopilotUserPrompt(kind);
+    let systemContent = copilotSystemPrompt();
+    if(kind === 'deck' && deckPromptPrefix){
+      systemContent += '\n\nDeck-only developer instructions from ' + (runtimeStatus.deckPromptSource || COPILOT_DEV_PROMPT_FILE || COPILOT_DECK_PROMPT_FILE) + ':\n' + deckPromptPrefix;
+    }
+    const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, deckPromptPrefix);
     const body = {
       model,
       input:[
-        { role:'system', content: copilotSystemPrompt() },
+        { role:'system', content: systemContent },
         { role:'user', content: userPrompt }
       ],
       text:{ format:{ type:'json_schema', name:'presentation_deck', schema:copilotDeckSchema(), strict:true } },
       store:false
     };
+    if(webSearch.use){
+      body.tools = [{ type:'web_search' }];
+      body.tool_choice = 'auto';
+    }
+    updateCopilotRuntime({ webSearchEnabled: !!webSearch.use, webSearchStatus: webSearch.status });
     setCopilotStatus(kind === 'deck' ? 'Generating deck…' : 'Generating slide…');
     updateCopilotRuntime({ requestInFlight:true, requestCount: Number(runtimeStatus.requestCount || 0) + 1, lastError:'' });
     const res = await fetchImpl(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
@@ -466,7 +493,7 @@ function createApi(deps){
   }
 
   return Object.freeze({
-    __stage:'stage34m-20260425-1',
+    __stage:'stage34n-20260425-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
@@ -485,6 +512,7 @@ function createApi(deps){
     compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
     buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
     loadDeckPromptPrefix: maybeClassic('loadDeckPromptPrefix', loadDeckPromptPrefix),
+    shouldUseOpenAiWebSearch: maybeClassic('shouldUseOpenAiWebSearch', shouldUseOpenAiWebSearch),
     extractResponsesOutputText: maybeClassic('extractResponsesOutputText', extractResponsesOutputText),
     callCopilot: maybeClassic('callCopilot', callCopilot),
     normalizeCopilotDeck: maybeClassic('normalizeCopilotDeck', normalizeCopilotDeck),
