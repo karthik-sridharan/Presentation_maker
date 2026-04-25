@@ -1,58 +1,28 @@
-# Lumina Presenter Migration Status
+# Lumina Presenter migration status — Stage 22A
 
-Current stable baseline: **Stage 21B diagnostics**, built on the last confirmed working **Stage 20** runtime.
+Stage 22A adds a classic-script command and keyboard-shortcut layer.
 
-## Stage 21B changes
+## Still intentionally unchanged
 
-This is a non-feature migration safety patch. It does **not** split Copilot and does **not** change editor behavior.
+- No ES modules yet.
+- Copilot is still inside the main app because prior Copilot splits broke startup.
+- Runtime keeps cache-proof stage filenames.
 
-Added:
+## New files
 
-- `js/diagnostics-stage21b.js`
-- `diagnostics-stage21b.html`
-- cache-proof stage-21B runtime filenames
-- per-script `onload`/`onerror` diagnostics
-- a bottom-right **Diagnostics** button in the app
-- expected-global checks after startup
-
-## Confirmed modular layers through Stage 20
-
-- `utils`
-- `block-library`
-- `theme`
-- `presets`
-- `parser`
-- `block-style`
-- `import`
-- `state/autosave`
-- `export`
-- `renderer`
-- `deck/snippet`
-- `file-io`
-- `ui`
-- `figure-insert`
-- `diagram-editor`
-- `figure-tools` — duplicate fixed; crop still needs UX/behavior review
-- `editor-selection`
-- `block-editor`
-
-## Do not split yet
-
-Copilot has broken startup twice. Leave it inside the main runtime until the remaining app core is cleaner and the diagnostics layer has been tested.
+- `js/commands-stage22a.js`
+- `js/commands.js`
+- `diagnostics-stage22a.html`
 
 ## Test URL
 
-```text
-http://localhost:8000/index.html?v=stage21b-20260425-1&clearLuminaStorage=1
-```
+`http://localhost:8000/index.html?v=stage22a-20260425-1&clearLuminaStorage=1`
 
-## Diagnostic URL
+## Main tests
 
-```text
-http://localhost:8000/diagnostics-stage21b.html?v=stage21b-20260425-1
-```
-
-
-## Stage 21B diagnostics fix
-
-Corrected diagnostics false positives: renderer and UI are function-based modules in the current classic-script migration, and the slide rail list id is `deckList`, not `slideList`. Runtime/editor behavior is unchanged.
+- App loads, preview renders, tabs work.
+- Diagnostics report has no missing assets/globals/DOM ids.
+- `Ctrl/Cmd+S` saves current slide.
+- `Alt+Shift+N/U/D` add/update/duplicate slides.
+- `Alt+Shift+ArrowLeft/Right` navigates slides.
+- `Alt+Shift+B/E/X` add/update/delete blocks.
