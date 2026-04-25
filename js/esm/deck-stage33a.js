@@ -68,6 +68,18 @@ export function createApi(deps) {
     var slides = getSlides();
     var activeIndex = getActiveIndex();
     deckCount.textContent = slides.length + ' slide' + (slides.length === 1 ? '' : 's');
+    if (!slides.length) {
+      deckList.innerHTML = `
+        <div class="deck-empty" role="status">
+          <strong>No slides yet.</strong>
+          <span>Start from the current editor contents, or choose a layout/preset and then add it.</span>
+          <button class="btn primary mini" type="button" data-empty-add-slide>Add first slide</button>
+        </div>
+      `;
+      var emptyAddBtn = deckList.querySelector('[data-empty-add-slide]');
+      if (emptyAddBtn) emptyAddBtn.addEventListener('click', addSlide);
+      return;
+    }
     deckList.innerHTML = slides.map(function (slide, idx) {
       var normalized = normalizeSlide(slide);
       return `
