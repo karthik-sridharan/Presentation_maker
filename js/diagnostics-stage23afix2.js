@@ -2,7 +2,7 @@
   'use strict';
   var W = window;
   var D = W.LuminaDiagnostics = W.LuminaDiagnostics || {};
-  D.stage = 'stage23afix2-20260425-1';
+  D.stage = 'stage23b-20260425-1';
   D.loaded = D.loaded || {};
   D.failed = D.failed || {};
   D.errors = D.errors || [];
@@ -19,7 +19,7 @@
   function hasOwn(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
   function expectedAssets() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.assets ? W.LuminaModuleManifest.assets : (W.LUMINA_EXPECTED_ASSETS || [])).slice(); }
   function expectedGlobals() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.globals ? W.LuminaModuleManifest.globals : [
-    'LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor','LuminaCommands'
+    'LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRendererApi','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor','LuminaCommands'
   ]).slice(); }
   function expectedDomIds() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.domIds ? W.LuminaModuleManifest.domIds : ['leftTabs','slideType','preview','deckList','blockList','deckTitle']).slice(); }
   function collectReport() {
@@ -44,10 +44,15 @@
       missingDomIds: missingDom,
       basicUiBound: !!W.__LUMINA_BASIC_UI_BOUND,
       previewHasContent: !!(document.getElementById('preview') && document.getElementById('preview').children.length),
-      rendererFunctionBased: typeof W.renderSlide === 'function',
+      rendererFunctionBased: !!(W.LuminaRendererApi && typeof W.LuminaRendererApi.buildSlideMarkup === 'function'),
       uiFunctionBased: typeof W.initPanelTabs === 'function' && typeof W.initUiCleanupLayout === 'function',
       manifestLoaded: !!W.LuminaModuleManifest,
-      rendererApi: { renderSlide: typeof W.renderSlide, buildPreview: typeof W.buildPreview },
+      rendererApi: {
+        exposed: typeof W.LuminaRendererApi,
+        buildSlideMarkup: W.LuminaRendererApi ? typeof W.LuminaRendererApi.buildSlideMarkup : 'undefined',
+        normalizeSlide: W.LuminaRendererApi ? typeof W.LuminaRendererApi.normalizeSlide : 'undefined',
+        legacyBuildPreview: typeof W.buildPreview
+      },
       appCommandBridge: !!W.LuminaAppCommands,
       commandsBound: !!W.__LUMINA_COMMANDS_BOUND,
       commandCount: W.LuminaCommands && typeof W.LuminaCommands.list === 'function' ? W.LuminaCommands.list().length : 0,

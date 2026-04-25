@@ -6,7 +6,7 @@
 (function(global){
   'use strict';
   global.LuminaModuleManifest = Object.freeze({
-    stage: 'stage23afix2-20260425-1',
+    stage: 'stage23b-20260425-1',
     assets: [
     "css/styles-stage23afix2.css",
     "js/diagnostics-stage23afix2.js",
@@ -42,6 +42,7 @@
     "LuminaImport",
     "LuminaState",
     "LuminaExport",
+    "LuminaRendererApi",
     "LuminaDeck",
     "LuminaFileIo",
     "LuminaFigureInsert",
@@ -61,8 +62,8 @@
 ],
     notes: [
       'Classic script runtime; no ES modules yet.',
-      'Stage 23A switches active runtime paths to stable filenames.',
-      'Stage-tagged files may remain in the repo as rollback artifacts.',
+      'Stage 23B aligns diagnostics with the actual renderer API.',
+      'Stage-tagged files remain cache-proof rollback artifacts.',
       'Copilot remains inside legacy-app; do not split until core app is stable.',
       'Commands live in LuminaCommands and app bridge lives in LuminaAppCommands.'
     ],

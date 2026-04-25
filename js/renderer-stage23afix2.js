@@ -108,3 +108,20 @@ function buildSlideMarkup(slide){
   const cls = slide.slideType === 'title-center' ? 'slide title-center' : (slide.slideType === 'two-col' ? 'slide two-col' : 'slide single');
   return '<section class="' + cls + ' ' + currentStyleClass() + '" style="' + buildSlideStyle(slide) + '">' + buildSlideInner(slide).trim() + '</section>';
 }
+
+
+// Stage 23B: narrow renderer API bridge for diagnostics and future cleanup.
+// This exposes existing function-based helpers without changing runtime behavior.
+window.LuminaRendererApi = Object.freeze({
+  diagramMarkup: diagramMarkup,
+  customFrameMarkup: customFrameMarkup,
+  diagramStandaloneDocument: diagramStandaloneDocument,
+  expandDiagramBlocksForSnippet: expandDiagramBlocksForSnippet,
+  slideForSnippet: slideForSnippet,
+  normalizeBlock: normalizeBlock,
+  normalizeSlide: normalizeSlide,
+  renderBlock: renderBlock,
+  renderBlocks: renderBlocks,
+  buildSlideInner: buildSlideInner,
+  buildSlideMarkup: buildSlideMarkup
+});
