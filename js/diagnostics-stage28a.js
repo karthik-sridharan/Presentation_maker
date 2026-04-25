@@ -2,10 +2,11 @@
   'use strict';
   var W = window;
   var D = W.LuminaDiagnostics = W.LuminaDiagnostics || {};
-  D.stage = W.LUMINA_STAGE || 'stage24c-20260425-1';
+  D.stage = 'stage28a-20260425-1';
   D.loaded = D.loaded || {};
   D.failed = D.failed || {};
   D.errors = D.errors || [];
+  D.warnings = D.warnings || [];
   D.startedAt = new Date().toISOString();
   var previousBootError = W.luminaBootError;
   W.luminaBootError = function (message) {
@@ -14,10 +15,18 @@
     if (typeof previousBootError === 'function') previousBootError(msg);
     else { W.LUMINA_BOOT_ERRORS = W.LUMINA_BOOT_ERRORS || []; W.LUMINA_BOOT_ERRORS.push(msg); }
   };
+  D.warn = function (message) {
+    D.warnings.push({ time: new Date().toISOString(), message: String(message || 'warning') });
+  };
   D.markLoaded = function (asset) { D.loaded[String(asset)] = true; };
   D.markFailed = function (asset) { D.failed[String(asset)] = true; W.luminaBootError('Failed to load ' + asset); };
+  D.markOptionalFailed = function (asset, detail) {
+    D.failed[String(asset)] = true;
+    D.warn('Optional asset did not load: ' + asset + (detail ? ' — ' + detail : ''));
+  };
   function hasOwn(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
   function expectedAssets() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.assets ? W.LuminaModuleManifest.assets : (W.LUMINA_EXPECTED_ASSETS || [])).slice(); }
+  function optionalAssets() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.optionalAssets ? W.LuminaModuleManifest.optionalAssets : (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || [])).slice(); }
   function expectedGlobals() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.globals ? W.LuminaModuleManifest.globals : [
     'LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRendererApi','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor','LuminaCopilotCore','LuminaCopilotGuardStatus','LuminaCommands'
   ]).slice(); }
@@ -31,6 +40,7 @@
     var missingGlobals = expectedGlobals().filter(function (key) { return !W[key]; });
     var missingDom = expectedDomIds().filter(function (id) { return !document.getElementById(id); });
     var bootErrors = (W.LUMINA_BOOT_ERRORS || []).slice();
+    var esm = W.LuminaEsModuleDiagnostics || null;
     return {
       stage: D.stage,
       url: location.href,
@@ -38,8 +48,10 @@
       startedAt: D.startedAt,
       checkedAt: new Date().toISOString(),
       expectedAssetCount: assets.length,
+      optionalAssetCount: optionalAssets().length,
       loadedScriptCount: Object.keys(D.loaded).length,
       missingAssets: missingAssets,
+      optionalAssets: optionalAssets(),
       missingGlobals: missingGlobals,
       missingDomIds: missingDom,
       basicUiBound: !!W.__LUMINA_BASIC_UI_BOUND,
@@ -61,10 +73,12 @@
       copilotValidationBound: !!(W.LuminaCopilotGuardStatus && W.LuminaCopilotGuardStatus.validationBound),
       commandsBound: !!W.__LUMINA_COMMANDS_BOUND,
       commandCount: W.LuminaCommands && typeof W.LuminaCommands.list === 'function' ? W.LuminaCommands.list().length : 0,
+      esModuleDiagnostics: esm,
+      esModuleSmokePassed: !!(esm && esm.ok === true),
+      esModuleSmokeStatus: esm ? (esm.status || (esm.ok ? 'passed' : 'failed')) : 'not-started',
       bootErrors: bootErrors,
       capturedErrors: D.errors.map(function (e) { return e.message || String(e); }),
-      esModuleDiagnostics: W.LuminaEsModuleDiagnostics || null,
-      optionalEsmAssetCount: ((W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || W.LUMINA_OPTIONAL_ESM_ASSETS || [])).length
+      warnings: D.warnings.map(function (e) { return e.message || String(e); })
     };
   }
   D.collectReport = collectReport;
@@ -101,8 +115,9 @@
     if (!report.basicUiBound) W.luminaBootError('Basic UI binding marker missing.');
     if (!report.manifestLoaded) W.luminaBootError('Module manifest did not load.');
     if (!report.commandsBound) W.luminaBootError('Command shortcut binding marker missing.');
+    if (report.esModuleSmokeStatus !== 'passed') D.warn('ES module smoke status: ' + report.esModuleSmokeStatus + '. This is optional in Stage 28A and does not block the classic runtime.');
     ensureButton();
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(delayedChecks, 1200); });
-  else setTimeout(delayedChecks, 1200);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(delayedChecks, 2500); });
+  else setTimeout(delayedChecks, 2500);
 })();
