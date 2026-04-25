@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HTML Presentation Generator</title>
+<script>
+(function(){
+  window.LUMINA_BOOT_ERRORS=[];
+  try{
+    var p=new URLSearchParams(location.search);
+    if(p.has('clearLuminaStorage')){
+      Object.keys(localStorage).forEach(function(k){
+        var low=String(k).toLowerCase();
+        if(low.indexOf('lumina')>=0 || low.indexOf('presentation')>=0 || low.indexOf('html-presentation')>=0 || low.indexOf('copilot')>=0){ localStorage.removeItem(k); }
+      });
+      sessionStorage.setItem('lumina-storage-cleared','1');
+    }
+  }catch(e){ window.LUMINA_BOOT_ERRORS.push('Storage-clear check failed: '+(e.message||e)); }
+  window.luminaBootError=function(message){window.LUMINA_BOOT_ERRORS.push(String(message));};
+  window.addEventListener('error',function(event){var where=event.filename?(' at '+event.filename.split('/').slice(-1)[0]+':'+event.lineno+':'+event.colno):''; window.luminaBootError((event.message||'Script error')+where);});
+  window.addEventListener('unhandledrejection',function(event){window.luminaBootError('Unhandled promise rejection: '+(event.reason&&(event.reason.stack||event.reason.message||event.reason)||'unknown'));});
+  window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(!window.LUMINA_BOOT_ERRORS.length)return; var box=document.createElement('pre'); box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:999999;max-height:40vh;overflow:auto;background:#fee;color:#600;border:2px solid #c00;padding:12px;border-radius:8px;font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;'; box.textContent='Lumina startup error(s):\n\n'+window.LUMINA_BOOT_ERRORS.join('\n\n'); document.body.appendChild(box);},600);});
+})();
+</script>
+<script>
+window.LUMINA_STAGE = 'stage32a-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage32a-20260425-1';
+try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
+window.LUMINA_EXPECTED_ASSETS = [
+  "css/styles-stage24c.css",
+  "js/diagnostics-stage24c.js",
+  "js/module-manifest-stage24c.js",
+  "js/utils-stage24c.js",
+  "js/block-library-stage24c.js",
+  "js/theme-stage24c.js",
+  "js/presets-stage24c.js",
+  "js/parser-stage24c.js",
+  "js/block-style-stage24c.js",
+  "js/import-stage24c.js",
+  "js/state-stage24c.js",
+  "js/export-stage24c.js",
+  "js/renderer-stage24c.js",
+  "js/deck-stage24c.js",
+  "js/file-io-stage24c.js",
+  "js/ui-stage24c.js",
+  "js/figure-insert-stage24c.js",
+  "js/diagram-editor-stage24c.js",
+  "js/figure-tools-stage24c.js",
+  "js/editor-selection-stage24c.js",
+  "js/block-editor-stage24c.js",
+  "js/legacy-app-stage24c.js",
+  "js/copilot-stage24c.js",
+  "js/commands-stage24c.js"
+];
+window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
+  "js/esm/utils-stage32a.js",
+  "js/esm/block-style-stage32a.js",
+  "js/esm/parser-stage32a.js",
+  "js/esm/import-stage32a.js",
+  "js/esm/state-stage32a.js",
+  "js/esm/theme-stage32a.js",
+  "js/esm/presets-stage32a.js",
+  "js/esm/renderer-stage32a.js",
+  "js/esm/deck-stage32a.js",
+  "js/esm/file-io-stage32a.js",
+  "js/esm/figure-insert-stage32a.js",
+  "js/esm/block-library-stage32a.js",
+  "js/esm/editor-selection-stage32a.js",
+  "js/esm/block-editor-stage32a.js"
+];
+</script>
+<script src="js/diagnostics-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script>
+(function(){
+  'use strict';
+  var W = window;
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage32a-20260425-1';
+  var base = W.LuminaModuleManifest || {};
+  var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
+  var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
+  W.LuminaModuleManifest = Object.freeze({
+    stage: W.LUMINA_STAGE || 'stage32a-20260425-1',
+    assets: required,
+    optionalAssets: optional,
+    globals: base.globals || [],
+    domIds: base.domIds || [],
+    notes: (base.notes || []).concat([
+      'Stage 32A keeps the Stage 24C classic runtime authoritative.',
+      'No new stage-numbered JavaScript file is required for startup.',
+      'ES module parity runs through inline optional leaf dynamic imports with fetch/MIME probes.'
+    ]),
+    loadOrder: required
+  });
+})();
+</script>
+
+
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage32a-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+
+<script>
+
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script async src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body data-beamer-style="${escapeHtml((payload.theme&&payload.theme.beamerStyle)||"classic")}">
+<div class="page">
+  <div class="panel stack editor-shell">
+    <div class="editor-intro">
+      <div class="smallcaps">Presentation generator</div>
+      <h1>Deck editor</h1>
+      <p class="help">Work in focused modes on the left, keep preview and inspector on the right, and use the slide rail for quick deck navigation.</p>
+    </div>
+
+
+    <div class="left-tabs mode-bar" id="leftTabs">
+      <button class="left-tab" type="button" data-left-tab="files">Files</button>
+      <button class="left-tab active" type="button" data-left-tab="edit">Slides</button>
+      <button class="left-tab" type="button" data-left-tab="presets">Insert</button>
+      <button class="left-tab" type="button" data-left-tab="styles">Design</button>
+      <button class="left-tab" type="button" data-left-tab="animate">Animate</button>
+      <button class="left-tab" type="button" data-left-tab="tools">Present</button>
+      <button class="left-tab" type="button" data-left-tab="slides">Organize</button>
+      <button class="left-tab" type="button" data-left-tab="copilot">Copilot</button>
+      <button class="left-tab" type="button" data-left-tab="help">Help</button>
+    </div>
+
+    <div class="left-pane active" data-left-pane="edit">
+
+      <div class="subtabs" data-subtab-group="edit">
+        <button class="subtab active" type="button" data-subtab="edit:slide">Slide</button>
+        <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
+      </div>
+      <div class="subpane active" data-subpane="edit:slide">
+<div class="field-grid">
+      <div class="field full">
+        <label for="deckTitle">Presentation title</label>
+        <input id="deckTitle" value="My HTML Presentation" />
+      </div>
+      <div class="field">
+        <label for="slideType">Slide type</label>
+        <select id="slideType">
+          <option value="title-center">Centered title slide</option>
+          <option value="single" selected>Single-column content slide</option>
+          <option value="two-col">Two-column body, full-width title</option>
+          <option value="title-two-callouts">Title + two callout boxes</option>
+          <option value="title-figure-explanation">Title + figure + explanation</option>
+          <option value="theorem-proof">Theorem / proof slide</option>
+          <option value="algorithm-layout">Algorithm slide</option>
+          <option value="section-divider">Section divider</option>
+          <option value="comparison">Comparison slide</option>
+          <option value="image-left-text-right">Image-left text-right</option>
+          <option value="full-width-figure-caption">Full-width figure with caption</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="headingLevel">Title size</label>
+        <select id="headingLevel">
+          <option value="h1">Large title</option>
+          <option value="h2" selected>Standard title</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bgColor">Slide background color</label>
+        <select id="bgColor">
+          <option value="#ffffff" selected>White</option>
+          <option value="#f7f1e3">Warm cream</option>
+          <option value="#121212">Charcoal</option>
+          <option value="#0f1630">Navy</option>
+          <option value="#1d3b2a">Forest</option>
+          <option value="#3a1028">Plum</option>
+          <option value="#102a43">Slate blue</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fontColor">Font color</label>
+        <select id="fontColor">
+          <option value="#111111" selected>Black</option>
+          <option value="#1f2937">Slate</option>
+          <option value="#ffffff">White</option>
+          <option value="#eef3ff">Soft white</option>
+          <option value="#ffe9a8">Warm gold</option>
+          <option value="#d6f5ff">Pale blue</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label><input type="checkbox" id="inheritTheme" checked style="width:auto;margin-right:.5rem;vertical-align:middle" /> Use master theme defaults for this slide</label>
+      </div>
+      <div class="field full">
+        <label for="title">Slide title</label>
+        <input id="title" placeholder="Backpropagation, stage by stage" />
+      </div>
+      <div class="field full">
+        <label for="kicker">Kicker / subtitle under title</label>
+        <input id="kicker" value="" placeholder="Optional short subtitle" />
+      </div>
+      <div class="field full">
+        <label for="lede">Intro line / lead paragraph under title area</label>
+        <textarea id="lede" placeholder="Optional short framing sentence"></textarea>
+      </div>
+      <div class="field">
+        <label for="notesTitle">Speaker notes title</label>
+        <input id="notesTitle" value="Speaker notes" />
+      </div>
+      <div class="field">
+        <label for="notesBody">Speaker notes body</label>
+        <input id="notesBody" value="" />
+      </div>
+    </div>
+      </div>
+      <div class="subpane" data-subpane="edit:blocks">
+<div class="panel stack" style="padding:.9rem">
+      <div class="section-head">
+        <h2>Column content blocks</h2>
+        <span class="badge" id="columnModeBadge">Single-column slide</span>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="blockColumn">Editing column</label>
+          <select id="blockColumn">
+            <option value="left" selected>Left / main column</option>
+            <option value="right">Right column</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="blockMode">Block preset / content type</label>
+          <select id="blockMode">
+            <option value="panel" selected>Panel text</option>
+                        <option value="custom">Custom HTML block</option>
+            <option value="placeholder">Simple placeholder box</option>
+            <option value="plain">Plain text / rich content</option>
+            <option value="pseudocode">Pseudocode block</option>
+            <option value="pseudocode-latex">Pseudocode block with LaTeX</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="blockTitle">Block label (for the editor list only)</label>
+          <input id="blockTitle" placeholder="Optional label like Example, Figure, Proof sketch" />
+        </div>
+        <div class="field full">
+          <label for="blockContent">Block content</label>
+          <textarea id="blockContent" placeholder="\paragraph{Main idea goes here}&#10;&#10;\begin{itemize}&#10;\item First point&#10;\item Second point&#10;\end{itemize}"></textarea>
+          <div class="help">Pick a preset from the dropdown, then click <b>Add block</b>. For <b>custom</b>, paste raw HTML. For <b>pseudocode-latex</b>, indentation is preserved and math like <code>\(z^t = \sigma(u^t)\)</code> is typeset inside the block.</div>
+          <div class="row" style="margin-top:.6rem">
+            <button class="btn mini" id="addFigureBtn">Add figure</button>
+          </div>
+          <div class="help" style="margin-top:.45rem">Use <b>Add figure</b> to insert an image or diagram at the current cursor position in the block editor. For text blocks, the generator inserts a <code>\begin{figurehtml} ... \end{figurehtml}</code> wrapper. For block types that do not support inline figures, it creates a new custom HTML block below the current one.</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" id="addBlockBtn">Add block</button>
+        <button class="btn" id="updateBlockBtn">Update selected block</button>
+        <button class="btn" id="duplicateBlockBtn">Duplicate block</button>
+        <button class="btn" id="deleteBlockBtn">Delete block</button>
+        <button class="btn" id="clearBlockBtn">Clear block editor</button>
+      </div>
+
+      <div class="field">
+        <label>Blocks in selected column</label>
+        <div class="block-list" id="blockList"></div>
+        <div class="row" style="margin-top:.55rem">
+          <button class="btn mini" id="moveBlockUpBtn">Move block up</button>
+          <button class="btn mini" id="moveBlockDownBtn">Move block down</button>
+        </div>
+      </div>
+    </div>
+      </div>
+
+    </div>
+
+    <div class="left-pane" data-left-pane="presets">
+
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Slide presets</div>
+        <div class="subtabs" data-subtab-group="presets">
+          <button class="subtab active" type="button" data-subtab="presets:core">Core presets</button>
+          <button class="subtab" type="button" data-subtab="presets:layouts">Layout templates</button>
+        </div>
+        <div class="subpane active" data-subpane="presets:core">
+          <div class="template-list" style="margin-top:.2rem">
+        <button data-preset="title">Centered title slide<small>Big centered title and optional subtitle.</small></button>
+        <button data-preset="concept">Concept slide<small>One-column title + bullets.</small></button>
+        <button data-preset="twocol">Two-column lecture slide<small>Full-width title with body split into two columns.</small></button>
+        <button data-preset="appendix">Summary / appendix slide<small>Recipe or recap slide with concise bullets.</small></button>
+        <button data-preset="pseudocode">Pseudocode slide<small>Single-column title with one large pseudocode block.</small></button>
+        <button data-preset="pseudocodeLatex">Pseudocode + LaTeX slide<small>Pseudocode formatting with MathJax-rendered math inside.</small></button>
+          </div>
+        </div>
+        <div class="subpane" data-subpane="presets:layouts">
+          <div class="template-list" style="margin-top:.2rem">
+        <button data-preset="callouts">Title + two callout boxes<small>Two emphasized side-by-side callouts.</small></button>
+        <button data-preset="figureExplain">Title + figure + explanation<small>Figure on one side, explanation on the other.</small></button>
+        <button data-preset="theoremProof">Theorem / proof slide<small>Named theorem block followed by proof block.</small></button>
+        <button data-preset="algorithmLayout">Algorithm slide<small>Pseudocode plus notes beneath it.</small></button>
+        <button data-preset="sectionDivider">Section divider<small>Clean section transition slide.</small></button>
+        <button data-preset="comparison">Comparison slide<small>Two contrasted columns with headings.</small></button>
+        <button data-preset="imageText">Image-left text-right<small>Image or figure on left, narrative on right.</small></button>
+        <button data-preset="fullFigureCaption">Full-width figure with caption<small>Large figure area plus caption below.</small></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="left-pane" data-left-pane="slides">
+
+      <div class="subtabs" data-subtab-group="slides">
+        <button class="subtab active" type="button" data-subtab="slides:deck">Actions</button>
+        <button class="subtab" type="button" data-subtab="slides:snippet">JSON</button>
+        <button class="subtab" type="button" data-subtab="slides:theme">Theme</button>
+      </div>
+      <div class="subpane active" data-subpane="slides:deck">
+<div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Slide actions</div>
+<div class="toolbar">
+      <button class="btn primary" id="addSlideBtn">Add as new slide</button>
+      <button class="btn" id="updateSlideBtn">Update selected slide</button>
+      <button class="btn" id="duplicateSlideBtn">Duplicate selected</button>
+      <button class="btn" id="deleteSlideBtn">Delete selected</button>
+      <button class="btn" id="clearFormBtn">Clear form</button>
+    </div>
+
+    
+      </div>
+<div class="panel" style="padding:.9rem">
+      <div class="preview-header">
+        <h2>Slide rail</h2>
+        <span class="badge" id="deckCount">0 slides</span>
+      </div>
+      <div class="deck-list" id="deckList"></div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn mini" id="moveUpBtn">Move up</button>
+        <button class="btn mini" id="moveDownBtn">Move down</button>
+      </div>
+    </div>
+      </div>
+      <div class="subpane" data-subpane="slides:snippet">
+<div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Current slide snippet</div>
+    <div>
+      <div class="preview-header">
+        <h2>Current slide snippet</h2>
+        <span class="muted">Editable JSON for this slide</span>
+      </div>
+      <textarea class="code" id="snippetOutput" spellcheck="false"></textarea>
+      <div class="row" style="margin-top:.65rem">
+        <button class="btn mini" id="loadSnippetToEditorBtn">Load snippet into editor</button>
+        <button class="btn mini" id="replaceSlideFromSnippetBtn">Replace selected slide</button>
+        <button class="btn mini" id="addSlideFromSnippetBtn">Add slide from snippet</button>
+        <button class="btn mini" id="formatSnippetBtn">Format snippet</button>
+      </div>
+      <div class="help" style="margin-top:.45rem">Paste a slide JSON object here, then load it into the editor or turn it into a new slide.</div>
+      <div class="help" style="margin-top:.35rem" id="autosaveStatus">Autosave ready.</div>
+    </div>
+
+      </div>
+      </div>
+      <div class="subpane" data-subpane="slides:theme">
+<div class="panel" style="margin-top:1rem;padding:.95rem">
+      <div class="smallcaps">Master theme</div>
+      <div class="field-grid" style="margin-top:.7rem">
+        <div class="field full">
+          <label for="themeName">Theme name</label>
+          <input id="themeName" value="Default theme" />
+        </div>
+        <div class="field">
+          <label for="themeBgColor">Theme background</label>
+          <select id="themeBgColor">
+            <option value="#ffffff" selected>White</option>
+            <option value="#f7f1e3">Warm cream</option>
+            <option value="#121212">Charcoal</option>
+            <option value="#0f1630">Navy</option>
+            <option value="#1d3b2a">Forest</option>
+            <option value="#3a1028">Plum</option>
+            <option value="#102a43">Slate blue</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="themeFontColor">Theme font color</label>
+          <select id="themeFontColor">
+            <option value="#111111" selected>Black</option>
+            <option value="#1f2937">Slate</option>
+            <option value="#ffffff">White</option>
+            <option value="#eef3ff">Soft white</option>
+            <option value="#ffe9a8">Warm gold</option>
+            <option value="#d6f5ff">Pale blue</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="themeAccentColor">Accent color</label>
+          <input id="themeAccentColor" type="color" value="#2f6fed" />
+        </div>
+        <div class="field">
+          <label for="themePanelRadius">Panel radius</label>
+          <input id="themePanelRadius" type="number" min="0" max="48" step="1" value="22" />
+        </div>
+        <div class="field">
+          <label for="themeTitleScale">Title scale</label>
+          <input id="themeTitleScale" type="number" min="0.8" max="1.6" step="0.05" value="1" />
+        </div>
+        <div class="field full">
+          <div class="row">
+            <button class="btn mini" id="applyThemeToCurrentBtn">Apply theme to current slide</button>
+            <button class="btn mini" id="applyThemeToAllBtn">Apply theme to all slides</button>
+          </div>
+          <div class="help" style="margin-top:.35rem">Accent color and radius apply deck-wide. Background and font apply to slides that use <b>master theme defaults</b>.</div>
+        </div>
+      </div>
+    </div>
+      </div>
+
+    </div>
+
+
+    <div class="left-pane" data-left-pane="styles">
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Master presentation styles</div>
+        <div class="help" style="margin-top:.45rem">Beamer-inspired master styles for the whole deck.</div>
+        <div class="style-preset-grid">
+          <div class="style-card"><b>Berkeley</b><small>Sidebar navigation feel with strong institutional chrome.</small><button class="btn mini" type="button" data-style-preset="berkeley">Use Berkeley</button></div>
+          <div class="style-card"><b>Madrid</b><small>Top and bottom bars with clean lecture-deck styling.</small><button class="btn mini" type="button" data-style-preset="madrid">Use Madrid</button></div>
+          <div class="style-card"><b>AnnArbor</b><small>Warm header chrome and footer accent.</small><button class="btn mini" type="button" data-style-preset="annarbor">Use AnnArbor</button></div>
+          <div class="style-card"><b>CambridgeUS</b><small>Formal title bar with accent stripe.</small><button class="btn mini" type="button" data-style-preset="cambridgeus">Use CambridgeUS</button></div>
+          <div class="style-card"><b>Pittsburgh</b><small>Minimal accent rule with compact slide chrome.</small><button class="btn mini" type="button" data-style-preset="pittsburgh">Use Pittsburgh</button></div>
+          <div class="style-card"><b>Classic</b><small>Minimal generator default with maximum content room.</small><button class="btn mini" type="button" data-style-preset="classic">Use Classic</button></div>
+        </div>
+
+        <div class="smallcaps" style="margin-top:1rem">Style builder tools</div>
+        <div class="field-grid style-tools-grid" style="margin-top:.65rem">
+          <div class="field">
+            <label for="themeBeamerStyle">Style family</label>
+            <select id="themeBeamerStyle">
+              <option value="classic" selected>Classic / minimal</option>
+              <option value="berkeley">Berkeley-style sidebar</option>
+              <option value="madrid">Madrid-style bars</option>
+              <option value="annarbor">AnnArbor-style warm chrome</option>
+              <option value="cambridgeus">CambridgeUS-style formal bar</option>
+              <option value="pittsburgh">Pittsburgh-style accent rule</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="themeChromeColor">Chrome color</label>
+            <input id="themeChromeColor" type="color" value="#17365d" />
+          </div>
+          <div class="field">
+            <label for="themeChromeTextColor">Chrome text color</label>
+            <select id="themeChromeTextColor">
+              <option value="#ffffff" selected>White</option>
+              <option value="#eef3ff">Soft white</option>
+              <option value="#111111">Black</option>
+              <option value="#f7f1e3">Warm cream</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="themeSidebarWidth">Sidebar width</label>
+            <input id="themeSidebarWidth" type="number" min="72" max="220" step="2" value="118" />
+          </div>
+          <div class="field">
+            <label for="themeTitleCaps">Title casing</label>
+            <select id="themeTitleCaps">
+              <option value="0" selected>Normal case</option>
+              <option value="1">Uppercase-style titles</option>
+            </select>
+          </div>
+          <div class="field full">
+            <div class="row">
+              <button class="btn mini" type="button" id="applyStyleBuilderBtn">Apply builder to master theme</button>
+              <button class="btn mini" type="button" id="randomizeStyleBtn">Generate variant</button>
+            </div>
+            <div class="help" style="margin-top:.4rem">Generate and apply Beamer-like slide chrome deck-wide.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="animate">
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Animation tools</div>
+        <div class="help" style="margin-top:.45rem">Select a title, text block, or figure in the preview, then apply build-in / build-out settings. For text blocks, you can also reveal items one at a time on click in the exported presentation.</div>
+        <div class="field-grid" style="margin-top:.7rem">
+          <div class="field full">
+            <label for="animateTargetLabel">Selected object</label>
+            <input id="animateTargetLabel" value="No object selected" readonly />
+          </div>
+          <div class="field">
+            <label for="animateBuildIn">Build in</label>
+            <select id="animateBuildIn">
+              <option value="none" selected>None</option>
+              <option value="appear">Appear</option>
+              <option value="fade">Fade in</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animateBuildOut">Build out</label>
+            <select id="animateBuildOut">
+              <option value="none" selected>None</option>
+              <option value="disappear">Disappear</option>
+              <option value="fade">Fade out</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animateStepMode">Reveal mode</label>
+            <select id="animateStepMode">
+              <option value="all" selected>Whole object</option>
+              <option value="by-item">One item at a time</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animateOrder">Animation order</label>
+            <input id="animateOrder" type="number" min="0" step="1" value="0" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:.75rem">
+          <button class="btn mini" type="button" id="applyAnimationBtn">Apply animation</button>
+          <button class="btn mini" type="button" id="clearAnimationBtn">Clear animation</button>
+        </div>
+        <div class="help" style="margin-top:.55rem">In the exported presentation, clicking the slide or pressing Space / Right Arrow will reveal the next animated item before moving to the next slide.</div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="tools">
+
+      <div class="subtabs" data-subtab-group="tools">
+        <button class="subtab active" type="button" data-subtab="tools:blocks">Block library</button>
+        <button class="subtab" type="button" data-subtab="tools:figures">Figure tools</button>
+      </div>
+      <div class="subpane active" data-subpane="tools:blocks">
+<div class="panel" style="margin-top:1rem;padding:.95rem">
+      <div class="smallcaps">Reusable block library</div>
+      <div class="help" style="margin-top:.45rem">Save the current block as a reusable component or insert a reusable block into the current slide.</div>
+      <div class="template-list" style="margin-top:.7rem">
+        <button data-block-template="theorem"><small>Theorem box</small></button>
+        <button data-block-template="proof"><small>Proof box</small></button>
+        <button data-block-template="recap"><small>Recap box</small></button>
+        <button data-block-template="algorithm"><small>Algorithm box</small></button>
+        <button data-block-template="citation"><small>Citation box</small></button>
+        <button data-block-template="reminder"><small>Speaker reminder box</small></button>
+      </div>
+      <div class="toolbar" style="margin-top:.7rem">
+        <button class="btn mini" id="saveCurrentBlockToLibraryBtn">Save current block to library</button>
+        <button class="btn mini" id="insertLibraryBlockBtn">Insert selected library block</button>
+        <button class="btn mini" id="deleteLibraryBlockBtn">Delete selected saved block</button>
+      </div>
+      <div class="library-list" id="blockLibraryList" style="margin-top:.7rem"></div>
+    </div>
+      </div>
+      <div class="subpane" data-subpane="tools:figures">
+<div class="panel figure-toolbar" style="margin-top:1rem;padding:.95rem">
+      <div class="smallcaps">Figure tools and guides</div>
+      <div class="help">Select one or more figures in the preview. Shift-click adds to the selection.</div>
+      <div class="row" style="margin:.55rem 0 .35rem">
+        <button class="btn mini" type="button" id="toolsAddFigureBtn">Add figure</button>
+        <button class="btn mini" type="button" id="toolsOpenDiagramEditorBtn">Open simple diagram editor</button>
+      </div>
+      <div class="inline-checks">
+        <label><input type="checkbox" id="showGridToggle" style="width:auto" /> Show grid</label>
+        <label><input type="checkbox" id="showMarginsToggle" style="width:auto" /> Show margins</label>
+        <label><input type="checkbox" id="snapToGuidesToggle" style="width:auto" checked /> Snap to guides</label>
+        <label><input type="checkbox" id="lockAspectToggle" style="width:auto" /> Lock aspect ratio</label>
+      </div>
+      <div class="help" id="selectedFiguresStatus">No figure selected.</div>
+      <div class="tool-grid">
+        <button class="btn mini" id="alignFigureLeftBtn">Align left</button>
+        <button class="btn mini" id="alignFigureCenterBtn">Align center</button>
+        <button class="btn mini" id="alignFigureRightBtn">Align right</button>
+        <button class="btn mini" id="alignFigureTopBtn">Align top</button>
+        <button class="btn mini" id="alignFigureMiddleBtn">Align middle</button>
+        <button class="btn mini" id="alignFigureBottomBtn">Align bottom</button>
+      </div>
+      <div class="tool-grid two">
+        <button class="btn mini" id="distributeFigureHorizBtn">Distribute horiz.</button>
+        <button class="btn mini" id="distributeFigureVertBtn">Distribute vert.</button>
+      </div>
+      <div class="tool-grid">
+        <button class="btn mini" id="snapFigureBtn">Snap to grid</button>
+        <button class="btn mini" id="bringForwardBtn">Bring forward</button>
+        <button class="btn mini" id="sendBackwardBtn">Send backward</button>
+        <button class="btn mini" id="cropFigureBtn">Crop</button>
+        <button class="btn mini" id="duplicateFigureBtn">Duplicate</button>
+        <button class="btn mini" id="resetFigureBtn">Reset</button>
+      </div>
+    </div>
+      </div>
+
+    </div>
+
+    <div class="left-pane" data-left-pane="files">
+
+      <div class="subtabs" data-subtab-group="files">
+        <button class="subtab active" type="button" data-subtab="files:save">Save / load</button>
+        <button class="subtab" type="button" data-subtab="files:import">Import</button>
+      </div>
+      <div class="subpane active" data-subpane="files:save">
+        <div class="panel" style="padding:.95rem">
+          <div class="smallcaps">Files and export</div>
+<div class="toolbar">
+      <button class="btn" id="copySnippetBtn">Copy current slide snippet</button>
+      <button class="btn" id="copyMathJaxBtn">Copy MathJax helper</button>
+      <button class="btn" id="downloadStandaloneBtn">Save current slide</button>
+      <button class="btn" id="saveCurrentSlideJsonBtn">Save current slide JSON</button>
+      <button class="btn" id="loadDeckBtn">Load HTML presentation</button>
+      <input id="loadDeckInput" type="file" accept=".html,text/html" hidden />
+      <button class="btn" id="loadPresentationJsonBtn">Load presentation JSON</button>
+      <input id="loadPresentationJsonInput" type="file" accept=".json,application/json" hidden />
+      <button class="btn" id="savePresentationJsonBtn">Save presentation JSON</button>
+      <button class="btn primary" id="downloadDeckBtn">Save full presentation</button>
+    </div>
+          <div class="inline-checks" style="margin-top:.75rem">
+            <label><input type="checkbox" id="enableLiveDrawExport" /> In generated presentation, add a <b>Draw</b> button on every slide</label>
+          </div>
+          <div class="help" style="margin-top:.45rem">
+            When enabled, the saved presentation includes a live drawing popup. Drawings are inserted on the current slide and autosaved in this browser for that presentation.
+          </div>
+        </div>
+      </div>
+
+      <div class="subpane" data-subpane="files:import">
+        <div class="panel" style="padding:.95rem">
+          <div class="smallcaps">Import tools</div>
+          <div class="help" style="margin-top:.45rem">First-pass importers for outlines and reference assets. You can append imported slides to the current deck or replace the current deck.</div>
+
+          <div class="field-grid" style="margin-top:.75rem">
+            <div class="field">
+              <label for="importModeSelect">Import mode</label>
+              <select id="importModeSelect">
+                <option value="append" selected>Append to current deck</option>
+                <option value="replace">Replace current deck</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="importFilesInput">Files to import</label>
+              <input id="importFilesInput" type="file" multiple accept=".md,.markdown,.tex,.ltx,.json,.txt,.pdf,image/*" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:.55rem">
+            <button class="btn mini" type="button" id="importFilesBtn">Import selected files</button>
+          </div>
+
+          <div class="subtabs" data-subtab-group="import">
+            <button class="subtab active" type="button" data-subtab="import:markdown">Markdown</button>
+            <button class="subtab" type="button" data-subtab="import:beamer">LaTeX / Beamer</button>
+            <button class="subtab" type="button" data-subtab="import:json">JSON outline</button>
+            <button class="subtab" type="button" data-subtab="import:ppt">PowerPoint-style text</button>
+          </div>
+
+          <div class="subpane active" data-subpane="import:markdown">
+            <div class="help" style="margin:.45rem 0">Use headings as slide titles. Bullets become bullet lists.</div>
+            <textarea id="importMarkdownText" class="code" placeholder="# Slide title&#10;- bullet&#10;- bullet&#10;&#10;# Another slide&#10;Paragraph text"></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importMarkdownBtn">Import markdown outline</button>
+            </div>
+          </div>
+
+          <div class="subpane" data-subpane="import:beamer">
+            <div class="help" style="margin:.45rem 0">Best for simple Beamer sources using \begin{frame}{Title} ... \end{frame} and itemize/enumerate.</div>
+            <textarea id="importBeamerText" class="code" placeholder="\begin{frame}{Convolution}\begin{itemize}\item Local connectivity\item Weight sharing\end{itemize}\end{frame}"></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importBeamerBtn">Import LaTeX / Beamer outline</button>
+            </div>
+          </div>
+
+          <div class="subpane" data-subpane="import:json">
+            <div class="help" style="margin:.45rem 0">Accepts a full deck JSON with <code>slides</code>, or a simpler JSON outline.</div>
+            <textarea id="importJsonText" class="code" placeholder='{"deckTitle":"Lecture","slides":[{"title":"Intro","leftBlocks":[{"mode":"panel","content":"P: Welcome"}]}]}'></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importJsonBtn">Import JSON outline</button>
+            </div>
+          </div>
+
+          <div class="subpane" data-subpane="import:ppt">
+            <div class="help" style="margin:.45rem 0">Use one slide per paragraph block. First non-empty line becomes the slide title; following lines become bullets or text.</div>
+            <textarea id="importPptText" class="code" placeholder="Convolution&#10;- Local filters&#10;- Weight sharing&#10;&#10;Pooling&#10;- Max pooling&#10;- Average pooling"></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importPptBtn">Import PowerPoint-style text</button>
+            </div>
+          </div>
+
+          <div class="help" style="margin-top:.7rem">
+            PDF/image file import creates <b>reference slides</b> in this first pass:
+            images are imported as figure slides, and PDFs are embedded as reference blocks.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="copilot">
+      <div class="panel copilot-panel" style="padding:.95rem">
+        <div>
+          <div class="smallcaps">ChatGPT copilot</div>
+          <h2 style="margin-top:.25rem">Generate slides or a full deck</h2>
+          <p class="help" style="margin:.45rem 0 0">Describe the audience, goal, tone, and any source notes. Copilot returns editable slide JSON that uses this generator's existing slide and block structure.</p>
+        </div>
+
+        <div class="field-grid">
+          <div class="field full">
+            <label for="copilotPrompt">What should ChatGPT make?</label>
+            <textarea id="copilotPrompt" placeholder="Example: Create a 7-slide lecture deck explaining backpropagation for advanced undergraduates. Include intuition, equations, pseudocode, common mistakes, and a recap."></textarea>
+          </div>
+          <div class="field">
+            <label for="copilotSlideCount">Target slides</label>
+            <input id="copilotSlideCount" type="number" min="1" max="30" step="1" value="6" />
+          </div>
+          <div class="field">
+            <label for="copilotTone">Tone / style</label>
+            <select id="copilotTone">
+              <option value="clear and concise" selected>Clear and concise</option>
+              <option value="lecture-style and explanatory">Lecture-style</option>
+              <option value="executive and decision-focused">Executive</option>
+              <option value="visual and workshop-friendly">Workshop-friendly</option>
+              <option value="technical and rigorous">Technical / rigorous</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="copilotMode">Apply deck generation as</label>
+            <select id="copilotMode">
+              <option value="append" selected>Append to current deck</option>
+              <option value="replace">Replace current deck</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="copilotModel">Model</label>
+            <input id="copilotModel" value="gpt-4.1-mini" />
+          </div>
+          <div class="field full">
+            <label for="copilotEndpoint">API endpoint</label>
+            <input id="copilotEndpoint" value="https://api.openai.com/v1/responses" />
+            <div class="help">For production, point this to your own backend proxy so your OpenAI API key is not exposed in browser code.</div>
+          </div>
+          <div class="field full">
+            <div class="copilot-key-row">
+              <div class="field" style="gap:.35rem">
+                <label for="copilotApiKey">OpenAI API key</label>
+                <input id="copilotApiKey" type="password" autocomplete="off" placeholder="sk-proj-..." />
+              </div>
+              <button class="btn mini" type="button" id="saveCopilotKeyBtn">Save locally</button>
+            </div>
+            <div class="help">Local testing only: saved keys stay in this browser's localStorage. Do not publish a real key in a public browser app; use a backend proxy for deployment.</div>
+            <div id="copilotKeyWarning" class="help" style="display:none;color:#ffd6a0;border-left:3px solid rgba(255,214,160,.8);padding-left:.55rem;margin-top:.35rem"></div>
+          </div>
+        </div>
+
+        <div class="copilot-actions">
+          <button class="btn primary" type="button" id="copilotDraftSlideBtn">Draft current slide</button>
+          <button class="btn" type="button" id="copilotAddSlideBtn">Add generated slide</button>
+          <button class="btn primary full" type="button" id="copilotGenerateDeckBtn">Generate full deck</button>
+        </div>
+
+        <div class="copilot-status" id="copilotStatus">Copilot ready. Enter a prompt, then generate a slide or deck.</div>
+
+        <div class="field">
+          <label for="copilotResultJson">Latest Copilot result</label>
+          <textarea id="copilotResultJson" class="code copilot-json" spellcheck="false" placeholder="Generated JSON will appear here before it is applied."></textarea>
+        </div>
+        <div class="row">
+          <button class="btn mini" type="button" id="copilotApplyFirstSlideBtn">Apply first result slide</button>
+          <button class="btn mini" type="button" id="copilotAppendResultBtn">Append result slides</button>
+          <button class="btn mini" type="button" id="copilotReplaceDeckBtn">Replace deck with result</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="help">
+
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">How to write content</div>
+        <div class="subtabs" data-subtab-group="help">
+          <button class="subtab active" type="button" data-subtab="help:syntax">Syntax</button>
+          <button class="subtab" type="button" data-subtab="help:math">Math and figures</button>
+        </div>
+        <div class="subpane active" data-subpane="help:syntax">
+<div class="help" style="margin-top:.55rem">
+        <p>For panel/plain modes, you can use:</p>
+        <p><code>\paragraph{Teach the pattern before teaching every symbol.}</code></p>
+        <p><code>\begin{itemize}</code><br><code>\item First key point</code><br><code>\item Second key point</code><br><code>\end{itemize}</code></p>
+        <p><code>\begin{enumerate}</code><br><code>\item A</code><br><code>\item B</code><br><code>\end{enumerate}</code></p>
+        <p><code>\begin{card}{Key idea}</code><br><code>Each neuron turns an incoming sensitivity into an outgoing sensitivity.</code><br><code>\end{card}</code></p>
+      </div>
+        </div>
+        <div class="subpane" data-subpane="help:math">
+<div class="help" style="margin-top:.55rem">
+        <p>For equations, use:</p>
+        <p><code>\begin{equation}</code><br><code>\nabla_w L &= \frac{\partial L}{\partial z}\frac{\partial z}{\partial w}\\</code><br><code>&= \frac{\partial L}{\partial z}\frac{\partial z}{\partial w}</code><br><code>\end{equation}</code></p>
+        <p>For <b>pseudocode</b>, paste plain indented pseudocode.</p>
+        <p>For <b>pseudocode-latex</b>, paste indented pseudocode and write math as <code>\( ... \)</code> or <code>\[ ... \]</code>.</p>
+        <p>Use <b>Add figure</b> in the block editor to insert images or figure-maker diagrams at the cursor position.</p>
+      </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="slide-rail-shell" id="slideRailShell">
+      <div class="slide-rail-header">
+        <div>
+          <div class="smallcaps">Slide rail</div>
+          <div class="help" style="margin-top:.15rem">Quick navigation, reorder, and selection.</div>
+        </div>
+        <button class="btn mini" type="button" id="toggleSlideRailBtn">Hide rail</button>
+      </div>
+      <div class="slide-rail-content" id="slideRailMount"></div>
+    </div>
+  </div>
+
+  <div class="right-shell">
+    <div class="panel preview-wrap">
+    <div class="preview-header">
+      <div>
+        <div class="smallcaps">Live preview</div>
+        <h2 id="previewTitle">Current slide</h2>
+      </div>
+      <span class="badge">Preview and export use the same renderer</span>
+    </div>
+    <div class="preview-viewport"><div class="preview-stage"><div class="preview-frame" id="previewFrame"><div class="preview-grid-overlay" id="previewGridOverlay"></div><div class="preview-margin-overlay" id="previewMarginOverlay"><div class="preview-margin-box"></div><div class="preview-center-v"></div><div class="preview-center-h"></div></div><div class="preview-scale" id="previewScale"><div id="preview"></div></div></div></div></div>
+
+    <div class="panel" style="padding:.95rem">
+      <div class="smallcaps">Selected item inspector</div>
+      <div class="help" style="margin-top:.45rem">Click any content block in the preview to edit its style. Custom HTML inside iframes may not fully honor typography changes.</div>
+      <div class="preview-block-props" style="margin-top:.7rem">
+        <div class="field">
+          <label for="previewBlockLabel">Selected item</label>
+          <input id="previewBlockLabel" value="No block selected" readonly />
+        </div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="previewBlockFontScale">Font scale</label>
+            <input id="previewBlockFontScale" type="number" min="0.6" max="2.5" step="0.05" value="1" />
+          </div>
+          <div class="field">
+            <label for="previewBlockFontFamily">Font family</label>
+            <select id="previewBlockFontFamily">
+              <option value="inherit" selected>Theme default</option>
+              <option value="Inter, Arial, sans-serif">Inter / Sans</option>
+              <option value="Georgia, serif">Georgia / Serif</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="system-ui, sans-serif">System UI</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="previewBlockFontColor">Font color</label>
+            <input id="previewBlockFontColor" type="color" value="#111111" />
+          </div>
+          <div class="field">
+            <label for="previewBlockBulletType">Bullet / list type</label>
+            <select id="previewBlockBulletType">
+              <option value="disc" selected>Disc</option>
+              <option value="circle">Circle</option>
+              <option value="square">Square</option>
+              <option value="decimal">Decimal</option>
+              <option value="lower-alpha">lower-alpha</option>
+              <option value="upper-alpha">Upper-alpha</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn mini" type="button" id="resetPreviewBlockStyleBtn">Reset block style</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="figureModal" hidden>
+  <div class="modal-card">
+    <div class="section-head">
+      <h2>Add figure</h2>
+      <button class="btn mini" id="closeFigureModalBtn">Close</button>
+    </div>
+    <div class="help">Choose how to add a figure into the current block.</div>
+    <div class="row" style="margin-top:.45rem">
+      <button class="btn mini primary" id="figureSourceImageBtn">Image from link or file</button>
+      <button class="btn mini" id="figureSourceEditorBtn">Open simple diagram editor</button>
+    </div>
+    <div id="figureImagePanel" style="margin-top:.8rem;display:grid;gap:.7rem">
+      <div class="field">
+        <label for="figureUrlInput">Image URL</label>
+        <input id="figureUrlInput" placeholder="https://example.com/figure.png" />
+      </div>
+      <div class="field">
+        <label for="figureAltInput">Alt text / caption</label>
+        <input id="figureAltInput" placeholder="Optional description" />
+      </div>
+      <div class="row">
+        <button class="btn mini" id="insertFigureUrlBtn">Insert image from URL</button>
+      </div>
+      <div class="field">
+        <label for="figureFileInput">Or choose an image file</label>
+        <input id="figureFileInput" type="file" accept="image/*,.svg" />
+      </div>
+      <div class="row">
+        <button class="btn mini" id="insertFigureFileBtn">Insert selected image file</button>
+      </div>
+    </div>
+    <div id="figureEditorPanel" style="display:none;margin-top:.8rem" class="help">
+      Open a popup editor where you can draw a simple SVG diagram using your mouse, trackpad, or touchscreen. When you click <b>Insert into slide</b> in that editor, the SVG will be inserted back into the current block.
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="toast">Copied</div>
+
+
+
+<script>
+(function(){
+  function bindBasicLuminaUi(){
+    try{
+      document.querySelectorAll('[data-left-tab]').forEach(function(btn){
+        if(btn.dataset.basicLuminaTabBound) return;
+        btn.dataset.basicLuminaTabBound='1';
+        btn.addEventListener('click', function(){
+          var tab=btn.dataset.leftTab;
+          document.querySelectorAll('[data-left-tab]').forEach(function(el){el.classList.toggle('active', el===btn);});
+          document.querySelectorAll('[data-left-pane]').forEach(function(el){el.classList.toggle('active', el.dataset.leftPane===tab);});
+        });
+      });
+      document.querySelectorAll('[data-subtab]').forEach(function(btn){
+        if(btn.dataset.basicLuminaSubtabBound) return;
+        btn.dataset.basicLuminaSubtabBound='1';
+        btn.addEventListener('click', function(){
+          var name=btn.dataset.subtab||''; var group=name.split(':')[0];
+          document.querySelectorAll('[data-subtab]').forEach(function(el){ if((el.dataset.subtab||'').indexOf(group+':')===0) el.classList.toggle('active', el===btn); });
+          document.querySelectorAll('[data-subpane]').forEach(function(el){ if((el.dataset.subpane||'').indexOf(group+':')===0) el.classList.toggle('active', el.dataset.subpane===name); });
+        });
+      });
+      var railShell=document.getElementById('slideRailShell');
+      var railMount=document.getElementById('slideRailMount');
+      var deckList=document.getElementById('deckList');
+      var deckPanel=deckList && deckList.closest('.panel');
+      if(railMount && deckPanel && !railMount.contains(deckPanel)) railMount.appendChild(deckPanel);
+      var toggleBtn=document.getElementById('toggleSlideRailBtn');
+      if(toggleBtn && railShell && !toggleBtn.dataset.basicLuminaRailBound){
+        toggleBtn.dataset.basicLuminaRailBound='1';
+        toggleBtn.addEventListener('click', function(){
+          railShell.classList.toggle('collapsed');
+          toggleBtn.textContent = railShell.classList.contains('collapsed') ? 'Show rail' : 'Hide rail';
+        });
+      }
+      window.__LUMINA_BASIC_UI_BOUND = true;
+    }catch(e){ window.luminaBootError && window.luminaBootError('Basic UI bind failed: '+(e.stack||e.message||e)); }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindBasicLuminaUi);
+  else bindBasicLuminaUi();
+})();
+</script>
+<script src="js/utils-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage32a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+
+<script>
+/* Stage 32A: inline optional ES-module leaf importer + parity harness.
+   This must never block the classic Stage 24C runtime. It avoids a static-import
+   smoke module so browser reports can isolate fetch/MIME/syntax/import problems. */
+(function () {
+  'use strict';
+  var W = window;
+  var STAGE = W.LUMINA_STAGE || 'stage32a-20260425-1';
+  var D = W.LuminaDiagnostics;
+  var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
+  var MODULE_KEYS = {
+    'js/esm/utils-stage32a.js': 'utils',
+    'js/esm/block-style-stage32a.js': 'blockStyle',
+    'js/esm/parser-stage32a.js': 'parser',
+    'js/esm/import-stage32a.js': 'importHelpers',
+    'js/esm/state-stage32a.js': 'state',
+    'js/esm/theme-stage32a.js': 'theme',
+    'js/esm/presets-stage32a.js': 'presets',
+    'js/esm/renderer-stage32a.js': 'renderer',
+    'js/esm/deck-stage32a.js': 'deck',
+    'js/esm/file-io-stage32a.js': 'fileIo',
+    'js/esm/figure-insert-stage32a.js': 'figureInsert',
+    'js/esm/block-library-stage32a.js': 'blockLibrary',
+    'js/esm/editor-selection-stage32a.js': 'editorSelection',
+    'js/esm/block-editor-stage32a.js': 'blockEditor'
+  };
+  function now() { return new Date().toISOString(); }
+  function warn(message) {
+    if (D && typeof D.warn === 'function') D.warn(message);
+    else if (W.console && console.warn) console.warn('[Lumina ES module smoke]', message);
+  }
+  function markOptionalLoaded(asset) { if (D && typeof D.markLoaded === 'function') D.markLoaded(asset); }
+  function markOptionalFailed(asset, message) {
+    if (D && typeof D.markOptionalFailed === 'function') D.markOptionalFailed(asset, message);
+    else warn(asset + ': ' + message);
+  }
+  function setReport(report) { W.LuminaEsModuleDiagnostics = Object.freeze(report); }
+  function shortError(e) { return String((e && (e.stack || e.message)) || e || 'unknown error'); }
+  function absUrl(asset, extra) {
+    try { return new URL(asset + '?v=' + encodeURIComponent(STAGE) + (extra || ''), document.baseURI || W.location.href).href; }
+    catch (e) { return asset + '?v=' + encodeURIComponent(STAGE) + (extra || ''); }
+  }
+  function json(value) { return JSON.stringify(value); }
+  function sameJson(checks, name, esmValue, classicValue) {
+    return check(checks, name, json(esmValue) === json(classicValue), { esm: esmValue, classic: classicValue });
+  }
+  function check(checks, name, ok, details) {
+    var record = { name: name, ok: !!ok, details: details || {} };
+    checks.push(record);
+    return record.ok;
+  }
+  function probeAsset(asset) {
+    if (!W.fetch) return Promise.resolve({ asset: asset, ok: null, status: 'fetch-unavailable', bytes: null, contentType: '', sample: '' });
+    return W.fetch(absUrl(asset, '&probe=' + Date.now()), { cache: 'no-store' }).then(function (res) {
+      return res.text().then(function (text) {
+        return {
+          asset: asset,
+          ok: !!res.ok,
+          status: res.status,
+          contentType: (res.headers && res.headers.get && res.headers.get('content-type')) || '',
+          bytes: text.length,
+          sample: text.slice(0, 80)
+        };
+      });
+    }).catch(function (e) {
+      return { asset: asset, ok: false, status: 'fetch-error', bytes: 0, contentType: '', sample: shortError(e) };
+    });
+  }
+  function runParity(mods) {
+    var checks = [];
+    var utils = mods.utils || {};
+    var blockStyleModule = mods.blockStyle || {};
+    var parserModule = mods.parser || {};
+    var importModule = mods.importHelpers || {};
+    var createBlockStyleApi = blockStyleModule.createApi;
+    var createParserApi = parserModule.createApi;
+    var createImportApi = importModule.createApi;
+    var classicUtils = W.LuminaUtils || {};
+    var classicBlockStyle = W.LuminaBlockStyle || {};
+    var classicParser = W.LuminaParser || {};
+    var classicImport = W.LuminaImport || {};
+    var rendererApi = W.LuminaRendererApi || {};
+    var figureInsert = W.LuminaFigureInsert || {};
+
+    check(checks, 'module leaf imports completed', true, { stage: STAGE });
+    check(checks, 'classic LuminaUtils available', typeof classicUtils.escapeHtml === 'function');
+    check(checks, 'classic LuminaBlockStyle available', typeof classicBlockStyle.createApi === 'function');
+    check(checks, 'classic LuminaParser available', typeof classicParser.createApi === 'function');
+    check(checks, 'classic LuminaImport available', typeof classicImport.createApi === 'function');
+
+    var sampleHtml = '<section title="A&B">\n\'quote\'</section>';
+    if (typeof classicUtils.escapeHtml === 'function') {
+      check(checks, 'utils.escapeHtml parity', utils.escapeHtml(sampleHtml) === classicUtils.escapeHtml(sampleHtml), { esm: utils.escapeHtml(sampleHtml), classic: classicUtils.escapeHtml(sampleHtml) });
+    }
+    if (typeof classicUtils.escapeAttr === 'function') {
+      check(checks, 'utils.escapeAttr parity', utils.escapeAttr(sampleHtml) === classicUtils.escapeAttr(sampleHtml), { esm: utils.escapeAttr(sampleHtml), classic: classicUtils.escapeAttr(sampleHtml) });
+    }
+    if (typeof classicUtils.preserveMathTokens === 'function' && typeof classicUtils.restoreMathTokens === 'function') {
+      var mathSample = 'Alpha $x_1$ and $$y=x^2$$ plus \\(z\\).';
+      var esmPreserved = utils.preserveMathTokens(mathSample);
+      var classicPreserved = classicUtils.preserveMathTokens(mathSample);
+      sameJson(checks, 'utils.preserveMathTokens parity', esmPreserved, classicPreserved);
+      check(checks, 'utils.restoreMathTokens parity', utils.restoreMathTokens(esmPreserved.out, esmPreserved.tokens) === classicUtils.restoreMathTokens(classicPreserved.out, classicPreserved.tokens));
+    }
+    if (typeof classicUtils.hexToRgb === 'function' && typeof classicUtils.rgbaFromHex === 'function') {
+      ['#abc', '#123456', 'not-a-color'].forEach(function (value) { sameJson(checks, 'utils.hexToRgb parity: ' + value, utils.hexToRgb(value), classicUtils.hexToRgb(value)); });
+      check(checks, 'utils.rgbaFromHex parity', utils.rgbaFromHex('#336699', 0.42) === classicUtils.rgbaFromHex('#336699', 0.42));
+    }
+    if (typeof classicUtils.normalizeTheme === 'function') {
+      var theme = { name:'Custom', panelRadius:'35', titleScale:'1.2', sidebarWidth:'144', titleCaps:1 };
+      sameJson(checks, 'utils.normalizeTheme parity', utils.normalizeTheme(theme), classicUtils.normalizeTheme(theme));
+    }
+
+    if (typeof classicBlockStyle.createApi === 'function' && typeof createBlockStyleApi === 'function') {
+      var deps = { escapeAttr: utils.escapeAttr };
+      var esmStyle = createBlockStyleApi(deps);
+      var classicStyle = classicBlockStyle.createApi(deps);
+      var styleSample = { fontScale: 3, fontFamily: 'Inter "Tight"', fontColor: '#445566', bulletType: 'square' };
+      var animSample = { buildIn: 'fade', buildOut: 'disappear', stepMode: 'by-item', order: '2' };
+      sameJson(checks, 'block-style.normalizeBlockStyle parity', esmStyle.normalizeBlockStyle(styleSample), classicStyle.normalizeBlockStyle(styleSample));
+      sameJson(checks, 'block-style.normalizeAnimation parity', esmStyle.normalizeAnimation(animSample), classicStyle.normalizeAnimation(animSample));
+      check(checks, 'block-style.animationDataAttrs parity', esmStyle.animationDataAttrs(animSample) === classicStyle.animationDataAttrs(animSample));
+      check(checks, 'block-style.blockWrapperStyle parity', esmStyle.blockWrapperStyle({ style: styleSample }) === classicStyle.blockWrapperStyle({ style: styleSample }));
+      check(checks, 'block-style.titleWrapperStyle parity', esmStyle.titleWrapperStyle(styleSample, 'h1') === classicStyle.titleWrapperStyle(styleSample, 'h1'));
+    }
+
+    if (typeof classicParser.createApi === 'function' && typeof createParserApi === 'function') {
+      var parserDeps = { preserveMathTokens: utils.preserveMathTokens, restoreMathTokens: utils.restoreMathTokens, escapeHtml: utils.escapeHtml, escapeAttr: utils.escapeAttr };
+      var esmParser = createParserApi(parserDeps);
+      var classicParserApi = classicParser.createApi(parserDeps);
+      var parserSamples = [
+        'P: Hello <world> and $x^2$\n- first item\n- second item',
+        '### Claim\n\\begin{itemize}\n\\item One\n\\item Two $z$\n\\end{itemize}',
+        '\\begin{equation}\na &= b + c\n\\end{equation}',
+        'CARD: Bias | Variance decreases under averaging',
+        '\\begin{card}{Theorem}\nLine one\n\nLine two\n\\end{card}',
+        '\\begin{figurehtml}\n<svg><circle r="10"></circle></svg>\n\\end{figurehtml}'
+      ];
+      parserSamples.forEach(function (sample, index) {
+        check(checks, 'parser.parseStructuredText parity sample ' + (index + 1),
+          esmParser.parseStructuredText(sample, { column:'left', blockIndex:index, figureIndex:0 }) === classicParserApi.parseStructuredText(sample, { column:'left', blockIndex:index, figureIndex:0 }),
+          { esm: esmParser.parseStructuredText(sample, { column:'left', blockIndex:index, figureIndex:0 }), classic: classicParserApi.parseStructuredText(sample, { column:'left', blockIndex:index, figureIndex:0 }) }
+        );
+      });
+    }
+
+    if (typeof classicImport.createApi === 'function' && typeof createImportApi === 'function' && typeof rendererApi.normalizeSlide === 'function' && typeof figureInsert.buildImageFigureHtml === 'function') {
+      var importDeps = { normalizeSlide: rendererApi.normalizeSlide, escapeAttr: utils.escapeAttr, buildImageFigureHtml: figureInsert.buildImageFigureHtml };
+      var esmImport = createImportApi(importDeps);
+      var classicImportApi = classicImport.createApi(importDeps);
+      var md = '# Slide One\nIntro paragraph\n- alpha\n- beta\n---\n## Slide Two\n1. first\n2. second';
+      var beamer = '\\begin{frame}{Frame Title}\n\\framesubtitle{Sub}\n\\begin{itemize}\n\\item A\n\\item B\n\\end{itemize}\n\\end{frame}';
+      var outline = JSON.stringify({ sections:[{ title:'Section A', lede:'Overview', slides:[{ title:'Inside', bullets:['one','two'] }] }] });
+      var pptText = 'Title A\n- bullet\nbody line\n\nTitle B\n1. ordered';
+      check(checks, 'import.buildImportedContent parity', esmImport.buildImportedContent(['P'], ['B'], ['O']) === classicImportApi.buildImportedContent(['P'], ['B'], ['O']));
+      sameJson(checks, 'import.makeImportedSlide parity', esmImport.makeImportedSlide('Title', ['Para'], ['Bullet'], ['Ordered']), classicImportApi.makeImportedSlide('Title', ['Para'], ['Bullet'], ['Ordered']));
+      sameJson(checks, 'import.makeReferenceImageSlide parity', esmImport.makeReferenceImageSlide('data:image/png;base64,AAA', 'Image'), classicImportApi.makeReferenceImageSlide('data:image/png;base64,AAA', 'Image'));
+      sameJson(checks, 'import.makeReferencePdfSlide parity', esmImport.makeReferencePdfSlide('data:application/pdf;base64,AAA', 'PDF'), classicImportApi.makeReferencePdfSlide('data:application/pdf;base64,AAA', 'PDF'));
+      sameJson(checks, 'import.parseMarkdownToSlides parity', esmImport.parseMarkdownToSlides(md), classicImportApi.parseMarkdownToSlides(md));
+      sameJson(checks, 'import.parseBeamerToSlides parity', esmImport.parseBeamerToSlides(beamer), classicImportApi.parseBeamerToSlides(beamer));
+      sameJson(checks, 'import.parseJsonOutlineToSlides parity', esmImport.parseJsonOutlineToSlides(outline), classicImportApi.parseJsonOutlineToSlides(outline));
+      sameJson(checks, 'import.parsePowerPointTextToSlides parity', esmImport.parsePowerPointTextToSlides(pptText), classicImportApi.parsePowerPointTextToSlides(pptText));
+    }
+
+
+    var stateModule = mods.state || {};
+    var themeModule = mods.theme || {};
+    var presetsModule = mods.presets || {};
+    var classicState = W.LuminaState || {};
+    var classicTheme = W.LuminaTheme || {};
+    var classicPresets = W.LuminaPresets || {};
+
+    check(checks, 'classic LuminaState available', typeof classicState.createAutosaveApi === 'function');
+    check(checks, 'classic LuminaTheme available', typeof classicTheme.createApi === 'function');
+    check(checks, 'classic LuminaPresets available', !!classicPresets.presets);
+
+    function exerciseAutosave(createAutosaveApi){
+      var key = 'lumina-stage32a-autosave-test';
+      try { if (W.localStorage && W.localStorage.removeItem) W.localStorage.removeItem(key); } catch (e) {}
+      var statuses = [];
+      var afterPayloads = [];
+      var appliedPayloads = [];
+      var beforeCount = 0;
+      var payload = { slides:[{ title:'Autosave' }], theme:{ name:'T' } };
+      var api = createAutosaveApi({
+        key:key,
+        setStatus:function(message){ statuses.push(message); },
+        beforePersist:function(){ beforeCount += 1; },
+        buildPayload:function(){ return payload; },
+        afterPersist:function(value){ afterPayloads.push(value); },
+        applyPayload:function(value){ appliedPayloads.push(value); return true; }
+      });
+      api.scheduleAutosave('Scheduled save.');
+      var dirtyAfterSchedule = api.getDirtyCount();
+      var persisted = api.persistAutosaveNow('Saved now.');
+      var dirtyAfterPersist = api.getDirtyCount();
+      var stored = null;
+      try { stored = W.localStorage && W.localStorage.getItem ? W.localStorage.getItem(key) : null; } catch (e2) { stored = 'localStorage-read-failed'; }
+      var restored = api.restoreAutosave();
+      api.clearScheduledAutosave();
+      try { if (W.localStorage && W.localStorage.removeItem) W.localStorage.removeItem(key); } catch (e3) {}
+      return {
+        dirtyAfterSchedule: dirtyAfterSchedule,
+        persisted: persisted,
+        dirtyAfterPersist: dirtyAfterPersist,
+        restored: restored,
+        dirtyAfterClear: api.getDirtyCount(),
+        statuses: statuses,
+        beforeCount: beforeCount,
+        afterPayloads: afterPayloads,
+        appliedPayloads: appliedPayloads,
+        stored: stored
+      };
+    }
+    if (typeof classicState.createAutosaveApi === 'function' && typeof stateModule.createAutosaveApi === 'function') {
+      sameJson(checks, 'state.createAutosaveApi autosave workflow parity', exerciseAutosave(stateModule.createAutosaveApi), exerciseAutosave(classicState.createAutosaveApi));
+    }
+
+    function makeThemeFields(seed){
+      var fields = {};
+      Object.keys(seed).forEach(function(key){ fields[key] = { value:String(seed[key]) }; });
+      return fields;
+    }
+    function makeFakeDocument(){
+      var live = { checked:false };
+      return { live: live, getElementById:function(id){ return id === 'enableLiveDrawExport' ? live : null; } };
+    }
+    function exerciseTheme(createThemeApi){
+      var seed = {
+        name:'Stage Theme', bgColor:'#f8fafc', fontColor:'#102030', accentColor:'#ff6600', panelRadius:'31',
+        titleScale:'1.35', beamerStyle:'cambridgeus', chromeColor:'#112244', chromeTextColor:'#eeeeee', sidebarWidth:'132', titleCaps:'1'
+      };
+      var fields = makeThemeFields(seed);
+      var fakeDoc = makeFakeDocument();
+      var events = { preview:0, deck:0, saves:[], toasts:[] };
+      var api = createThemeApi({
+        themeFields:fields,
+        normalizeTheme:classicUtils.normalizeTheme,
+        rgbaFromHex:classicUtils.rgbaFromHex,
+        getDocument:function(){ return fakeDoc; },
+        buildPreview:function(){ events.preview += 1; },
+        renderDeckList:function(){ events.deck += 1; },
+        scheduleAutosave:function(message){ events.saves.push(message); },
+        showToast:function(message){ events.toasts.push(message); }
+      });
+      var current = api.currentThemeFromFields();
+      var styleClass = api.currentStyleClass();
+      var slideStyle = api.buildSlideStyle({ inheritTheme:false, bgColor:'#000001', fontColor:'#fafafa' });
+      var presets = ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','unknown'].map(function(name){ return api.beamerPresetTheme(name); });
+      api.applyPresentationOptions({ enableLiveDraw:true });
+      var options = api.currentPresentationOptions();
+      api.applyThemeToForm({ name:'Applied', panelRadius:40, titleScale:1.1, sidebarWidth:99, titleCaps:0 });
+      var applied = api.currentThemeFromFields();
+      api.applyStylePreset('madrid');
+      var afterPreset = api.currentThemeFromFields();
+      return { current:current, styleClass:styleClass, slideStyle:slideStyle, presets:presets, options:options, applied:applied, afterPreset:afterPreset, events:events };
+    }
+    if (typeof classicTheme.createApi === 'function' && typeof themeModule.createApi === 'function' && typeof classicUtils.normalizeTheme === 'function' && typeof classicUtils.rgbaFromHex === 'function') {
+      sameJson(checks, 'theme.createApi workflow parity', exerciseTheme(themeModule.createApi), exerciseTheme(classicTheme.createApi));
+      var esmThemeApi = themeModule.createApi({ themeFields:makeThemeFields({}), normalizeTheme:classicUtils.normalizeTheme, rgbaFromHex:classicUtils.rgbaFromHex });
+      var classicThemeApi = classicTheme.createApi({ themeFields:makeThemeFields({}), normalizeTheme:classicUtils.normalizeTheme, rgbaFromHex:classicUtils.rgbaFromHex });
+      ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','unknown'].forEach(function(name){
+        sameJson(checks, 'theme.beamerPresetTheme parity: ' + name, esmThemeApi.beamerPresetTheme(name), classicThemeApi.beamerPresetTheme(name));
+      });
+    }
+
+    if (classicPresets.presets && presetsModule.presets) {
+      sameJson(checks, 'presets object parity', presetsModule.presets, classicPresets.presets);
+      sameJson(checks, 'presets keys parity', Object.keys(presetsModule.presets).sort(), Object.keys(classicPresets.presets).sort());
+      ['title','concept','twocol','algorithmLayout','pseudocodeLatex'].forEach(function(key){
+        sameJson(checks, 'presets entry parity: ' + key, presetsModule.presets[key], classicPresets.presets[key]);
+      });
+    }
+
+    var rendererModule = mods.renderer || {};
+    var classicRenderer = W.LuminaRendererApi || {};
+    check(checks, 'classic LuminaRendererApi available', typeof classicRenderer.buildSlideMarkup === 'function' && typeof classicRenderer.normalizeSlide === 'function');
+    function makeDomThemeFields(){
+      var ids = {
+        name:'themeName', bgColor:'themeBgColor', fontColor:'themeFontColor', accentColor:'themeAccentColor',
+        panelRadius:'themePanelRadius', titleScale:'themeTitleScale', beamerStyle:'themeBeamerStyle', chromeColor:'themeChromeColor',
+        chromeTextColor:'themeChromeTextColor', sidebarWidth:'themeSidebarWidth', titleCaps:'themeTitleCaps'
+      };
+      var out = {};
+      Object.keys(ids).forEach(function(key){ out[key] = document.getElementById(ids[key]) || { value:'' }; });
+      return out;
+    }
+    if (typeof rendererModule.createApi === 'function' && typeof classicRenderer.buildSlideMarkup === 'function' && typeof createBlockStyleApi === 'function' && typeof createParserApi === 'function' && typeof themeModule.createApi === 'function') {
+      var rendererStyleApi = createBlockStyleApi({ escapeAttr: utils.escapeAttr });
+      var rendererParserApi = createParserApi({
+        preserveMathTokens: utils.preserveMathTokens,
+        restoreMathTokens: utils.restoreMathTokens,
+        escapeHtml: utils.escapeHtml,
+        escapeAttr: utils.escapeAttr
+      });
+      var rendererThemeApi = themeModule.createApi({
+        themeFields: makeDomThemeFields(),
+        normalizeTheme: classicUtils.normalizeTheme,
+        rgbaFromHex: classicUtils.rgbaFromHex,
+        getDocument:function(){ return document; }
+      });
+      var esmRenderer = rendererModule.createApi({
+        escapeAttr: utils.escapeAttr,
+        escapeHtml: utils.escapeHtml,
+        preserveMathTokens: utils.preserveMathTokens,
+        restoreMathTokens: utils.restoreMathTokens,
+        clone: utils.clone,
+        parseStructuredText: rendererParserApi.parseStructuredText,
+        normalizeBlockStyle: rendererStyleApi.normalizeBlockStyle,
+        normalizeAnimation: rendererStyleApi.normalizeAnimation,
+        animationDataAttrs: rendererStyleApi.animationDataAttrs,
+        blockWrapperStyle: rendererStyleApi.blockWrapperStyle,
+        titleWrapperStyle: rendererStyleApi.titleWrapperStyle,
+        currentStyleClass: rendererThemeApi.currentStyleClass,
+        buildSlideStyle: rendererThemeApi.buildSlideStyle,
+        expandDiagramSnippetChecked:function(){ var el = document.getElementById('expandDiagramSnippet'); return !!(el && el.checked); }
+      });
+      check(checks, 'renderer.diagramMarkup parity', esmRenderer.diagramMarkup() === classicRenderer.diagramMarkup());
+      check(checks, 'renderer.customFrameMarkup empty parity', esmRenderer.customFrameMarkup('') === classicRenderer.customFrameMarkup(''));
+      check(checks, 'renderer.customFrameMarkup html parity', esmRenderer.customFrameMarkup('<b>A&B</b>') === classicRenderer.customFrameMarkup('<b>A&B</b>'));
+      check(checks, 'renderer.diagramStandaloneDocument parity', esmRenderer.diagramStandaloneDocument('<svg></svg>') === classicRenderer.diagramStandaloneDocument('<svg></svg>'));
+      var rendererBlock = { mode:'panel', title:'Block', content:'P: Hello $x$\n- one', style:{ fontScale:1.3, fontFamily:'Inter', fontColor:'#223344', bulletType:'circle' }, animation:{ buildIn:'fade', buildOut:'none', stepMode:'all', order:1 } };
+      sameJson(checks, 'renderer.normalizeBlock parity', esmRenderer.normalizeBlock(rendererBlock), classicRenderer.normalizeBlock(rendererBlock));
+      check(checks, 'renderer.renderBlock panel parity', esmRenderer.renderBlock(rendererBlock, 'Placeholder', { column:'left', blockIndex:0 }) === classicRenderer.renderBlock(rendererBlock, 'Placeholder', { column:'left', blockIndex:0 }));
+      var customBlock = { mode:'custom', content:'<div class="x">Hi</div>', style:{}, animation:{} };
+      check(checks, 'renderer.renderBlock custom parity', esmRenderer.renderBlock(customBlock, 'Custom', { column:'right', blockIndex:2 }) === classicRenderer.renderBlock(customBlock, 'Custom', { column:'right', blockIndex:2 }));
+      var pseudoBlock = { mode:'pseudocode-latex', content:'Input: \\(x\\)\nreturn \\(x^2\\)', style:{}, animation:{} };
+      check(checks, 'renderer.renderBlock pseudocode-latex parity', esmRenderer.renderBlock(pseudoBlock, 'Pseudo', { column:'left', blockIndex:1 }) === classicRenderer.renderBlock(pseudoBlock, 'Pseudo', { column:'left', blockIndex:1 }));
+      var slideSingle = { slideType:'single', headingLevel:'h2', inheritTheme:true, title:'Renderer <single>', kicker:'Kicker', lede:'Lede', leftBlocks:[rendererBlock], rightBlocks:[], titleStyle:{ fontScale:1.1 }, titleAnimation:{ buildIn:'appear', order:0 } };
+      var slideTwo = { slideType:'two-col', headingLevel:'h2', inheritTheme:true, title:'Two col', leftBlocks:[rendererBlock], rightBlocks:[{ mode:'placeholder', content:'Right <side>' }], titleStyle:{}, titleAnimation:{} };
+      var slideTitle = { slideType:'title-center', headingLevel:'h1', inheritTheme:true, title:'Title slide', kicker:'Course', leftBlocks:[], rightBlocks:[], titleStyle:{}, titleAnimation:{} };
+      sameJson(checks, 'renderer.normalizeSlide single parity', esmRenderer.normalizeSlide(slideSingle), classicRenderer.normalizeSlide(slideSingle));
+      check(checks, 'renderer.buildSlideInner single parity', esmRenderer.buildSlideInner(slideSingle) === classicRenderer.buildSlideInner(slideSingle));
+      check(checks, 'renderer.buildSlideMarkup single parity', esmRenderer.buildSlideMarkup(slideSingle) === classicRenderer.buildSlideMarkup(slideSingle));
+      check(checks, 'renderer.buildSlideMarkup two-col parity', esmRenderer.buildSlideMarkup(slideTwo) === classicRenderer.buildSlideMarkup(slideTwo));
+      check(checks, 'renderer.buildSlideMarkup title-center parity', esmRenderer.buildSlideMarkup(slideTitle) === classicRenderer.buildSlideMarkup(slideTitle));
+    }
+
+    function makeHarnessDiv() { return document.createElement('div'); }
+    function runDeckWorkflow(deckModule) {
+      var slides = [
+        { slideType:'single', title:'Alpha', leftBlocks:[{ mode:'panel', content:'P: A' }], rightBlocks:[] },
+        { slideType:'two-col', title:'Beta', leftBlocks:[{ mode:'panel', content:'P: B' }], rightBlocks:[{ mode:'panel', content:'P: R' }] }
+      ];
+      var active = 0;
+      var applied = [];
+      var toasts = [];
+      var saves = [];
+      var previews = 0;
+      var deckCountEl = makeHarnessDiv();
+      var deckListEl = makeHarnessDiv();
+      var snippet = { value: JSON.stringify({ slideType:'single', title:'Snippet <Slide>', leftBlocks:[{ mode:'panel', content:'P: Snip' }], rightBlocks:[] }) };
+      var api = deckModule.createApi({
+        clone: classicUtils.clone,
+        escapeHtml: classicUtils.escapeHtml,
+        normalizeSlide: rendererApi.normalizeSlide,
+        slideForSnippet: function (slide) { return { title:slide.title, slideType:slide.slideType, leftBlocks:slide.leftBlocks, rightBlocks:slide.rightBlocks }; },
+        snippetOutput: snippet,
+        deckCount: deckCountEl,
+        deckList: deckListEl,
+        getSlides: function () { return slides; },
+        setSlides: function (next) { slides = next; },
+        getActiveIndex: function () { return active; },
+        setActiveIndex: function (next) { active = next; },
+        saveCurrentBlockToDraft: function () { saves.push('block'); },
+        saveCurrentSlideToDeck: function () { saves.push('slide'); },
+        applySlideToForm: function (slide) { applied.push(slide ? slide.title : ''); },
+        buildPreview: function () { previews += 1; },
+        scheduleAutosave: function (msg) { saves.push(msg); },
+        showToast: function (msg) { toasts.push(msg); },
+        currentDraftSlide: function () { return { slideType:'single', title:'Draft', leftBlocks:[{ mode:'panel', content:'P: Draft' }], rightBlocks:[] }; }
+      });
+      api.renderDeckList();
+      var html1 = deckListEl.innerHTML;
+      api.formatSnippet();
+      var formatted = snippet.value;
+      api.addSlideFromSnippet();
+      api.duplicateSlide();
+      api.moveSlide(-1);
+      api.updateSlide();
+      api.deleteSlide();
+      return { slides:slides.map(function (slide) { return { title:slide.title, type:slide.slideType, left:(slide.leftBlocks || []).length, right:(slide.rightBlocks || []).length }; }), active:active, count:deckCountEl.textContent, html1:html1, formatted:formatted, applied:applied, toasts:toasts, saves:saves, previews:previews };
+    }
+    if (mods.deck && W.LuminaDeck && typeof W.LuminaDeck.createApi === 'function') {
+      sameJson(checks, 'deck.createApi workflow parity', runDeckWorkflow(mods.deck), runDeckWorkflow(W.LuminaDeck));
+      check(checks, 'deck module export createApi', typeof mods.deck.createApi === 'function');
+    }
+
+    function runFileIoWorkflow(fileIoModule, mode) {
+      var slides = [{ slideType:'single', title:'Existing', leftBlocks:[], rightBlocks:[] }];
+      var active = 0;
+      var fields = { deckTitle:{ value:'' } };
+      var applied = [];
+      var events = [];
+      var docStub = { getElementById:function () { return { value:mode || 'append' }; } };
+      var api = fileIoModule.createApi({
+        clone: classicUtils.clone,
+        normalizeSlide: rendererApi.normalizeSlide,
+        fields: fields,
+        getDocument: function () { return docStub; },
+        getSlides: function () { return slides; },
+        setSlides: function (next) { slides = next; },
+        getActiveIndex: function () { return active; },
+        setActiveIndex: function (next) { active = next; },
+        makeReferenceImageSlide: function (src, name) { return { slideType:'single', title:name || 'Image', leftBlocks:[{ mode:'panel', content:src }], rightBlocks:[] }; },
+        makeReferencePdfSlide: function (src, name) { return { slideType:'single', title:name || 'PDF', leftBlocks:[{ mode:'custom', content:src }], rightBlocks:[] }; },
+        parseMarkdownToSlides: function () { return []; },
+        parseBeamerToSlides: function () { return []; },
+        parseJsonOutlineToSlides: function () { return []; },
+        parsePowerPointTextToSlides: function () { return []; },
+        syncPreviewFiguresToDraft: function (flag) { events.push('sync:' + flag); },
+        saveCurrentBlockToDraft: function () { events.push('save-block'); },
+        saveCurrentSlideToDeck: function () { events.push('save-slide'); },
+        applySlideToForm: function (slide) { applied.push(slide ? slide.title : ''); },
+        clearForm: function () { events.push('clear'); },
+        buildPreview: function () { events.push('preview'); },
+        renderDeckList: function () { events.push('deck-list'); },
+        scheduleAutosave: function (msg) { events.push(msg); },
+        showToast: function (msg) { events.push(msg); },
+        applyThemeToForm: function (theme) { events.push('theme:' + (theme && theme.name)); },
+        applyPresentationOptions: function (opts) { events.push('options:' + Object.keys(opts || {}).join(',')); }
+      });
+      var imported = [{ slideType:'single', title:'Imported', leftBlocks:[{ mode:'panel', content:'P: Imported' }], rightBlocks:[] }];
+      api.applyImportedSlides(imported, { mode:mode, deckTitle:'Deck Title' });
+      return { importMode:api.importModeValue(), slides:slides.map(function (slide) { return slide.title; }), active:active, deckTitle:fields.deckTitle.value, applied:applied, events:events };
+    }
+    if (mods.fileIo && W.LuminaFileIo && typeof W.LuminaFileIo.createApi === 'function') {
+      sameJson(checks, 'file-io.applyImportedSlides append parity', runFileIoWorkflow(mods.fileIo, 'append'), runFileIoWorkflow(W.LuminaFileIo, 'append'));
+      sameJson(checks, 'file-io.applyImportedSlides replace parity', runFileIoWorkflow(mods.fileIo, 'replace'), runFileIoWorkflow(W.LuminaFileIo, 'replace'));
+      check(checks, 'file-io module export createApi', typeof mods.fileIo.createApi === 'function');
+    }
+
+    function makeFakeTextarea(value, start, end) {
+      return { value:value, selectionStart:start, selectionEnd:end, focusCount:0, focus:function () { this.focusCount += 1; } };
+    }
+    function runFigureInsertWorkflow(figureModule, mode) {
+      var textarea = makeFakeTextarea('abcXYZ', 3, 6);
+      var contentField = makeFakeTextarea('base', 4, 4);
+      var blocks = [];
+      var selected = -1;
+      var events = [];
+      var modal = { hidden:true };
+      var imagePanel = { style:{ display:'old' } };
+      var editorPanel = { style:{ display:'old' } };
+      figureModule.insertTextAtCursor(textarea, '<i>');
+      var api = figureModule.createApi({
+        getBlockFields:function () { return { mode:{ value:mode }, content:contentField }; },
+        currentColumnName:function () { return 'left'; },
+        blockArray:function () { return blocks; },
+        selectedIndex:function () { return selected; },
+        setSelectedIndex:function (idx) { selected = idx; },
+        loadSelectedBlockIntoEditor:function () { events.push('load'); },
+        buildPreview:function () { events.push('preview'); },
+        persistAutosaveNow:function (msg) { events.push(msg); },
+        saveCurrentBlockToDraft:function () { events.push('save-block'); },
+        showToast:function (msg) { events.push(msg); },
+        escapeAttr:classicUtils.escapeAttr,
+        getFigureModal:function () { return modal; },
+        getFigureImagePanel:function () { return imagePanel; },
+        getFigureEditorPanel:function () { return editorPanel; }
+      });
+      api.insertFigureHtml('<svg><circle></circle></svg>');
+      api.openFigureModal();
+      api.closeFigureModal();
+      return { textarea:textarea.value, cursor:textarea.selectionStart, focus:textarea.focusCount, content:contentField.value, blocks:blocks, selected:selected, events:events, modalHidden:modal.hidden, imageDisplay:imagePanel.style.display, editorDisplay:editorPanel.style.display, html:api.buildImageFigureHtml('data:a&b', 'Alt "Q"'), wrap:api.wrapFigureHtml('<b>x</b>') };
+    }
+    if (mods.figureInsert && W.LuminaFigureInsert && typeof W.LuminaFigureInsert.createApi === 'function') {
+      check(checks, 'figure-insert.buildImageFigureHtml parity', mods.figureInsert.buildImageFigureHtml('data:a&b', 'Alt "Q"', classicUtils.escapeAttr) === W.LuminaFigureInsert.buildImageFigureHtml('data:a&b', 'Alt "Q"', classicUtils.escapeAttr));
+      sameJson(checks, 'figure-insert panel workflow parity', runFigureInsertWorkflow(mods.figureInsert, 'panel'), runFigureInsertWorkflow(W.LuminaFigureInsert, 'panel'));
+      sameJson(checks, 'figure-insert custom workflow parity', runFigureInsertWorkflow(mods.figureInsert, 'custom'), runFigureInsertWorkflow(W.LuminaFigureInsert, 'custom'));
+      sameJson(checks, 'figure-insert unsupported-mode workflow parity', runFigureInsertWorkflow(mods.figureInsert, 'diagram'), runFigureInsertWorkflow(W.LuminaFigureInsert, 'diagram'));
+    }
+
+    function runBlockLibraryWorkflow(blockLibraryModule) {
+      var library = [];
+      var list = makeHarnessDiv();
+      var events = [];
+      var key = 'lumina-stage32a-block-library-test-' + Math.random();
+      var custom = [{ id:'custom-1', name:'Custom <Block>', builtin:false, block:{ mode:'panel', title:'Custom', content:'P: Custom' } }];
+      localStorage.setItem(key, JSON.stringify(custom));
+      var leftBlocks = [{ mode:'panel', title:'Base', content:'P: Base' }];
+      var selected = 0;
+      var api = blockLibraryModule.createApi({
+        clone:classicUtils.clone,
+        escapeHtml:classicUtils.escapeHtml,
+        showToast:function (msg) { events.push(msg); },
+        getBlockLibrary:function () { return library; },
+        setBlockLibrary:function (next) { library = next; },
+        getBlockLibraryList:function () { return list; },
+        getBlockLibraryKey:function () { return key; },
+        currentBlockFromEditor:function () { return { mode:'panel', title:'Editor Block', content:'P: Editor' }; },
+        currentColumnName:function () { return 'left'; },
+        blockArray:function () { return leftBlocks; },
+        selectedIndex:function () { return selected; },
+        setSelectedIndex:function (idx) { selected = idx; },
+        loadSelectedBlockIntoEditor:function () { events.push('load-selected'); },
+        renderBlockList:function () { events.push('render-block-list'); },
+        buildPreview:function () { events.push('preview'); },
+        scheduleAutosave:function (msg) { events.push(msg); }
+      });
+      var theorem = api.defaultReusableBlock('theorem');
+      var unknown = api.defaultReusableBlock('unknown');
+      var builtins = api.builtinLibraryEntries();
+      api.loadBlockLibrary();
+      api.renderBlockLibrary();
+      var html = list.innerHTML;
+      api.renderBlockLibrary.selectedIndex = library.length - 1;
+      api.persistBlockLibrary();
+      var stored = localStorage.getItem(key);
+      api.insertSelectedLibraryBlock();
+      api.deleteSelectedLibraryBlock();
+      var afterDelete = library.map(function (item) { return item.name; });
+      localStorage.removeItem(key);
+      return { theorem:theorem, unknown:unknown, builtinCount:builtins.length, loaded:library.map(function (item) { return { id:item.id, name:item.name, builtin:!!item.builtin, mode:item.block && item.block.mode }; }), html:html, stored:stored, leftBlocks:leftBlocks, selected:selected, afterDelete:afterDelete, events:events };
+    }
+    if (mods.blockLibrary && W.LuminaBlockLibrary && typeof W.LuminaBlockLibrary.createApi === 'function') {
+      sameJson(checks, 'block-library workflow parity', runBlockLibraryWorkflow(mods.blockLibrary), runBlockLibraryWorkflow(W.LuminaBlockLibrary));
+      check(checks, 'block-library module export createApi', typeof mods.blockLibrary.createApi === 'function');
+    }
+
+
+    function runEditorSelectionWorkflow(selectionModule) {
+      var preview = document.createElement('div');
+      preview.innerHTML = '<div class="preview-title"></div><div class="preview-block" data-column="left" data-block-index="0"></div><div class="preview-block" data-column="right" data-block-index="0"></div>';
+      var draftBlocks = {
+        left: [{ mode:'panel', title:'Block', content:'P: Block', style:{ fontScale:1.2, fontFamily:'Inter', fontColor:'#222222', bulletType:'circle' }, animation:{ buildIn:'appear', buildOut:'none', stepMode:'all', order:1 } }],
+        right: [{ mode:'plain', title:'Right', content:'P: Right', style:{}, animation:{} }]
+      };
+      var selected = { left:-1, right:-1 };
+      var titleStyle = { fontScale:1.05, fontFamily:'inherit', fontColor:'#111111', bulletType:'disc' };
+      var titleAnimation = { buildIn:'none', buildOut:'none', stepMode:'all', order:0 };
+      var snippetOutput = { value:'' };
+      var events = [];
+      var blockStyleApi = classicBlockStyle.createApi();
+      var controls = {
+        blockFields:{ column:{ value:'left' } },
+        previewBlockLabel:{ value:'' },
+        previewBlockFontScale:{ value:'' },
+        previewBlockFontFamily:{ value:'' },
+        previewBlockFontColor:{ value:'' },
+        previewBlockBulletType:{ value:'' },
+        animateTargetLabel:{ value:'' },
+        animateBuildIn:{ value:'fade' },
+        animateBuildOut:{ value:'disappear' },
+        animateStepMode:{ value:'by-item' },
+        animateOrder:{ value:'3' }
+      };
+      var api = selectionModule.createApi({
+        normalizeBlockStyle: blockStyleApi.normalizeBlockStyle,
+        normalizeAnimation: blockStyleApi.normalizeAnimation,
+        preview: preview,
+        blockFields: controls.blockFields,
+        snippetOutput: snippetOutput,
+        previewBlockLabel: controls.previewBlockLabel,
+        previewBlockFontScale: controls.previewBlockFontScale,
+        previewBlockFontFamily: controls.previewBlockFontFamily,
+        previewBlockFontColor: controls.previewBlockFontColor,
+        previewBlockBulletType: controls.previewBlockBulletType,
+        animateTargetLabel: controls.animateTargetLabel,
+        animateBuildIn: controls.animateBuildIn,
+        animateBuildOut: controls.animateBuildOut,
+        animateStepMode: controls.animateStepMode,
+        animateOrder: controls.animateOrder,
+        getDraftBlock:function (col, idx) { return draftBlocks[col] && draftBlocks[col][idx]; },
+        getDraftTitleStyle:function () { return titleStyle; },
+        setDraftTitleStyle:function (next) { titleStyle = next; events.push('set-title-style'); },
+        getDraftTitleAnimation:function () { return titleAnimation; },
+        setDraftTitleAnimation:function (next) { titleAnimation = next; events.push('set-title-animation'); },
+        getSelectedFigureBoxes:function () { return []; },
+        refreshFigureToolState:function () { events.push('refresh-figures'); },
+        saveSelectedFigures:function () { events.push('save-figures'); },
+        saveCurrentBlockToDraft:function () { events.push('save-block'); },
+        loadSelectedBlockIntoEditor:function () { events.push('load-block'); },
+        setSelectedIndex:function (col, idx) { selected[col] = idx; events.push('select-' + col + '-' + idx); },
+        slideForSnippet:function (slide) { return { title:slide.title, leftBlocks:slide.leftBlocks, rightBlocks:slide.rightBlocks, titleStyle:slide.titleStyle, titleAnimation:slide.titleAnimation }; },
+        currentDraftSlide:function () { return { title:'Draft', leftBlocks:draftBlocks.left, rightBlocks:draftBlocks.right, titleStyle:titleStyle, titleAnimation:titleAnimation }; },
+        buildPreview:function () { events.push('preview'); },
+        scheduleAutosave:function (msg) { events.push(msg); }
+      });
+      api.selectPreviewBlock('left', 0);
+      api.applySelectedPreviewBlockStyle({ fontScale:1.7, fontFamily:'Georgia, serif', fontColor:'#abcdef', bulletType:'square' });
+      controls.animateBuildIn.value = 'fade';
+      controls.animateBuildOut.value = 'disappear';
+      controls.animateStepMode.value = 'by-item';
+      controls.animateOrder.value = '3';
+      api.applySelectedAnimation();
+      api.clearSelectedAnimation();
+      api.selectPreviewTitle();
+      api.applySelectedPreviewBlockStyle({ fontScale:1.4, fontColor:'#123456' });
+      controls.animateBuildIn.value = 'appear';
+      controls.animateBuildOut.value = 'none';
+      controls.animateStepMode.value = 'all';
+      controls.animateOrder.value = '2';
+      api.applySelectedAnimation();
+      api.clearSelectedAnimation();
+      api.updatePreviewBlockSelectionUI();
+      return {
+        selected:selected,
+        label:controls.previewBlockLabel.value,
+        styleControls:{ scale:controls.previewBlockFontScale.value, family:controls.previewBlockFontFamily.value, color:controls.previewBlockFontColor.value, bullet:controls.previewBlockBulletType.value },
+        animControls:{ target:controls.animateTargetLabel.value, buildIn:controls.animateBuildIn.value, buildOut:controls.animateBuildOut.value, stepMode:controls.animateStepMode.value, order:controls.animateOrder.value },
+        block:draftBlocks.left[0],
+        titleStyle:titleStyle,
+        titleAnimation:titleAnimation,
+        titleSelected:!!preview.querySelector('.preview-title.selected'),
+        leftSelected:!!preview.querySelector('.preview-block[data-column="left"].selected'),
+        snippet:snippetOutput.value,
+        events:events
+      };
+    }
+    if (mods.editorSelection && W.LuminaEditorSelection && typeof W.LuminaEditorSelection.createApi === 'function') {
+      sameJson(checks, 'editor-selection workflow parity', runEditorSelectionWorkflow(mods.editorSelection), runEditorSelectionWorkflow(W.LuminaEditorSelection));
+      check(checks, 'editor-selection module export createApi', typeof mods.editorSelection.createApi === 'function');
+    }
+
+    function makeSelect(value, options) {
+      var select = document.createElement('select');
+      (options || []).forEach(function (opt) { var node = document.createElement('option'); node.value = opt; node.textContent = opt; select.appendChild(node); });
+      select.value = value;
+      return select;
+    }
+    function runBlockEditorWorkflow(blockEditorModule) {
+      var draftBlocks = { left:[], right:[] };
+      var selected = { left:-1, right:-1 };
+      var titleStyle = { fontScale:1.1, fontFamily:'inherit', fontColor:'#111111', bulletType:'disc' };
+      var titleAnimation = { buildIn:'none', buildOut:'none', stepMode:'all', order:0 };
+      var slides = [{ slideType:'single', title:'Original', leftBlocks:[], rightBlocks:[] }];
+      var active = 0;
+      var syncing = false;
+      var events = [];
+      var blockStyleApi = classicBlockStyle.createApi();
+      var fields = {
+        slideType: makeSelect('single', ['single','two-col']),
+        headingLevel: makeSelect('h2', ['h1','h2','h3']),
+        bgColor:{ value:'#ffffff' },
+        fontColor:{ value:'#111111' },
+        inheritTheme:{ checked:true },
+        title:{ value:'' },
+        kicker:{ value:'' },
+        lede:{ value:'' },
+        notesTitle:{ value:'' },
+        notesBody:{ value:'' },
+        deckTitle:{ value:'Deck X' }
+      };
+      var blockFields = {
+        column: makeSelect('left', ['left','right']),
+        mode: makeSelect('panel', ['panel','plain','custom','pseudocode-latex']),
+        title:{ value:'' },
+        content:{ value:'' }
+      };
+      var columnModeBadge = { textContent:'' };
+      var previewTitle = { textContent:'' };
+      var blockList = document.createElement('div');
+      var preview = document.createElement('div');
+      preview.innerHTML = '<div class="figure-embed" data-column="left" data-block-index="0"></div>';
+      var snippetOutput = { value:'' };
+      var api = blockEditorModule.createApi({
+        clone:classicUtils.clone,
+        escapeHtml:classicUtils.escapeHtml,
+        normalizeSlide:rendererApi.normalizeSlide,
+        normalizeBlockStyle:blockStyleApi.normalizeBlockStyle,
+        normalizeAnimation:blockStyleApi.normalizeAnimation,
+        fields:fields,
+        blockFields:blockFields,
+        columnModeBadge:columnModeBadge,
+        previewTitle:previewTitle,
+        blockList:blockList,
+        preview:preview,
+        snippetOutput:snippetOutput,
+        getDraftBlocks:function () { return draftBlocks; },
+        setDraftBlocks:function (next) { draftBlocks = next; },
+        getSelectedBlock:function () { return selected; },
+        setSelectedBlock:function (next) { selected = next; },
+        getDraftTitleStyle:function () { return titleStyle; },
+        setDraftTitleStyle:function (next) { titleStyle = next; },
+        getDraftTitleAnimation:function () { return titleAnimation; },
+        setDraftTitleAnimation:function (next) { titleAnimation = next; },
+        getSlides:function () { return slides; },
+        getActiveIndex:function () { return active; },
+        isSyncingPreviewFigures:function () { return syncing; },
+        setSyncingPreviewFigures:function (flag) { syncing = flag; events.push('syncing:' + flag); },
+        currentThemeFromFields:function () { return { name:'Theme X' }; },
+        currentPresentationOptions:function () { return { enableLiveDraw:true }; },
+        slideForSnippet:function (slide) { return { title:slide.title, slideType:slide.slideType, leftBlocks:slide.leftBlocks, rightBlocks:slide.rightBlocks }; },
+        saveFigureEmbedToDraft:function () { events.push('save-figure'); },
+        buildPreview:function () { events.push('preview'); },
+        showToast:function (msg) { events.push(msg); },
+        scheduleAutosave:function (msg) { events.push(msg); },
+        persistAutosaveNow:function (msg) { events.push(msg); }
+      });
+      api.applySlideToForm({ slideType:'two-col', headingLevel:'h2', bgColor:'#eeeeee', fontColor:'#101010', inheritTheme:false, title:'Block Editor <Slide>', kicker:'K', lede:'L', notesTitle:'Notes', notesBody:'Body', titleStyle:{ fontScale:1.2 }, titleAnimation:{ buildIn:'appear', order:1 }, leftBlocks:[{ mode:'panel', title:'Left A', content:'P: A', style:{ fontScale:1.3 }, animation:{ buildIn:'fade', order:2 } }], rightBlocks:[{ mode:'plain', title:'Right A', content:'P: R' }] });
+      blockFields.mode.value = 'panel';
+      blockFields.title.value = 'New <Block>';
+      blockFields.content.value = 'P: New';
+      api.addBlock();
+      api.duplicateBlock();
+      api.moveBlock(-1);
+      api.updateBlock();
+      api.deleteBlock();
+      api.saveCurrentSlideToDeck();
+      var current = api.currentDraftSlide();
+      var deck = api.currentDeckData();
+      var html = blockList.innerHTML;
+      api.clearBlockEditor();
+      return {
+        blank:api.blankBlock('custom'),
+        fields:{ slideType:fields.slideType.value, headingLevel:fields.headingLevel.value, title:fields.title.value, column:blockFields.column.value, badge:columnModeBadge.textContent, previewTitle:previewTitle.textContent },
+        draftBlocks:draftBlocks,
+        selected:selected,
+        titleStyle:titleStyle,
+        titleAnimation:titleAnimation,
+        current:{ title:current.title, left:(current.leftBlocks || []).length, right:(current.rightBlocks || []).length, notesTitle:current.notesTitle },
+        deck:{ deckTitle:deck.deckTitle, theme:deck.theme, options:deck.presentationOptions, slides:deck.slides.map(function (slide) { return slide.title; }) },
+        html:html,
+        editorAfterClear:{ mode:blockFields.mode.value, title:blockFields.title.value, content:blockFields.content.value },
+        events:events
+      };
+    }
+    if (mods.blockEditor && W.LuminaBlockEditor && typeof W.LuminaBlockEditor.createApi === 'function') {
+      sameJson(checks, 'block-editor workflow parity', runBlockEditorWorkflow(mods.blockEditor), runBlockEditorWorkflow(W.LuminaBlockEditor));
+      check(checks, 'block-editor module export createApi', typeof mods.blockEditor.createApi === 'function');
+    }
+
+    return checks;
+  }
+
+  setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'pending', migrationMode: 'inline optional leaf dynamic imports; classic runtime remains authoritative', loaderMode: 'inline-leaf-dynamic-import' });
+  var params;
+  try { params = new URLSearchParams(W.location.search || ''); } catch (e) { params = { has: function () { return false; } }; }
+  if (params.has('disableEsModuleSmoke')) { setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'disabled', reason: 'disableEsModuleSmoke query parameter present' }); return; }
+  if (W.location.protocol === 'file:') { setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'skipped-file-protocol', reason: 'Browsers commonly block ES module imports from local file:// pages. Serve over HTTP to run the smoke harness.' }); return; }
+
+  var importer;
+  try { importer = new Function('specifier', 'return import(specifier);'); }
+  catch (e) { setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'unsupported', reason: shortError(e), loaderMode: 'inline-leaf-dynamic-import' }); return; }
+
+  Promise.all(ASSETS.map(probeAsset)).then(function (probeResults) {
+    var modules = {};
+    var importResults = [];
+    var chain = Promise.resolve();
+    ASSETS.forEach(function (asset) {
+      chain = chain.then(function () {
+        return importer(absUrl(asset, '&import=' + Date.now())).then(function (module) {
+          modules[MODULE_KEYS[asset]] = module;
+          importResults.push({ asset: asset, ok: true, exports: Object.keys(module).sort() });
+          markOptionalLoaded(asset);
+        }).catch(function (e) {
+          importResults.push({ asset: asset, ok: false, error: shortError(e) });
+          markOptionalFailed(asset, shortError(e));
+        });
+      });
+    });
+    return chain.then(function () {
+      var failedImports = importResults.filter(function (r) { return !r.ok; });
+      if (failedImports.length) {
+        setReport({
+          stage: STAGE,
+          checkedAt: now(),
+          ok: false,
+          status: 'leaf-import-failed',
+          failedImports: failedImports,
+          assetProbeResults: probeResults,
+          leafImportResults: importResults,
+          loaderMode: 'inline-leaf-dynamic-import',
+          migrationMode: 'classic runtime unaffected; one or more optional ESM leaf imports failed'
+        });
+        return;
+      }
+      var checks = [];
+      try { checks = runParity(modules); }
+      catch (e) {
+        setReport({ stage: STAGE, checkedAt: now(), ok: false, status: 'parity-threw', error: shortError(e), assetProbeResults: probeResults, leafImportResults: importResults, loaderMode: 'inline-leaf-dynamic-import' });
+        return;
+      }
+      var failed = checks.filter(function (item) { return !item.ok; });
+      setReport({
+        stage: STAGE,
+        checkedAt: now(),
+        ok: failed.length === 0,
+        status: failed.length === 0 ? 'passed' : 'parity-failed',
+        failed: failed,
+        checks: checks,
+        checkCount: checks.length,
+        assetProbeResults: probeResults,
+        leafImportResults: importResults,
+        loaderMode: 'inline-leaf-dynamic-import',
+        migrationMode: 'non-blocking ESM leaf parity harness; classic runtime remains authoritative'
+      });
+      if (failed.length) warn('Stage 32A ES module parity checks failed: ' + failed.map(function (item) { return item.name; }).join(', '));
+    });
+  }).catch(function (e) {
+    setReport({ stage: STAGE, checkedAt: now(), ok: false, status: 'probe-or-import-threw', error: shortError(e), loaderMode: 'inline-leaf-dynamic-import' });
+  });
+})();
+</script>
+
+<script>
+/* Stage 32A: diagnostics copy decorator.
+   Some deployments may still have an older diagnostics-stage24c.js cached or copied.
+   Keep startup unchanged, but ensure copied reports surface LuminaEsModuleDiagnostics. */
+(function () {
+  'use strict';
+  var W = window;
+  var STAGE = W.LUMINA_STAGE || 'stage32a-20260425-1';
+  function cloneArray(value) {
+    return Array.isArray(value) ? value.slice() : [];
+  }
+  function esmStatus(esm) {
+    return esm ? (esm.status || (esm.ok === true ? 'passed' : 'failed')) : 'not-started';
+  }
+  function augment(base) {
+    var report = base && typeof base === 'object' ? base : {};
+    var esm = W.LuminaEsModuleDiagnostics || null;
+    var optional = cloneArray(W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || W.LUMINA_OPTIONAL_ESM_ASSETS);
+    var baseStage = report.stage || null;
+    report.stage = STAGE;
+    report.baseDiagnosticStage = baseStage;
+    report.stageFromWindow = W.LUMINA_STAGE || null;
+    report.indexStageSignature = W.LUMINA_STAGE_SIGNATURE || null;
+    report.indexDatasetStage = document.documentElement ? document.documentElement.getAttribute('data-lumina-stage') : null;
+    report.diagnosticsDecorator = 'stage32a-inline-forced';
+    report.esModuleDiagnostics = esm;
+    report.esModuleSmokePassed = !!(esm && esm.ok === true);
+    report.esModuleSmokeStatus = esmStatus(esm);
+    report.optionalEsmAssets = optional;
+    report.optionalEsmAssetCount = optional.length;
+    report.esModuleDiagnosticsCapturedAt = new Date().toISOString();
+    return report;
+  }
+  function fallbackReport() {
+    var D = W.LuminaDiagnostics || {};
+    var assets = (W.LuminaModuleManifest && W.LuminaModuleManifest.assets ? W.LuminaModuleManifest.assets : []).slice();
+    return augment({
+      stage: STAGE,
+      url: W.location && W.location.href,
+      userAgent: navigator.userAgent,
+      checkedAt: new Date().toISOString(),
+      expectedAssetCount: assets.length,
+      loadedScriptCount: D.loaded ? Object.keys(D.loaded).length : 0,
+      missingAssets: [],
+      missingGlobals: [],
+      missingDomIds: [],
+      bootErrors: (W.LUMINA_BOOT_ERRORS || []).slice(),
+      capturedErrors: (D.errors || []).map(function (e) { return e.message || String(e); })
+    });
+  }
+  function decorate() {
+    var D = W.LuminaDiagnostics;
+    if (!D || D.__stage32aEsmCopyDecorator) return;
+    D.stage = STAGE;
+    var originalCollect = typeof D.collectReport === 'function' ? D.collectReport : null;
+    D.collectReport = function () {
+      var base;
+      try { base = originalCollect ? originalCollect.call(D) : fallbackReport(); }
+      catch (e) { base = fallbackReport(); base.collectReportError = String(e && (e.stack || e.message) || e); }
+      return augment(base);
+    };
+    D.copyReport = function () {
+      var text = JSON.stringify(D.collectReport(), null, 2);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(function () { return text; });
+      }
+      return Promise.resolve(text);
+    };
+    D.__stage32aEsmCopyDecorator = true;
+    W.LuminaStage32aReport = function () { return D.collectReport(); };
+  }
+  decorate();
+  setTimeout(decorate, 0);
+  setTimeout(decorate, 1200);
+  setTimeout(decorate, 3000);
+})();
+</script>
+
+
+<script>
+setTimeout(function(){
+  try{
+    var checks=['LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor','LuminaCommands'];
+    var missing=checks.filter(function(k){return !window[k];});
+    if(missing.length) window.luminaBootError && window.luminaBootError('Missing globals after startup: '+missing.join(', '));
+    if(!window.__LUMINA_BASIC_UI_BOUND) window.luminaBootError && window.luminaBootError('Basic UI binding marker missing.');
+    if(!window.__LUMINA_COMMANDS_BOUND) window.luminaBootError && window.luminaBootError('Command shortcut binding marker missing.');
+  }catch(e){ window.luminaBootError && window.luminaBootError('Post-startup check failed: '+(e.message||e)); }
+}, 2500);
+</script>
+
+</body>
+</html>

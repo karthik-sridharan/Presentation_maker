@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Lumina Stage 32A diagnostics</title>
+<style>
+body{font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;margin:24px;background:#f8fafc;color:#0f172a}
+pre{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px;overflow:auto}
+table{border-collapse:collapse;width:100%;background:white;border-radius:10px;overflow:hidden;box-shadow:0 1px 8px rgba(15,23,42,.08);margin:14px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top}.ok{color:#166534;font-weight:700}.bad{color:#b91c1c;font-weight:700}.warn{color:#92400e;font-weight:700}button{padding:8px 11px;border:1px solid #94a3b8;border-radius:8px;background:white;cursor:pointer}.muted{color:#64748b}iframe{width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;border:0}
+</style>
+</head>
+<body>
+<h1>Lumina Stage 32A diagnostics</h1>
+<p class="muted">Checks the known-good Stage 24C required assets, boots the editor in a hidden iframe, and reports optional ES module leaf-import parity status without blocking the classic runtime.</p>
+<button id="copy">Copy report</button>
+<div id="out">Checking…</div>
+<iframe id="appFrame" src="index.html?clearLuminaStorage=1&v=stage32a-20260425-1&diagnostic=1"></iframe>
+<script>
+const STAGE="stage32a-20260425-1";
+const ASSETS=[
+  "css/styles-stage24c.css",
+  "js/diagnostics-stage24c.js",
+  "js/module-manifest-stage24c.js",
+  "js/utils-stage24c.js",
+  "js/block-library-stage24c.js",
+  "js/theme-stage24c.js",
+  "js/presets-stage24c.js",
+  "js/parser-stage24c.js",
+  "js/block-style-stage24c.js",
+  "js/import-stage24c.js",
+  "js/state-stage24c.js",
+  "js/export-stage24c.js",
+  "js/renderer-stage24c.js",
+  "js/deck-stage24c.js",
+  "js/file-io-stage24c.js",
+  "js/ui-stage24c.js",
+  "js/figure-insert-stage24c.js",
+  "js/diagram-editor-stage24c.js",
+  "js/figure-tools-stage24c.js",
+  "js/editor-selection-stage24c.js",
+  "js/block-editor-stage24c.js",
+  "js/legacy-app-stage24c.js",
+  "js/copilot-stage24c.js",
+  "js/commands-stage24c.js"
+];
+const OPTIONAL_ESM_ASSETS=[
+  "js/esm/utils-stage32a.js",
+  "js/esm/block-style-stage32a.js",
+  "js/esm/parser-stage32a.js",
+  "js/esm/import-stage32a.js",
+  "js/esm/state-stage32a.js",
+  "js/esm/theme-stage32a.js",
+  "js/esm/presets-stage32a.js",
+  "js/esm/renderer-stage32a.js"
+];
+function escapeHtml(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+async function check(asset){
+  const url=asset+'?v='+encodeURIComponent(STAGE)+'&diagnostic='+Date.now();
+  try{
+    const res=await fetch(url,{cache:'no-store'});
+    const text=await res.text();
+    return{asset,ok:res.ok,status:res.status,bytes:text.length,sample:text.slice(0,90)};
+  }catch(e){
+    return{asset,ok:false,status:'fetch-error',bytes:0,sample:String(e)};
+  }
+}
+async function collectFrameReport(){
+  const frame=document.getElementById('appFrame');
+  await new Promise(resolve=>{ frame.addEventListener('load', resolve, {once:true}); setTimeout(resolve, 2500); });
+  let w=null;
+  try{ w=frame.contentWindow; }catch(e){ return { accessible:false, error:String(e) }; }
+  // Wait for the optional dynamic import to finish when possible. The classic runtime remains the pass/fail gate.
+  const deadline=Date.now()+6500;
+  while(Date.now()<deadline){
+    const esm=w.LuminaEsModuleDiagnostics || null;
+    if(esm && esm.status && esm.status!=='pending') break;
+    await sleep(250);
+  }
+  try{
+    const diag=w.LuminaDiagnostics && typeof w.LuminaDiagnostics.collectReport==='function' ? w.LuminaDiagnostics.collectReport() : null;
+    return {
+      accessible:true,
+      diagnostics:diag,
+      frameStage:w.LUMINA_STAGE || null,
+      frameIndexSignature:w.LUMINA_STAGE_SIGNATURE || null,
+      frameDatasetStage:w.document && w.document.documentElement ? w.document.documentElement.getAttribute('data-lumina-stage') : null,
+      stageMatches:(w.LUMINA_STAGE === STAGE),
+      esModuleDiagnostics:w.LuminaEsModuleDiagnostics || (diag && diag.esModuleDiagnostics) || null,
+      bootErrors:(w.LUMINA_BOOT_ERRORS || []).slice()
+    };
+  }catch(e){
+    return { accessible:false, error:String(e) };
+  }
+}
+function render(rows, frameReport){
+  const assetHtml='<h2>Asset checks</h2><table><thead><tr><th>Status</th><th>Asset</th><th>HTTP</th><th>Bytes</th></tr></thead><tbody>'+rows.map(r=>'<tr><td class="'+(r.ok?'ok':(r.optional?'warn':'bad'))+'">'+(r.ok?'OK':(r.optional?'OPTIONAL FAIL':'FAIL'))+'</td><td>'+escapeHtml(r.asset)+'</td><td>'+escapeHtml(r.status)+'</td><td>'+escapeHtml(r.bytes)+'</td></tr>').join('')+'</tbody></table>';
+  const diag=frameReport && frameReport.diagnostics;
+  const esm=frameReport && frameReport.esModuleDiagnostics;
+  const runtimeOk=!!(diag && !diag.missingAssets.length && !diag.missingGlobals.length && !diag.missingDomIds.length && diag.basicUiBound && diag.previewHasContent && diag.commandsBound && !(frameReport.bootErrors||[]).length);
+  const esmStatus=esm ? (esm.status || (esm.ok ? 'passed' : 'failed')) : 'not-started';
+  const esmClass=(esm && esm.ok===true)?'ok':(['skipped-file-protocol','disabled','unsupported','not-started','load-failed'].includes(esmStatus)?'warn':'bad');
+  const summary='<h2>Runtime summary</h2><table><tbody>'+
+    '<tr><th>Iframe accessible</th><td class="'+(frameReport.accessible?'ok':'bad')+'">'+frameReport.accessible+'</td></tr>'+
+    '<tr><th>Runtime diagnostics OK</th><td class="'+(runtimeOk?'ok':'bad')+'">'+runtimeOk+'</td></tr>'+
+    '<tr><th>Iframe stage</th><td class="'+(frameReport.stageMatches?'ok':'bad')+'">'+escapeHtml(frameReport.frameStage || 'missing')+'</td></tr>'+
+    '<tr><th>Index signature</th><td>'+escapeHtml(frameReport.frameIndexSignature || 'missing')+'</td></tr>'+
+    '<tr><th>Optional ES module smoke</th><td class="'+esmClass+'">'+escapeHtml(esmStatus)+'</td></tr>'+
+    '<tr><th>Boot errors</th><td>'+escapeHtml(JSON.stringify((frameReport && frameReport.bootErrors) || []))+'</td></tr>'+
+    '</tbody></table>';
+  window.__REPORT={stage:STAGE,url:location.href,assetRows:rows,frameReport,runtimeOk,frameStage:frameReport.frameStage||null,frameIndexSignature:frameReport.frameIndexSignature||null,stageMatches:!!frameReport.stageMatches,esModuleDiagnostics:esm,esModuleSmokeStatus:esmStatus,esModuleSmokePassed:!!(esm&&esm.ok===true)};
+  document.getElementById('out').innerHTML=summary+assetHtml+'<h2>Raw report</h2><pre>'+escapeHtml(JSON.stringify(window.__REPORT,null,2))+'</pre>';
+}
+async function run(){
+  const requiredRows=await Promise.all(ASSETS.map(check));
+  const optionalRows=await Promise.all(OPTIONAL_ESM_ASSETS.map(check));
+  const rows=requiredRows.concat(optionalRows.map(r=>Object.assign({optional:true},r)));
+  const frameReport=await collectFrameReport();
+  render(rows, frameReport);
+}
+document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(JSON.stringify(window.__REPORT||{},null,2));
+run();
+</script>
+</body>
+</html>
