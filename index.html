@@ -24,8 +24,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage34j-20260425-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34j-live-esm-core-renderer-export-ui-commands-diagram-editor-figure-insert-block-library-deck-editor-selection-file-io-block-editor-figure-tools-slide-actions-restore-20260425-1';
+window.LUMINA_STAGE = 'stage34k-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34k-live-esm-core-renderer-export-ui-commands-diagram-editor-figure-insert-block-library-deck-editor-selection-file-io-block-editor-figure-tools-copilot-slide-actions-restore-20260425-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -50,7 +50,7 @@ window.LUMINA_EXPECTED_ASSETS = [
   "js/editor-selection-stage24c.js",
   "js/block-editor-stage24c.js",
   "js/legacy-app-stage24c.js",
-  "js/copilot-stage24c.js",
+  "js/copilot-stage34k.js",
   "js/commands-stage24c.js"
 ];
 window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
@@ -72,30 +72,31 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
   "js/esm/block-editor-stage34j.js",
   "js/esm/diagram-editor-stage34j.js",
   "js/esm/figure-tools-stage34j.js",
-  "js/esm/commands-stage34j.js"
+  "js/esm/commands-stage34j.js",
+  "js/esm/copilot-stage34k.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage34k-20260425-1';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage34j-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage34k-20260425-1',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
     domIds: base.domIds || [],
     notes: (base.notes || []).concat([
-      'Stage 34J keeps the Stage 24C classic runtime authoritative except guarded live ESM core, renderer, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, and figure tools.',
+      'Stage 34K keeps the Stage 24C legacy app shell classic but promotes the Copilot core to guarded live ESM, in addition to the previously promoted core, renderer, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, and figure tools.',
       'Commands are booted from js/esm/commands-stage34j.js with a suppressed classic shadow/fallback.',
       'Export and UI shell helpers are also promoted to guarded live ESM after capturing classic Stage 24C shadows.',
-      'ES module parity still runs through inline optional leaf dynamic imports with fetch/MIME probes.'
+      'ES module parity still runs through inline optional leaf dynamic imports with fetch/MIME probes, including Copilot.'
     ]),
     loadOrder: required
   });
@@ -103,7 +104,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage34j-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage34k-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <script>
 
@@ -145,7 +146,7 @@ window.MathJax = {
         <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
       </div>
       <div class="subpane active" data-subpane="edit:slide">
-      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage34j-20260425-1">
+      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage34k-20260425-1">
         <div class="section-head">
           <div>
             <div class="smallcaps">Quick slide actions</div>
@@ -1116,7 +1117,7 @@ window.MathJax = {
    guarded live ESM deck runtime remains authoritative. */
 (function(){
   'use strict';
-  var STAGE = 'stage34j-20260425-1-slide-actions-restore';
+  var STAGE = 'stage34k-20260425-1-slide-actions-restore';
   var actionToCommand = {
     add: 'addSlide',
     update: 'updateSlide',
@@ -1187,26 +1188,71 @@ window.MathJax = {
   else bindSlideActionRestore();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage24c.js?v=stage34j-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage24c.js')"></script>
+<script src="js/utils-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage34k.js?v=stage34k-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
+<script type="module">
+/* Stage 34K: guarded live ESM runtime for Copilot core.
+   The classic core exposed by legacy-app-stage24c.js remains captured as a fallback. */
+const W34K = window;
+const STAGE34K = W34K.LUMINA_STAGE || 'stage34k-20260425-1';
+const status34K = W34K.LuminaLiveRuntimeStatus = W34K.LuminaLiveRuntimeStatus || {};
+function shortCopilotError34K(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
+function markCopilotLoaded34K(asset){ if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markLoaded === 'function') W34K.LuminaDiagnostics.markLoaded(asset); }
+function markCopilotOptionalFailed34K(asset, message){
+  const record = { asset, message:String(message || ''), at:new Date().toISOString(), optional:true };
+  W34K.LuminaOptionalEsmWarningsStage34K = W34K.LuminaOptionalEsmWarningsStage34K || [];
+  W34K.LuminaOptionalEsmWarningsStage34K.push(record);
+  if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markOptionalFailed === 'function') W34K.LuminaDiagnostics.markOptionalFailed(asset, message);
+  else if(W34K.console && console.warn) console.warn('[Lumina Stage 34K optional ESM]', asset, message);
+}
+function activateClassicCopilot34K(reason){
+  const classic = W34K.LuminaClassicCopilotCoreStage34K || W34K.LuminaCopilotCore;
+  if(classic){
+    W34K.LuminaCopilotCore = classic;
+    W34K.__LUMINA_COPILOT_RUNTIME_SOURCE = 'classic-preserved:legacy-app-stage24c.js';
+    status34K.copilot = Object.freeze({ ok:true, source:'classic-preserved', asset:'js/legacy-app-stage24c.js', reason:String(reason || ''), classicShadowReady:!!W34K.LuminaClassicCopilotCoreStage34K, loadedAt:new Date().toISOString() });
+    return true;
+  }
+  W34K.__LUMINA_COPILOT_RUNTIME_SOURCE = 'failed';
+  status34K.copilot = Object.freeze({ ok:false, source:'failed', reason:String(reason || ''), loadedAt:new Date().toISOString() });
+  return false;
+}
+W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
+  try{
+    if(W34K.LuminaCopilotCore) W34K.LuminaClassicCopilotCoreStage34K = W34K.LuminaCopilotCore;
+    if(!W34K.LuminaCopilotDepsStage34K) throw new Error('LuminaCopilotDepsStage34K was not exposed by legacy-app-stage24c.js');
+    const result = await import('./js/esm/copilot-stage34k.js?v=' + encodeURIComponent(STAGE34K) + '&live=1');
+    if(!result || typeof result.createApi !== 'function') throw new Error('js/esm/copilot-stage34k.js did not export createApi');
+    const api = result.createApi(W34K.LuminaCopilotDepsStage34K);
+    W34K.LuminaCopilotCore = api;
+    W34K.__LUMINA_COPILOT_RUNTIME_SOURCE = 'esm:js/esm/copilot-stage34k.js';
+    status34K.copilot = Object.freeze({ ok:true, source:'esm', asset:'js/esm/copilot-stage34k.js', apiKeys:Object.keys(api || {}).sort(), classicShadowReady:!!W34K.LuminaClassicCopilotCoreStage34K, loadedAt:new Date().toISOString() });
+    markCopilotLoaded34K('js/esm/copilot-stage34k.js');
+  }catch(error){
+    const message = shortCopilotError34K(error);
+    markCopilotOptionalFailed34K('js/esm/copilot-stage34k.js', message);
+    activateClassicCopilot34K(message);
+  }
+})();
+</script>
 <script>
 /* Stage 34J: load classic commands as a shadow baseline, but suppress its keydown binding.
    The live command runtime is installed by js/esm/commands-stage34j.js below. */
@@ -1216,7 +1262,7 @@ window.MathJax = {
   var doc = document;
   var originalAdd = doc.addEventListener;
   var shadow = W.__LUMINA_STAGE34J_COMMANDS_SHADOW = {
-    stage: W.LUMINA_STAGE || 'stage34j-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage34k-20260425-1',
     suppressing: true,
     suppressedKeydown: 0,
     suppressedDomReady: 0,
@@ -1256,12 +1302,12 @@ window.MathJax = {
   W.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH = restore;
 })();
 </script>
-<script src="js/commands-stage24c.js?v=stage34j-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage34k-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
 <script type="module">
 /* Stage 34J hotfix: guarded live ESM runtime for Commands.
    ESM import failure is non-blocking; activate the captured classic shadow instead of surfacing startup errors. */
 const W = window;
-const STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+const STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
 const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
 function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1360,7 +1406,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1438,7 +1484,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1619,7 +1665,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1792,7 +1838,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1875,7 +1921,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
@@ -1897,7 +1943,8 @@ try{
     'js/esm/block-editor-stage34j.js': 'blockEditor',
     'js/esm/diagram-editor-stage34j.js': 'diagramEditor',
     'js/esm/figure-tools-stage34j.js': 'figureTools',
-    'js/esm/commands-stage34j.js': 'commands'
+    'js/esm/commands-stage34j.js': 'commands',
+    'js/esm/copilot-stage34k.js': 'copilot'
   };
   function now() { return new Date().toISOString(); }
   function warn(message) {
@@ -2884,11 +2931,16 @@ try{
       sameJson(checks, 'commands registry and shortcut metadata parity', stableCommandParitySummary(esmCommandsWorkflow), stableCommandParitySummary(classicCommandsWorkflow));
       check(checks, 'commands module export createApi', typeof mods.commands.createApi === 'function');
     }
+    if (W.LuminaLiveRuntimeStatus && W.LuminaLiveRuntimeStatus.copilot) {
+      check(checks, 'classic LuminaCopilotCore shadow available', !!W.LuminaClassicCopilotCoreStage34K && typeof W.LuminaClassicCopilotCoreStage34K.generateCopilotDeck === 'function');
+      check(checks, 'live LuminaCopilotCore sourced from guarded ESM', W.__LUMINA_COPILOT_RUNTIME_SOURCE === 'esm:js/esm/copilot-stage34k.js', { source: W.__LUMINA_COPILOT_RUNTIME_SOURCE || '', liveStatus: W.LuminaLiveRuntimeStatus && W.LuminaLiveRuntimeStatus.copilot });
+      check(checks, 'copilot module export createApi', !!mods.copilot && typeof mods.copilot.createApi === 'function');
+    }
 
     return checks;
   }
 
-  setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'pending', migrationMode: 'inline optional leaf dynamic imports; core factories, renderer bridge, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, and figure tools live from guarded ESM; legacy/copilot remain classic', loaderMode: 'inline-leaf-dynamic-import' });
+  setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'pending', migrationMode: 'inline optional leaf dynamic imports; core factories, renderer bridge, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, figure tools, and Copilot live from guarded ESM; legacy app remains classic', loaderMode: 'inline-leaf-dynamic-import' });
   var params;
   try { params = new URLSearchParams(W.location.search || ''); } catch (e) { params = { has: function () { return false; } }; }
   if (params.has('disableEsModuleSmoke')) { setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'disabled', reason: 'disableEsModuleSmoke query parameter present' }); return; }
@@ -2925,7 +2977,8 @@ try{
         W.__LUMINA_STAGE34J_EDITOR_SELECTION_PROMISE || null,
         W.__LUMINA_STAGE34J_FILE_IO_PROMISE || null,
         W.__LUMINA_STAGE34J_BLOCK_EDITOR_PROMISE || null,
-        W.__LUMINA_STAGE34J_FIGURE_TOOLS_PROMISE || null
+        W.__LUMINA_STAGE34J_FIGURE_TOOLS_PROMISE || null,
+        W.__LUMINA_STAGE34K_COPILOT_PROMISE || null
       ].map(function (p) { return Promise.resolve(p).catch(function () { return null; }); })).then(function () {
         var failedImports = importResults.filter(function (r) { return !r.ok; });
         if (failedImports.length) {
@@ -2938,7 +2991,7 @@ try{
             assetProbeResults: probeResults,
             leafImportResults: importResults,
             loaderMode: 'inline-leaf-dynamic-import',
-            migrationMode: 'live ESM core factories, renderer bridge, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, and figure tools guarded; one or more optional ESM leaf imports failed'
+            migrationMode: 'live ESM core factories, renderer bridge, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, figure tools, and Copilot guarded; one or more optional ESM leaf imports failed'
           });
           return;
         }
@@ -2960,7 +3013,7 @@ try{
           assetProbeResults: probeResults,
           leafImportResults: importResults,
           loaderMode: 'inline-leaf-dynamic-import',
-          migrationMode: 'guarded live ESM core factories, renderer bridge, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, and figure tools plus non-blocking ESM leaf parity harness; legacy/copilot remain classic'
+          migrationMode: 'guarded live ESM core factories, renderer bridge, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, figure tools, and Copilot plus non-blocking ESM leaf parity harness; legacy app remains classic'
         });
         if (failed.length) warn('Stage 34J ES module parity checks failed: ' + failed.map(function (item) { return item.name; }).join(', '));
       });
@@ -2978,7 +3031,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34j-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34k-20260425-1';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }

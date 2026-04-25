@@ -1,0 +1,23 @@
+{
+  "stage": "stage34k-20260425-1",
+  "purpose": "Guarded live ESM promotion for Copilot core with classic fallback preserved.",
+  "required_asset_count": 24,
+  "optional_esm_asset_count": 20,
+  "changed_files": [
+    "index.html",
+    "js/legacy-app-stage24c.js",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "STAGE34K_NOTES.md",
+    "RELEASE_NOTES_STAGE34K.md",
+    "DEPLOY_CHECK_STAGE34K.md",
+    "RELEASE_FILES_STAGE34K.json"
+  ],
+  "new_live_esm_modules": [
+    "js/esm/copilot-stage34k.js"
+  ],
+  "new_classic_guard_files": [
+    "js/copilot-stage34k.js"
+  ],
+  "fallback_rule": "If Copilot ESM import or initialization fails, window.LuminaCopilotCore is restored to the classic core captured from legacy-app-stage24c.js."
+}
