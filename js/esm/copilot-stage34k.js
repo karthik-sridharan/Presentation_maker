@@ -26,14 +26,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34k-20260425-2' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34l-20260425-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage34k-20260425-2', lastRuntimeLoadedAt:new Date().toISOString() });
+  updateCopilotRuntime({ stage:'stage34l-20260425-1', lastRuntimeLoadedAt:new Date().toISOString() });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -405,7 +405,7 @@ function createApi(deps){
   }
 
   return Object.freeze({
-    __stage:'stage34k-20260425-2',
+    __stage:'stage34l-20260425-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
