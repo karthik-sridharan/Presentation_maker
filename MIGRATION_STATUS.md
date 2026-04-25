@@ -2,59 +2,39 @@
 
 ## Current checkpoint
 
-**Current migration checkpoint:** Stage 29A  
-**Stage 29A purpose:** expand optional ES module parity coverage to state, theme, and presets  
-**Runtime behavior changed in Stage 29A:** No intentional editor behavior changes
+**Current migration checkpoint:** Stage 30A  
+**Stage 30A purpose:** expand optional ES module parity coverage to renderer helpers  
+**Runtime behavior changed in Stage 30A:** No intentional editor behavior changes
 
-Stage 29A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from four leaf modules to seven modules, using dynamic imports that never block the editor from booting.
+Stage 30A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from seven helper modules to eight modules, adding renderer helper parity.
 
 ## Completed ES module parity coverage
 
-- `js/esm/utils-stage29a.js`
-- `js/esm/block-style-stage29a.js`
-- `js/esm/parser-stage29a.js`
-- `js/esm/import-stage29a.js`
-- `js/esm/state-stage29a.js`
-- `js/esm/theme-stage29a.js`
-- `js/esm/presets-stage29a.js`
+- `js/esm/utils-stage30a.js`
+- `js/esm/block-style-stage30a.js`
+- `js/esm/parser-stage30a.js`
+- `js/esm/import-stage30a.js`
+- `js/esm/state-stage30a.js`
+- `js/esm/theme-stage30a.js`
+- `js/esm/presets-stage30a.js`
+- `js/esm/renderer-stage30a.js`
 
 ## Expected diagnostics
 
-Required runtime health should pass:
-
-```json
-{
-  "missingAssets": [],
-  "missingGlobals": [],
-  "missingDomIds": [],
-  "basicUiBound": true,
-  "previewHasContent": true,
-  "rendererFunctionBased": true,
-  "uiFunctionBased": true,
-  "manifestLoaded": true,
-  "commandsBound": true,
-  "bootErrors": [],
-  "capturedErrors": []
-}
-```
-
-The copied report should also include optional ESM diagnostics:
+Required runtime health should pass with no missing assets/globals/DOM ids and no boot/captured errors. The copied report should also include:
 
 ```json
 {
   "esModuleDiagnostics": {
     "ok": true,
     "status": "passed",
-    "loaderMode": "inline-leaf-dynamic-import",
-    "checkCount": 46
+    "loaderMode": "inline-leaf-dynamic-import"
   },
   "esModuleSmokePassed": true,
   "esModuleSmokeStatus": "passed",
-  "optionalEsmAssetCount": 7
+  "optionalEsmAssetCount": 8
 }
 ```
-
-The exact `checkCount` may increase if more parity cases are added, but it should not decrease unexpectedly.
 
 ## Still intentionally deferred
 
