@@ -49,9 +49,9 @@ Recommended next steps:
 - Diagnostics live at `diagnostics-stage23a.html` and `diagnostics.html`.
 
 
-## stage23afix2-20260425-1
+## stage23b2-20260425-1
 
-Cache-proof repair for Stage 23A. Runtime now loads suffixed stage23afix2 filenames to avoid stale stable `legacy-app.js`.
+Cache-proof repair for Stage 23A. Runtime now loads suffixed stage23b2 filenames to avoid stale stable `legacy-app.js`.
 
 
 ## Stage 23B — Renderer diagnostics cleanup
