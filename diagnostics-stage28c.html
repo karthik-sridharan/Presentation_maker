@@ -81,6 +81,10 @@ async function collectFrameReport(){
     return {
       accessible:true,
       diagnostics:diag,
+      frameStage:w.LUMINA_STAGE || null,
+      frameIndexSignature:w.LUMINA_STAGE_SIGNATURE || null,
+      frameDatasetStage:w.document && w.document.documentElement ? w.document.documentElement.getAttribute('data-lumina-stage') : null,
+      stageMatches:(w.LUMINA_STAGE === STAGE),
       esModuleDiagnostics:w.LuminaEsModuleDiagnostics || (diag && diag.esModuleDiagnostics) || null,
       bootErrors:(w.LUMINA_BOOT_ERRORS || []).slice()
     };
@@ -98,10 +102,12 @@ function render(rows, frameReport){
   const summary='<h2>Runtime summary</h2><table><tbody>'+
     '<tr><th>Iframe accessible</th><td class="'+(frameReport.accessible?'ok':'bad')+'">'+frameReport.accessible+'</td></tr>'+
     '<tr><th>Runtime diagnostics OK</th><td class="'+(runtimeOk?'ok':'bad')+'">'+runtimeOk+'</td></tr>'+
+    '<tr><th>Iframe stage</th><td class="'+(frameReport.stageMatches?'ok':'bad')+'">'+escapeHtml(frameReport.frameStage || 'missing')+'</td></tr>'+
+    '<tr><th>Index signature</th><td>'+escapeHtml(frameReport.frameIndexSignature || 'missing')+'</td></tr>'+
     '<tr><th>Optional ES module smoke</th><td class="'+esmClass+'">'+escapeHtml(esmStatus)+'</td></tr>'+
     '<tr><th>Boot errors</th><td>'+escapeHtml(JSON.stringify((frameReport && frameReport.bootErrors) || []))+'</td></tr>'+
     '</tbody></table>';
-  window.__REPORT={stage:STAGE,url:location.href,assetRows:rows,frameReport,runtimeOk,esModuleDiagnostics:esm,esModuleSmokeStatus:esmStatus,esModuleSmokePassed:!!(esm&&esm.ok===true)};
+  window.__REPORT={stage:STAGE,url:location.href,assetRows:rows,frameReport,runtimeOk,frameStage:frameReport.frameStage||null,frameIndexSignature:frameReport.frameIndexSignature||null,stageMatches:!!frameReport.stageMatches,esModuleDiagnostics:esm,esModuleSmokeStatus:esmStatus,esModuleSmokePassed:!!(esm&&esm.ok===true)};
   document.getElementById('out').innerHTML=summary+assetHtml+'<h2>Raw report</h2><pre>'+escapeHtml(JSON.stringify(window.__REPORT,null,2))+'</pre>';
 }
 async function run(){
