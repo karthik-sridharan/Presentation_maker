@@ -2,7 +2,7 @@
   'use strict';
   var W = window;
   var D = W.LuminaDiagnostics = W.LuminaDiagnostics || {};
-  D.stage = 'stage21b-20260425-1';
+  D.stage = 'stage21b-20260425-1-diagnostics-fix';
   D.loaded = D.loaded || {};
   D.failed = D.failed || {};
   D.errors = D.errors || [];
@@ -19,9 +19,9 @@
   function hasOwn(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
   function expectedAssets() { return (W.LUMINA_EXPECTED_ASSETS || []).slice(); }
   function expectedGlobals() { return [
-    'LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRenderer','LuminaDeck','LuminaFileIo','LuminaUi','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor'
+    'LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor'
   ]; }
-  function expectedDomIds() { return ['leftTabs','slideType','preview','slideList','blockList','deckTitle']; }
+  function expectedDomIds() { return ['leftTabs','slideType','preview','deckList','blockList','deckTitle']; }
   function collectReport() {
     var assets = expectedAssets();
     var missingAssets = assets.filter(function (asset) {
@@ -44,6 +44,8 @@
       missingDomIds: missingDom,
       basicUiBound: !!W.__LUMINA_BASIC_UI_BOUND,
       previewHasContent: !!(document.getElementById('preview') && document.getElementById('preview').children.length),
+      rendererFunctionBased: typeof W.renderSlide === 'function',
+      uiFunctionBased: typeof W.initPanelTabs === 'function' && typeof W.initUiCleanupLayout === 'function',
       bootErrors: bootErrors,
       capturedErrors: D.errors.map(function (e) { return e.message || String(e); })
     };
