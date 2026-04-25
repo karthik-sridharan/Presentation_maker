@@ -938,6 +938,36 @@ async function generateCopilotDeck(){
   }
 }
 
+// Stage 34K: expose the narrow dependency bridge needed by the guarded ESM Copilot core.
+// The bridge keeps mutable deck state inside legacy-app while allowing Copilot logic to migrate.
+window.LuminaCopilotDepsStage34K = {
+  stage: 'stage34k-20260425-1',
+  copilotEls,
+  apiKeyStorage: COPILOT_API_KEY_STORAGE,
+  settingsStorage: COPILOT_SETTINGS_STORAGE,
+  defaultEndpoint: COPILOT_DEFAULT_ENDPOINT,
+  copilotRuntimeStatus,
+  updateRuntime: updateCopilotRuntime,
+  showToast,
+  fields,
+  normalizeSlide,
+  normalizeBlock,
+  currentDeckData: () => currentDeckData(),
+  applySlideToForm: slide => applySlideToForm(slide),
+  getSlides: () => slides,
+  setSlides: value => { slides = Array.isArray(value) ? value : []; },
+  getActiveIndex: () => activeIndex,
+  setActiveIndex: value => { activeIndex = Number.isFinite(Number(value)) ? Number(value) : -1; },
+  buildPreview: () => buildPreview(),
+  renderDeckList: () => renderDeckList(),
+  scheduleAutosave: reason => scheduleAutosave(reason),
+  persistAutosaveNow: reason => persistAutosaveNow(reason),
+  alert: message => alert(message),
+  fetch: window.fetch ? window.fetch.bind(window) : null,
+  localStorage: window.localStorage,
+  locationHref: window.location && window.location.href
+};
+
 // Stage 24C: expose Copilot core, but let js/copilot-stage24c.js bind UI events after the main app has loaded.
 // This keeps Copilot failures from blocking preview/tabs/editor startup.
 window.LuminaCopilotCore = {
