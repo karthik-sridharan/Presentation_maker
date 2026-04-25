@@ -1,0 +1,12 @@
+{
+  "stage": "stage34k-20260425-2",
+  "kind": "root-relative patch",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "js/legacy-app-stage24c.js",
+    "DEPLOY_CHECK_STAGE34K2.md",
+    "RELEASE_NOTES_STAGE34K2.md"
+  ]
+}
