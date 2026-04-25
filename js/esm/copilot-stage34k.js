@@ -5,6 +5,16 @@ function safeString(value){ return String(value == null ? '' : value); }
 function noop(){ }
 function createApi(deps){
   deps = deps || {};
+  const classicCore = deps.classicCore || null;
+  const classicCompat = !!deps.__classicCompat && !!classicCore;
+  function maybeClassic(method, fallback){
+    return function(){
+      if(classicCompat && classicCore && typeof classicCore[method] === 'function'){
+        return classicCore[method].apply(classicCore, arguments);
+      }
+      return fallback.apply(null, arguments);
+    };
+  }
   const copilotEls = deps.copilotEls || {};
   const COPILOT_API_KEY_STORAGE = deps.apiKeyStorage || 'html-presentation-generator-openai-api-key-v1';
   const COPILOT_SETTINGS_STORAGE = deps.settingsStorage || 'html-presentation-generator-copilot-settings-v1';
@@ -16,14 +26,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34k-20260425-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34k-20260425-2' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage34k-20260425-1', lastRuntimeLoadedAt:new Date().toISOString() });
+  updateCopilotRuntime({ stage:'stage34k-20260425-2', lastRuntimeLoadedAt:new Date().toISOString() });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -395,33 +405,34 @@ function createApi(deps){
   }
 
   return Object.freeze({
-    __stage:'stage34k-20260425-1',
+    __stage:'stage34k-20260425-2',
     __source:'esm:js/esm/copilot-stage34k.js',
-    setCopilotStatus,
-    loadCopilotSettings,
-    saveCopilotSettings,
-    validateCopilotApiKey,
-    updateCopilotKeyWarning,
-    friendlyCopilotHttpError,
-    recordCopilotError,
-    recordCopilotSuccess,
+    __classicCompat: classicCompat,
+    setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
+    loadCopilotSettings: maybeClassic('loadCopilotSettings', loadCopilotSettings),
+    saveCopilotSettings: maybeClassic('saveCopilotSettings', saveCopilotSettings),
+    validateCopilotApiKey: maybeClassic('validateCopilotApiKey', validateCopilotApiKey),
+    updateCopilotKeyWarning: maybeClassic('updateCopilotKeyWarning', updateCopilotKeyWarning),
+    friendlyCopilotHttpError: maybeClassic('friendlyCopilotHttpError', friendlyCopilotHttpError),
+    recordCopilotError: maybeClassic('recordCopilotError', recordCopilotError),
+    recordCopilotSuccess: maybeClassic('recordCopilotSuccess', recordCopilotSuccess),
     copilotRuntimeStatus: runtimeStatus,
-    copilotBlockSchema,
-    copilotSlideSchema,
-    copilotDeckSchema,
-    copilotSystemPrompt,
-    compactDeckForCopilot,
-    buildCopilotUserPrompt,
-    extractResponsesOutputText,
-    callCopilot,
-    normalizeCopilotDeck,
-    normalizeCopilotSlide,
-    parseCopilotResult,
-    applyCopilotFirstSlide,
-    appendCopilotSlides,
-    replaceDeckWithCopilot,
-    generateCopilotSlide,
-    generateCopilotDeck
+    copilotBlockSchema: maybeClassic('copilotBlockSchema', copilotBlockSchema),
+    copilotSlideSchema: maybeClassic('copilotSlideSchema', copilotSlideSchema),
+    copilotDeckSchema: maybeClassic('copilotDeckSchema', copilotDeckSchema),
+    copilotSystemPrompt: maybeClassic('copilotSystemPrompt', copilotSystemPrompt),
+    compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
+    buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
+    extractResponsesOutputText: maybeClassic('extractResponsesOutputText', extractResponsesOutputText),
+    callCopilot: maybeClassic('callCopilot', callCopilot),
+    normalizeCopilotDeck: maybeClassic('normalizeCopilotDeck', normalizeCopilotDeck),
+    normalizeCopilotSlide: maybeClassic('normalizeCopilotSlide', normalizeCopilotSlide),
+    parseCopilotResult: maybeClassic('parseCopilotResult', parseCopilotResult),
+    applyCopilotFirstSlide: maybeClassic('applyCopilotFirstSlide', applyCopilotFirstSlide),
+    appendCopilotSlides: maybeClassic('appendCopilotSlides', appendCopilotSlides),
+    replaceDeckWithCopilot: maybeClassic('replaceDeckWithCopilot', replaceDeckWithCopilot),
+    generateCopilotSlide: maybeClassic('generateCopilotSlide', generateCopilotSlide),
+    generateCopilotDeck: maybeClassic('generateCopilotDeck', generateCopilotDeck)
   });
 }
 
