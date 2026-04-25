@@ -189,7 +189,7 @@ const COPILOT_SETTINGS_STORAGE = 'html-presentation-generator-copilot-settings-v
 
 const COPILOT_DEFAULT_ENDPOINT = 'https://api.openai.com/v1/responses';
 const copilotRuntimeStatus = window.LuminaCopilotRuntimeStatus = {
-  stage: 'stage24c-20260425-1',
+  stage: window.LUMINA_STAGE || 'stage34l-20260425-1',
   lastValidationWarning: '',
   lastError: '',
   lastErrorAt: '',
@@ -941,7 +941,7 @@ async function generateCopilotDeck(){
 // Stage 34K: expose the narrow dependency bridge needed by the guarded ESM Copilot core.
 // The bridge keeps mutable deck state inside legacy-app while allowing Copilot logic to migrate.
 window.LuminaCopilotDepsStage34K = {
-  stage: 'stage34k-20260425-2',
+  stage: window.LUMINA_STAGE || 'stage34l-20260425-1',
   copilotEls,
   apiKeyStorage: COPILOT_API_KEY_STORAGE,
   settingsStorage: COPILOT_SETTINGS_STORAGE,
