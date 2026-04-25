@@ -1,0 +1,18 @@
+{
+  "stage": "stage34l-20260425-1",
+  "type": "root-relative patch",
+  "files": [
+    "index.html",
+    "js/legacy-app-stage24c.js",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "DEPLOY_CHECK_STAGE34L.md",
+    "RELEASE_NOTES_STAGE34L.md",
+    "RELEASE_FILES_STAGE34L.json"
+  ],
+  "notes": [
+    "Cleanup-only stage after Stage 34K2 passed.",
+    "No new feature module migrated.",
+    "Upload contents to repository root."
+  ]
+}
