@@ -40,3 +40,10 @@ Recommended next steps:
 - Stage 23B: figure crop repair with tests.
 - Stage 24: carefully retry Copilot extraction behind a feature flag.
 - Later: convert to ES modules only after the classic-script architecture is fully stable.
+
+## Stage 23A — stable filename cleanup
+
+- Active runtime now loads stable filenames (`js/utils.js`, `js/theme.js`, `js/legacy-app.js`, etc.).
+- Stage-tagged files can remain as rollback artifacts.
+- No Copilot split, no ES modules, and no intended editor behavior changes.
+- Diagnostics live at `diagnostics-stage23a.html` and `diagnostics.html`.
