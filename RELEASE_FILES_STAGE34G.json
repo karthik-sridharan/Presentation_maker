@@ -1,0 +1,26 @@
+{
+  "stage": "stage34g-20260425-1",
+  "description": "Stage 34G promotes Figure Tools to guarded live ESM, preserving the Stage 24C classic shadow/fallback pattern.",
+  "files": [
+    "index.html",
+    "js/esm/utils-stage34g.js",
+    "js/esm/block-style-stage34g.js",
+    "js/esm/parser-stage34g.js",
+    "js/esm/import-stage34g.js",
+    "js/esm/state-stage34g.js",
+    "js/esm/theme-stage34g.js",
+    "js/esm/presets-stage34g.js",
+    "js/esm/renderer-stage34g.js",
+    "js/esm/deck-stage34g.js",
+    "js/esm/file-io-stage34g.js",
+    "js/esm/figure-insert-stage34g.js",
+    "js/esm/block-library-stage34g.js",
+    "js/esm/editor-selection-stage34g.js",
+    "js/esm/block-editor-stage34g.js",
+    "js/esm/diagram-editor-stage34g.js",
+    "js/esm/figure-tools-stage34g.js",
+    "js/esm/commands-stage34g.js",
+    "RELEASE_NOTES_STAGE34G.md",
+    "STAGE34G_NOTES.md"
+  ]
+}
