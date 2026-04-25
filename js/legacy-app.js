@@ -320,6 +320,19 @@ const autosaveApi = LuminaState.createAutosaveApi({
   }
 });
 
+function persistAutosaveNow(reason){
+  return autosaveApi.persistAutosaveNow(reason);
+}
+function scheduleAutosave(reason){
+  return autosaveApi.scheduleAutosave(reason);
+}
+function restoreAutosave(){
+  return autosaveApi.restoreAutosave();
+}
+function clearScheduledAutosave(){
+  return autosaveApi.clearScheduledAutosave();
+}
+
 const LuminaParser = window.LuminaParser;
 if(!LuminaParser){
   throw new Error('LuminaParser failed to load. Check that js/parser.js is included before js/legacy-app.js.');
@@ -1193,6 +1206,47 @@ if(!restoreAutosave()){
 }
 initPanelTabs();
 initUiCleanupLayout();
+
+
+// Stage 22B: expose a narrow command surface for keyboard shortcuts/command helpers.
+window.LuminaAppCommands = {
+  buildPreview,
+  renderDeckList,
+  addSlide,
+  updateSlide,
+  duplicateSlide,
+  deleteSlide,
+  moveSlide,
+  addBlock,
+  updateBlock,
+  duplicateBlock,
+  deleteBlock,
+  moveBlock,
+  clearBlockEditor,
+  saveCurrentBlockToDraft,
+  saveCurrentSlideToDeck,
+  scheduleAutosave,
+  persistAutosaveNow,
+  showToast,
+  closeFigureModal,
+  getActiveIndex: () => activeIndex,
+  getSlideCount: () => slides.length,
+  goToSlide: (idx) => {
+    if(!slides.length) return false;
+    const next = Math.max(0, Math.min(slides.length - 1, Number(idx) || 0));
+    saveCurrentBlockToDraft();
+    saveCurrentSlideToDeck();
+    activeIndex = next;
+    applySlideToForm(slides[activeIndex]);
+    buildPreview();
+    renderDeckList();
+    scheduleAutosave('Autosaved after slide navigation.');
+    return true;
+  },
+  nextSlide: () => window.LuminaAppCommands.goToSlide(activeIndex + 1),
+  previousSlide: () => window.LuminaAppCommands.goToSlide(activeIndex - 1)
+};
+
 window.addEventListener('beforeunload', ()=>{ try{ persistAutosaveNow('Autosaved.'); }catch(e){} });
 window.addEventListener('resize', ()=>updatePreviewScale());
 
