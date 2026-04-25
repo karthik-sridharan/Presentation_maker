@@ -24,11 +24,11 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage27c-20260425-1';
+window.LUMINA_STAGE = 'stage27d-20260425-1';
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
-  "js/diagnostics-stage27c.js",
-  "js/module-manifest-stage27c.js",
+  "js/diagnostics-stage24c.js",
+  "js/module-manifest-stage24c.js",
   "js/utils-stage24c.js",
   "js/block-library-stage24c.js",
   "js/theme-stage24c.js",
@@ -49,20 +49,42 @@ window.LUMINA_EXPECTED_ASSETS = [
   "js/block-editor-stage24c.js",
   "js/legacy-app-stage24c.js",
   "js/copilot-stage24c.js",
-  "js/commands-stage24c.js",
-  "js/es-module-loader-stage27c.js"
+  "js/commands-stage24c.js"
 ];
 window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
-  "js/esm/utils-stage27c.js",
-  "js/esm/block-style-stage27c.js",
-  "js/es-module-smoke-stage27c.js"
+  "js/esm/utils-stage27d.js",
+  "js/esm/block-style-stage27d.js",
+  "js/es-module-smoke-stage27d.js"
 ];
 </script>
-<script src="js/diagnostics-stage27c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage27c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage27c.js')"></script>
-<script src="js/module-manifest-stage27c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage27c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage27c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script>
+(function(){
+  'use strict';
+  var W = window;
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage27d-20260425-1';
+  var base = W.LuminaModuleManifest || {};
+  var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
+  var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
+  W.LuminaModuleManifest = Object.freeze({
+    stage: W.LUMINA_STAGE || 'stage27d-20260425-1',
+    assets: required,
+    optionalAssets: optional,
+    globals: base.globals || [],
+    domIds: base.domIds || [],
+    notes: (base.notes || []).concat([
+      'Stage 27D keeps the Stage 24C classic runtime authoritative.',
+      'No new stage-numbered JavaScript file is required for startup.',
+      'ES module parity runs from an inline optional dynamic import only when the host supports it.'
+    ]),
+    loadOrder: required
+  });
+})();
+</script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage27c-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage27d-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <script>
 
@@ -919,28 +941,111 @@ window.MathJax = {
   else bindBasicLuminaUi();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage24c.js')"></script>
-<script src="js/commands-stage24c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
-<script src="js/es-module-loader-stage27c.js?v=stage27c-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/es-module-loader-stage27c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/es-module-loader-stage27c.js')"></script>
+<script src="js/utils-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage27d-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+
+<script>
+/* Stage 27D: inline optional ES-module smoke loader.
+   This must never block the classic Stage 24C runtime. */
+(function () {
+  'use strict';
+  var W = window;
+  var STAGE = W.LUMINA_STAGE || 'stage27d-20260425-1';
+  var D = W.LuminaDiagnostics;
+  function warn(message) {
+    if (D && typeof D.warn === 'function') D.warn(message);
+    else if (W.console && console.warn) console.warn('[Lumina ES module smoke]', message);
+  }
+  function markOptionalLoaded(asset) {
+    if (D && typeof D.markLoaded === 'function') D.markLoaded(asset);
+  }
+  function markOptionalFailed(asset, message) {
+    if (D && typeof D.markOptionalFailed === 'function') D.markOptionalFailed(asset, message);
+    else warn(asset + ': ' + message);
+  }
+  function now() { return new Date().toISOString(); }
+  function setReport(report) { W.LuminaEsModuleDiagnostics = Object.freeze(report); }
+  setReport({
+    stage: STAGE,
+    checkedAt: now(),
+    ok: null,
+    status: 'pending',
+    migrationMode: 'inline optional dynamic import; classic runtime remains authoritative'
+  });
+  var params;
+  try { params = new URLSearchParams(W.location.search || ''); }
+  catch (e) { params = { has: function () { return false; } }; }
+  if (params.has('disableEsModuleSmoke')) {
+    setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'disabled', reason: 'disableEsModuleSmoke query parameter present' });
+    return;
+  }
+  if (W.location.protocol === 'file:') {
+    setReport({
+      stage: STAGE,
+      checkedAt: now(),
+      ok: null,
+      status: 'skipped-file-protocol',
+      reason: 'Browsers commonly block ES module imports from local file:// pages. Serve the folder over HTTP to run the smoke harness.'
+    });
+    return;
+  }
+  var importer;
+  try { importer = new Function('specifier', 'return import(specifier);'); }
+  catch (e) {
+    setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'unsupported', reason: String(e && e.message || e) });
+    return;
+  }
+  var specifier;
+  try { specifier = new URL('js/es-module-smoke-stage27d.js?v=' + encodeURIComponent(STAGE), document.baseURI || W.location.href).href; }
+  catch (e) { specifier = 'js/es-module-smoke-stage27d.js?v=' + encodeURIComponent(STAGE); }
+  importer(specifier).then(function (module) {
+    var report = (module && module.report) || W.LuminaEsModuleDiagnostics;
+    if (report && report.ok === true) {
+      setReport(report);
+      markOptionalLoaded('js/es-module-smoke-stage27d.js');
+      markOptionalLoaded('js/esm/utils-stage27d.js');
+      markOptionalLoaded('js/esm/block-style-stage27d.js');
+    } else {
+      setReport(report || { stage: STAGE, checkedAt: now(), ok: false, status: 'failed-without-report' });
+      warn('ES module smoke imported but did not report success.');
+    }
+  }).catch(function (e) {
+    var message = String((e && (e.stack || e.message)) || e || 'unknown dynamic import failure');
+    setReport({
+      stage: STAGE,
+      checkedAt: now(),
+      ok: false,
+      status: 'load-failed',
+      error: message,
+      migrationMode: 'classic runtime unaffected; optional ESM smoke failed before execution or while importing dependencies'
+    });
+    markOptionalFailed('js/es-module-smoke-stage27d.js', message);
+    if (params.has('strictEsModuleSmoke') && typeof W.luminaBootError === 'function') {
+      W.luminaBootError('Strict ES module smoke failed: ' + message);
+    }
+  });
+})();
+</script>
+
 
 <script>
 setTimeout(function(){

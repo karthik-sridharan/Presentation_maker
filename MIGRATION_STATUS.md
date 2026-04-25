@@ -75,3 +75,8 @@ disabled              - disableEsModuleSmoke was present in the query string
 2. Add an ESM loader prototype on a separate `index-esm.html` without changing `index.html`.
 3. Move the production boot path to ESM only after diagnostics prove the prototype is clean.
 4. Design the backend proxy for Copilot before public deployment.
+
+
+## Stage 27D — ES module bridge startup hardening
+
+Stage 27D removes newly named Stage 27 diagnostic/manifest files from the required startup path. The app now boots using the known-good Stage 24C classic script graph, while ES module parity runs through an inline optional dynamic import and reports to `window.LuminaEsModuleDiagnostics`.
