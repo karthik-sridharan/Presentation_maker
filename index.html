@@ -1963,8 +1963,8 @@ window.MathJax = {
         _events: events
       };
     }
-    function runCommandsWorkflow(moduleLike) {
-      var g = makeCommandParityGlobal();
+    function runCommandsWorkflow(moduleLike, providedGlobal) {
+      var g = providedGlobal || makeCommandParityGlobal();
       var api = moduleLike.createApi ? moduleLike.createApi(g) : moduleLike;
       api.initShortcuts();
       var list = api.list();
@@ -2059,7 +2059,7 @@ window.MathJax = {
       function runClassicCommandsWorkflow(adapter) {
         var g = makeCommandParityGlobal();
         var api = adapter.createApi(g);
-        try { return runCommandsWorkflow({ createApi:function(){ return api; } }); }
+        try { return runCommandsWorkflow({ createApi:function(){ return api; } }, g); }
         finally { if(api && api._restore) api._restore(); }
       }
       check(checks, 'classic LuminaCommands available', typeof W.LuminaCommands.initShortcuts === 'function');
