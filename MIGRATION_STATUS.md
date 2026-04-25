@@ -2,22 +2,22 @@
 
 ## Current checkpoint
 
-**Current migration checkpoint:** Stage 30A  
-**Stage 30A purpose:** expand optional ES module parity coverage to renderer helpers  
-**Runtime behavior changed in Stage 30A:** No intentional editor behavior changes
+**Current migration checkpoint:** Stage 31A  
+**Stage 31A purpose:** expand optional ES module parity coverage to renderer helpers  
+**Runtime behavior changed in Stage 31A:** No intentional editor behavior changes
 
-Stage 30A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from seven helper modules to eight modules, adding renderer helper parity.
+Stage 31A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from seven helper modules to eight modules, adding renderer helper parity.
 
 ## Completed ES module parity coverage
 
-- `js/esm/utils-stage30a.js`
-- `js/esm/block-style-stage30a.js`
-- `js/esm/parser-stage30a.js`
-- `js/esm/import-stage30a.js`
-- `js/esm/state-stage30a.js`
-- `js/esm/theme-stage30a.js`
-- `js/esm/presets-stage30a.js`
-- `js/esm/renderer-stage30a.js`
+- `js/esm/utils-stage31a.js`
+- `js/esm/block-style-stage31a.js`
+- `js/esm/parser-stage31a.js`
+- `js/esm/import-stage31a.js`
+- `js/esm/state-stage31a.js`
+- `js/esm/theme-stage31a.js`
+- `js/esm/presets-stage31a.js`
+- `js/esm/renderer-stage31a.js`
 
 ## Expected diagnostics
 
@@ -44,3 +44,8 @@ Required runtime health should pass with no missing assets/globals/DOM ids and n
 - Backend proxy for production-safe OpenAI API calls
 - Deeper Copilot extraction from `legacy-app-stage24c.js`
 - Figure crop refinement
+
+
+## Stage 31A
+
+Added optional ES module parity leaves for deck, file I/O/import bridge, figure insertion, and reusable block library. Classic Stage 24C remains authoritative.

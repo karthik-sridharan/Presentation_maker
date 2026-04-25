@@ -1,6 +1,6 @@
-# Runtime Inventory — Stage 30A Checkpoint
+# Runtime Inventory — Stage 31A Checkpoint
 
-Stage 30A continues ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then an inline optional dynamic import runs the Stage 30A ESM parity harness.
+Stage 31A continues ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then an inline optional dynamic import runs the Stage 31A ESM parity harness.
 
 ## Required classic runtime assets
 
@@ -38,16 +38,16 @@ js/commands-stage24c.js
 These files are non-blocking and are dynamically imported only by the diagnostics/parity harness:
 
 ```text
-js/esm/utils-stage30a.js
-js/esm/block-style-stage30a.js
-js/esm/parser-stage30a.js
-js/esm/import-stage30a.js
-js/esm/state-stage30a.js
-js/esm/theme-stage30a.js
-js/esm/presets-stage30a.js
-js/esm/renderer-stage30a.js
+js/esm/utils-stage31a.js
+js/esm/block-style-stage31a.js
+js/esm/parser-stage31a.js
+js/esm/import-stage31a.js
+js/esm/state-stage31a.js
+js/esm/theme-stage31a.js
+js/esm/presets-stage31a.js
+js/esm/renderer-stage31a.js
 ```
 
 ## Startup guardrail
 
-No Stage 30A file is required for editor startup. If optional ESM parity fails, the production editor should still boot and the failure should appear only in `window.LuminaEsModuleDiagnostics`.
+No Stage 31A file is required for editor startup. If optional ESM parity fails, the production editor should still boot and the failure should appear only in `window.LuminaEsModuleDiagnostics`.
