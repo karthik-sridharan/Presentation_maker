@@ -1,0 +1,24 @@
+{
+  "stage": "stage34e-20260425-1",
+  "description": "Guarded live ESM promotion for Deck and Editor Selection; Commands, Diagram Editor, Figure Insert, and Block Library remain live ESM.",
+  "entrypoint": "index.html",
+  "esmAssets": [
+    "js/esm/utils-stage34e.js",
+    "js/esm/block-style-stage34e.js",
+    "js/esm/parser-stage34e.js",
+    "js/esm/import-stage34e.js",
+    "js/esm/state-stage34e.js",
+    "js/esm/theme-stage34e.js",
+    "js/esm/presets-stage34e.js",
+    "js/esm/renderer-stage34e.js",
+    "js/esm/deck-stage34e.js",
+    "js/esm/file-io-stage34e.js",
+    "js/esm/figure-insert-stage34e.js",
+    "js/esm/block-library-stage34e.js",
+    "js/esm/editor-selection-stage34e.js",
+    "js/esm/block-editor-stage34e.js",
+    "js/esm/diagram-editor-stage34e.js",
+    "js/esm/figure-tools-stage34e.js",
+    "js/esm/commands-stage34e.js"
+  ]
+}
