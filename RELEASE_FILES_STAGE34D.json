@@ -1,0 +1,24 @@
+{
+  "stage": "stage34d-20260425-1",
+  "description": "Guarded live ESM promotion for Figure Insert and Block Library; Commands and Diagram Editor remain live ESM.",
+  "entrypoint": "index.html",
+  "esmAssets": [
+    "js/esm/utils-stage34d.js",
+    "js/esm/block-style-stage34d.js",
+    "js/esm/parser-stage34d.js",
+    "js/esm/import-stage34d.js",
+    "js/esm/state-stage34d.js",
+    "js/esm/theme-stage34d.js",
+    "js/esm/presets-stage34d.js",
+    "js/esm/renderer-stage34d.js",
+    "js/esm/deck-stage34d.js",
+    "js/esm/file-io-stage34d.js",
+    "js/esm/figure-insert-stage34d.js",
+    "js/esm/block-library-stage34d.js",
+    "js/esm/editor-selection-stage34d.js",
+    "js/esm/block-editor-stage34d.js",
+    "js/esm/diagram-editor-stage34d.js",
+    "js/esm/figure-tools-stage34d.js",
+    "js/esm/commands-stage34d.js"
+  ]
+}
