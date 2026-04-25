@@ -188,8 +188,18 @@ const COPILOT_API_KEY_STORAGE = 'html-presentation-generator-openai-api-key-v1';
 const COPILOT_SETTINGS_STORAGE = 'html-presentation-generator-copilot-settings-v1';
 
 const COPILOT_DEFAULT_ENDPOINT = 'https://api.openai.com/v1/responses';
+const COPILOT_DECK_PROMPT_FILE = 'prompts/deck.txt';
+const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
+  'Deck-level generation instructions:',
+  'Create a coherent complete presentation, not a loose collection of slides.',
+  'Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.',
+  'Make slide titles specific and informative.',
+  'Use speaker notes to explain transitions, emphasis, and teaching guidance.',
+  'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
+].join('\n');
+let deckPromptPrefixCache = null;
 const copilotRuntimeStatus = window.LuminaCopilotRuntimeStatus = {
-  stage: window.LUMINA_STAGE || 'stage34l-20260425-1',
+  stage: window.LUMINA_STAGE || 'stage34m-20260425-1',
   lastValidationWarning: '',
   lastError: '',
   lastErrorAt: '',
@@ -773,21 +783,69 @@ function compactDeckForCopilot(){
     }))
   };
 }
-function buildCopilotUserPrompt(kind){
+function deckPromptUrl(){
+  const base = String(COPILOT_DECK_PROMPT_FILE || 'prompts/deck.txt').trim() || 'prompts/deck.txt';
+  const version = String(window.LUMINA_STAGE || copilotRuntimeStatus.stage || 'stage34m-20260425-1');
+  return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
+}
+async function loadDeckPromptPrefix(){
+  if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
+  let fileText = '';
+  let source = 'builtin-default';
+  let status = 'builtin-default';
+  try{
+    if(typeof fetch === 'function'){
+      const res = await fetch(deckPromptUrl(), { cache:'no-store' });
+      if(res && res.ok){
+        fileText = String(await res.text() || '').trim();
+        if(fileText){
+          source = COPILOT_DECK_PROMPT_FILE;
+          status = 'loaded-file';
+        }else{
+          status = 'blank-file-used-builtin-default';
+        }
+      }else if(res){
+        status = 'file-http-' + res.status + '-used-builtin-default';
+      }
+    }else{
+      status = 'fetch-unavailable-used-builtin-default';
+    }
+  }catch(err){
+    status = 'file-load-error-used-builtin-default';
+    updateCopilotRuntime({ deckPromptLastError: (err && err.message) || String(err) });
+  }
+  deckPromptPrefixCache = fileText || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
+  updateCopilotRuntime({
+    deckPromptFile: COPILOT_DECK_PROMPT_FILE,
+    deckPromptSource: source,
+    deckPromptStatus: status,
+    deckPromptAppliesTo: 'deck-only',
+    deckPromptLoadedAt: new Date().toISOString()
+  });
+  return deckPromptPrefixCache;
+}
+async function buildCopilotUserPrompt(kind){
   const prompt = (copilotEls.prompt?.value || '').trim();
   if(!prompt) throw new Error('Tell Copilot what to create first.');
   const count = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || 1)));
   const tone = copilotEls.tone?.value || 'clear and concise';
   const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
-  return [
-    mode,
+  const parts = [mode];
+  if(kind === 'deck'){
+    const deckPromptPrefix = await loadDeckPromptPrefix();
+    if(deckPromptPrefix){
+      parts.push('Deck prompt file instructions (from prompts/deck.txt, or built-in fallback if missing/blank):\n' + deckPromptPrefix);
+    }
+  }
+  parts.push(
     'User request: ' + prompt,
     'Target slide count: ' + (kind === 'deck' ? count : 1),
     'Tone/style: ' + tone,
     'Current deck context JSON:',
     JSON.stringify(compactDeckForCopilot(), null, 2),
     'Important: output JSON with deckTitle, summary, and slides. For single-slide requests, slides must contain exactly one slide.'
-  ].join('\n\n');
+  );
+  return parts.join('\n\n');
 }
 function extractResponsesOutputText(data){
   if(data && typeof data.output_text === 'string') return data.output_text;
@@ -809,11 +867,12 @@ async function callCopilot(kind){
   updateCopilotKeyWarning();
   const headers = { 'Content-Type':'application/json' };
   if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
+  const userPrompt = await buildCopilotUserPrompt(kind);
   const body = {
     model,
     input:[
       { role:'system', content: copilotSystemPrompt() },
-      { role:'user', content: buildCopilotUserPrompt(kind) }
+      { role:'user', content: userPrompt }
     ],
     text:{ format:{ type:'json_schema', name:'presentation_deck', schema:copilotDeckSchema(), strict:true } },
     store:false
@@ -941,11 +1000,12 @@ async function generateCopilotDeck(){
 // Stage 34K: expose the narrow dependency bridge needed by the guarded ESM Copilot core.
 // The bridge keeps mutable deck state inside legacy-app while allowing Copilot logic to migrate.
 window.LuminaCopilotDepsStage34K = {
-  stage: window.LUMINA_STAGE || 'stage34l-20260425-1',
+  stage: window.LUMINA_STAGE || 'stage34m-20260425-1',
   copilotEls,
   apiKeyStorage: COPILOT_API_KEY_STORAGE,
   settingsStorage: COPILOT_SETTINGS_STORAGE,
   defaultEndpoint: COPILOT_DEFAULT_ENDPOINT,
+  deckPromptFile: COPILOT_DECK_PROMPT_FILE,
   copilotRuntimeStatus,
   updateRuntime: updateCopilotRuntime,
   showToast,
@@ -986,6 +1046,7 @@ window.LuminaCopilotCore = {
   copilotSystemPrompt,
   compactDeckForCopilot,
   buildCopilotUserPrompt,
+  loadDeckPromptPrefix,
   extractResponsesOutputText,
   callCopilot,
   normalizeCopilotDeck,
