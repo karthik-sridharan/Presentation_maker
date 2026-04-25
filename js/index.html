@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HTML Presentation Generator</title>
+<script>
+(function(){
+  window.LUMINA_BOOT_ERRORS=[];
+  window.luminaBootError=function(message){window.LUMINA_BOOT_ERRORS.push(String(message));};
+  window.addEventListener('error',function(event){var where=event.filename?(' at '+event.filename.split('/').slice(-1)[0]+':'+event.lineno+':'+event.colno):''; window.luminaBootError((event.message||'Script error')+where);});
+  window.addEventListener('unhandledrejection',function(event){window.luminaBootError('Unhandled promise rejection: '+(event.reason&&(event.reason.stack||event.reason.message||event.reason)||'unknown'));});
+  window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(!window.LUMINA_BOOT_ERRORS.length)return; var box=document.createElement('pre'); box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:999999;max-height:40vh;overflow:auto;background:#fee;color:#600;border:2px solid #c00;padding:12px;border-radius:8px;font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;'; box.textContent='Lumina startup error(s):\n\n'+window.LUMINA_BOOT_ERRORS.join('\n\n'); document.body.appendChild(box);},600);});
+})();
+</script>
+
+<link rel="stylesheet" href="css/styles-stage5restore.css?v=stage5restore-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage5restore.css')" />
+
+<script>
+
+window.MathJax = {
+  tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body data-beamer-style="${escapeHtml((payload.theme&&payload.theme.beamerStyle)||"classic")}">
+<div class="page">
+  <div class="panel stack editor-shell">
+    <div class="editor-intro">
+      <div class="smallcaps">Presentation generator</div>
+      <h1>Deck editor</h1>
+      <p class="help">Work in focused modes on the left, keep preview and inspector on the right, and use the slide rail for quick deck navigation.</p>
+    </div>
+
+
+    <div class="left-tabs mode-bar" id="leftTabs">
+      <button class="left-tab" type="button" data-left-tab="files">Files</button>
+      <button class="left-tab active" type="button" data-left-tab="edit">Slides</button>
+      <button class="left-tab" type="button" data-left-tab="presets">Insert</button>
+      <button class="left-tab" type="button" data-left-tab="styles">Design</button>
+      <button class="left-tab" type="button" data-left-tab="animate">Animate</button>
+      <button class="left-tab" type="button" data-left-tab="tools">Present</button>
+      <button class="left-tab" type="button" data-left-tab="slides">Organize</button>
+      <button class="left-tab" type="button" data-left-tab="copilot">Copilot</button>
+      <button class="left-tab" type="button" data-left-tab="help">Help</button>
+    </div>
+
+    <div class="left-pane active" data-left-pane="edit">
+
+      <div class="subtabs" data-subtab-group="edit">
+        <button class="subtab active" type="button" data-subtab="edit:slide">Slide</button>
+        <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
+      </div>
+      <div class="subpane active" data-subpane="edit:slide">
+<div class="field-grid">
+      <div class="field full">
+        <label for="deckTitle">Presentation title</label>
+        <input id="deckTitle" value="My HTML Presentation" />
+      </div>
+      <div class="field">
+        <label for="slideType">Slide type</label>
+        <select id="slideType">
+          <option value="title-center">Centered title slide</option>
+          <option value="single" selected>Single-column content slide</option>
+          <option value="two-col">Two-column body, full-width title</option>
+          <option value="title-two-callouts">Title + two callout boxes</option>
+          <option value="title-figure-explanation">Title + figure + explanation</option>
+          <option value="theorem-proof">Theorem / proof slide</option>
+          <option value="algorithm-layout">Algorithm slide</option>
+          <option value="section-divider">Section divider</option>
+          <option value="comparison">Comparison slide</option>
+          <option value="image-left-text-right">Image-left text-right</option>
+          <option value="full-width-figure-caption">Full-width figure with caption</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="headingLevel">Title size</label>
+        <select id="headingLevel">
+          <option value="h1">Large title</option>
+          <option value="h2" selected>Standard title</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bgColor">Slide background color</label>
+        <select id="bgColor">
+          <option value="#ffffff" selected>White</option>
+          <option value="#f7f1e3">Warm cream</option>
+          <option value="#121212">Charcoal</option>
+          <option value="#0f1630">Navy</option>
+          <option value="#1d3b2a">Forest</option>
+          <option value="#3a1028">Plum</option>
+          <option value="#102a43">Slate blue</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fontColor">Font color</label>
+        <select id="fontColor">
+          <option value="#111111" selected>Black</option>
+          <option value="#1f2937">Slate</option>
+          <option value="#ffffff">White</option>
+          <option value="#eef3ff">Soft white</option>
+          <option value="#ffe9a8">Warm gold</option>
+          <option value="#d6f5ff">Pale blue</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label><input type="checkbox" id="inheritTheme" checked style="width:auto;margin-right:.5rem;vertical-align:middle" /> Use master theme defaults for this slide</label>
+      </div>
+      <div class="field full">
+        <label for="title">Slide title</label>
+        <input id="title" placeholder="Backpropagation, stage by stage" />
+      </div>
+      <div class="field full">
+        <label for="kicker">Kicker / subtitle under title</label>
+        <input id="kicker" value="" placeholder="Optional short subtitle" />
+      </div>
+      <div class="field full">
+        <label for="lede">Intro line / lead paragraph under title area</label>
+        <textarea id="lede" placeholder="Optional short framing sentence"></textarea>
+      </div>
+      <div class="field">
+        <label for="notesTitle">Speaker notes title</label>
+        <input id="notesTitle" value="Speaker notes" />
+      </div>
+      <div class="field">
+        <label for="notesBody">Speaker notes body</label>
+        <input id="notesBody" value="" />
+      </div>
+    </div>
+      </div>
+      <div class="subpane" data-subpane="edit:blocks">
+<div class="panel stack" style="padding:.9rem">
+      <div class="section-head">
+        <h2>Column content blocks</h2>
+        <span class="badge" id="columnModeBadge">Single-column slide</span>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="blockColumn">Editing column</label>
+          <select id="blockColumn">
+            <option value="left" selected>Left / main column</option>
+            <option value="right">Right column</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="blockMode">Block preset / content type</label>
+          <select id="blockMode">
+            <option value="panel" selected>Panel text</option>
+                        <option value="custom">Custom HTML block</option>
+            <option value="placeholder">Simple placeholder box</option>
+            <option value="plain">Plain text / rich content</option>
+            <option value="pseudocode">Pseudocode block</option>
+            <option value="pseudocode-latex">Pseudocode block with LaTeX</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="blockTitle">Block label (for the editor list only)</label>
+          <input id="blockTitle" placeholder="Optional label like Example, Figure, Proof sketch" />
+        </div>
+        <div class="field full">
+          <label for="blockContent">Block content</label>
+          <textarea id="blockContent" placeholder="\paragraph{Main idea goes here}&#10;&#10;\begin{itemize}&#10;\item First point&#10;\item Second point&#10;\end{itemize}"></textarea>
+          <div class="help">Pick a preset from the dropdown, then click <b>Add block</b>. For <b>custom</b>, paste raw HTML. For <b>pseudocode-latex</b>, indentation is preserved and math like <code>\(z^t = \sigma(u^t)\)</code> is typeset inside the block.</div>
+          <div class="row" style="margin-top:.6rem">
+            <button class="btn mini" id="addFigureBtn">Add figure</button>
+          </div>
+          <div class="help" style="margin-top:.45rem">Use <b>Add figure</b> to insert an image or diagram at the current cursor position in the block editor. For text blocks, the generator inserts a <code>\begin{figurehtml} ... \end{figurehtml}</code> wrapper. For block types that do not support inline figures, it creates a new custom HTML block below the current one.</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" id="addBlockBtn">Add block</button>
+        <button class="btn" id="updateBlockBtn">Update selected block</button>
+        <button class="btn" id="duplicateBlockBtn">Duplicate block</button>
+        <button class="btn" id="deleteBlockBtn">Delete block</button>
+        <button class="btn" id="clearBlockBtn">Clear block editor</button>
+      </div>
+
+      <div class="field">
+        <label>Blocks in selected column</label>
+        <div class="block-list" id="blockList"></div>
+        <div class="row" style="margin-top:.55rem">
+          <button class="btn mini" id="moveBlockUpBtn">Move block up</button>
+          <button class="btn mini" id="moveBlockDownBtn">Move block down</button>
+        </div>
+      </div>
+    </div>
+      </div>
+
+    </div>
+
+    <div class="left-pane" data-left-pane="presets">
+
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Slide presets</div>
+        <div class="subtabs" data-subtab-group="presets">
+          <button class="subtab active" type="button" data-subtab="presets:core">Core presets</button>
+          <button class="subtab" type="button" data-subtab="presets:layouts">Layout templates</button>
+        </div>
+        <div class="subpane active" data-subpane="presets:core">
+          <div class="template-list" style="margin-top:.2rem">
+        <button data-preset="title">Centered title slide<small>Big centered title and optional subtitle.</small></button>
+        <button data-preset="concept">Concept slide<small>One-column title + bullets.</small></button>
+        <button data-preset="twocol">Two-column lecture slide<small>Full-width title with body split into two columns.</small></button>
+        <button data-preset="appendix">Summary / appendix slide<small>Recipe or recap slide with concise bullets.</small></button>
+        <button data-preset="pseudocode">Pseudocode slide<small>Single-column title with one large pseudocode block.</small></button>
+        <button data-preset="pseudocodeLatex">Pseudocode + LaTeX slide<small>Pseudocode formatting with MathJax-rendered math inside.</small></button>
+          </div>
+        </div>
+        <div class="subpane" data-subpane="presets:layouts">
+          <div class="template-list" style="margin-top:.2rem">
+        <button data-preset="callouts">Title + two callout boxes<small>Two emphasized side-by-side callouts.</small></button>
+        <button data-preset="figureExplain">Title + figure + explanation<small>Figure on one side, explanation on the other.</small></button>
+        <button data-preset="theoremProof">Theorem / proof slide<small>Named theorem block followed by proof block.</small></button>
+        <button data-preset="algorithmLayout">Algorithm slide<small>Pseudocode plus notes beneath it.</small></button>
+        <button data-preset="sectionDivider">Section divider<small>Clean section transition slide.</small></button>
+        <button data-preset="comparison">Comparison slide<small>Two contrasted columns with headings.</small></button>
+        <button data-preset="imageText">Image-left text-right<small>Image or figure on left, narrative on right.</small></button>
+        <button data-preset="fullFigureCaption">Full-width figure with caption<small>Large figure area plus caption below.</small></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="left-pane" data-left-pane="slides">
+
+      <div class="subtabs" data-subtab-group="slides">
+        <button class="subtab active" type="button" data-subtab="slides:deck">Actions</button>
+        <button class="subtab" type="button" data-subtab="slides:snippet">JSON</button>
+        <button class="subtab" type="button" data-subtab="slides:theme">Theme</button>
+      </div>
+      <div class="subpane active" data-subpane="slides:deck">
+<div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Slide actions</div>
+<div class="toolbar">
+      <button class="btn primary" id="addSlideBtn">Add as new slide</button>
+      <button class="btn" id="updateSlideBtn">Update selected slide</button>
+      <button class="btn" id="duplicateSlideBtn">Duplicate selected</button>
+      <button class="btn" id="deleteSlideBtn">Delete selected</button>
+      <button class="btn" id="clearFormBtn">Clear form</button>
+    </div>
+
+    
+      </div>
+<div class="panel" style="padding:.9rem">
+      <div class="preview-header">
+        <h2>Slide rail</h2>
+        <span class="badge" id="deckCount">0 slides</span>
+      </div>
+      <div class="deck-list" id="deckList"></div>
+      <div class="row" style="margin-top:.75rem">
+        <button class="btn mini" id="moveUpBtn">Move up</button>
+        <button class="btn mini" id="moveDownBtn">Move down</button>
+      </div>
+    </div>
+      </div>
+      <div class="subpane" data-subpane="slides:snippet">
+<div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Current slide snippet</div>
+    <div>
+      <div class="preview-header">
+        <h2>Current slide snippet</h2>
+        <span class="muted">Editable JSON for this slide</span>
+      </div>
+      <textarea class="code" id="snippetOutput" spellcheck="false"></textarea>
+      <div class="row" style="margin-top:.65rem">
+        <button class="btn mini" id="loadSnippetToEditorBtn">Load snippet into editor</button>
+        <button class="btn mini" id="replaceSlideFromSnippetBtn">Replace selected slide</button>
+        <button class="btn mini" id="addSlideFromSnippetBtn">Add slide from snippet</button>
+        <button class="btn mini" id="formatSnippetBtn">Format snippet</button>
+      </div>
+      <div class="help" style="margin-top:.45rem">Paste a slide JSON object here, then load it into the editor or turn it into a new slide.</div>
+      <div class="help" style="margin-top:.35rem" id="autosaveStatus">Autosave ready.</div>
+    </div>
+
+      </div>
+      </div>
+      <div class="subpane" data-subpane="slides:theme">
+<div class="panel" style="margin-top:1rem;padding:.95rem">
+      <div class="smallcaps">Master theme</div>
+      <div class="field-grid" style="margin-top:.7rem">
+        <div class="field full">
+          <label for="themeName">Theme name</label>
+          <input id="themeName" value="Default theme" />
+        </div>
+        <div class="field">
+          <label for="themeBgColor">Theme background</label>
+          <select id="themeBgColor">
+            <option value="#ffffff" selected>White</option>
+            <option value="#f7f1e3">Warm cream</option>
+            <option value="#121212">Charcoal</option>
+            <option value="#0f1630">Navy</option>
+            <option value="#1d3b2a">Forest</option>
+            <option value="#3a1028">Plum</option>
+            <option value="#102a43">Slate blue</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="themeFontColor">Theme font color</label>
+          <select id="themeFontColor">
+            <option value="#111111" selected>Black</option>
+            <option value="#1f2937">Slate</option>
+            <option value="#ffffff">White</option>
+            <option value="#eef3ff">Soft white</option>
+            <option value="#ffe9a8">Warm gold</option>
+            <option value="#d6f5ff">Pale blue</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="themeAccentColor">Accent color</label>
+          <input id="themeAccentColor" type="color" value="#2f6fed" />
+        </div>
+        <div class="field">
+          <label for="themePanelRadius">Panel radius</label>
+          <input id="themePanelRadius" type="number" min="0" max="48" step="1" value="22" />
+        </div>
+        <div class="field">
+          <label for="themeTitleScale">Title scale</label>
+          <input id="themeTitleScale" type="number" min="0.8" max="1.6" step="0.05" value="1" />
+        </div>
+        <div class="field full">
+          <div class="row">
+            <button class="btn mini" id="applyThemeToCurrentBtn">Apply theme to current slide</button>
+            <button class="btn mini" id="applyThemeToAllBtn">Apply theme to all slides</button>
+          </div>
+          <div class="help" style="margin-top:.35rem">Accent color and radius apply deck-wide. Background and font apply to slides that use <b>master theme defaults</b>.</div>
+        </div>
+      </div>
+    </div>
+      </div>
+
+    </div>
+
+
+    <div class="left-pane" data-left-pane="styles">
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Master presentation styles</div>
+        <div class="help" style="margin-top:.45rem">Beamer-inspired master styles for the whole deck.</div>
+        <div class="style-preset-grid">
+          <div class="style-card"><b>Berkeley</b><small>Sidebar navigation feel with strong institutional chrome.</small><button class="btn mini" type="button" data-style-preset="berkeley">Use Berkeley</button></div>
+          <div class="style-card"><b>Madrid</b><small>Top and bottom bars with clean lecture-deck styling.</small><button class="btn mini" type="button" data-style-preset="madrid">Use Madrid</button></div>
+          <div class="style-card"><b>AnnArbor</b><small>Warm header chrome and footer accent.</small><button class="btn mini" type="button" data-style-preset="annarbor">Use AnnArbor</button></div>
+          <div class="style-card"><b>CambridgeUS</b><small>Formal title bar with accent stripe.</small><button class="btn mini" type="button" data-style-preset="cambridgeus">Use CambridgeUS</button></div>
+          <div class="style-card"><b>Pittsburgh</b><small>Minimal accent rule with compact slide chrome.</small><button class="btn mini" type="button" data-style-preset="pittsburgh">Use Pittsburgh</button></div>
+          <div class="style-card"><b>Classic</b><small>Minimal generator default with maximum content room.</small><button class="btn mini" type="button" data-style-preset="classic">Use Classic</button></div>
+        </div>
+
+        <div class="smallcaps" style="margin-top:1rem">Style builder tools</div>
+        <div class="field-grid style-tools-grid" style="margin-top:.65rem">
+          <div class="field">
+            <label for="themeBeamerStyle">Style family</label>
+            <select id="themeBeamerStyle">
+              <option value="classic" selected>Classic / minimal</option>
+              <option value="berkeley">Berkeley-style sidebar</option>
+              <option value="madrid">Madrid-style bars</option>
+              <option value="annarbor">AnnArbor-style warm chrome</option>
+              <option value="cambridgeus">CambridgeUS-style formal bar</option>
+              <option value="pittsburgh">Pittsburgh-style accent rule</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="themeChromeColor">Chrome color</label>
+            <input id="themeChromeColor" type="color" value="#17365d" />
+          </div>
+          <div class="field">
+            <label for="themeChromeTextColor">Chrome text color</label>
+            <select id="themeChromeTextColor">
+              <option value="#ffffff" selected>White</option>
+              <option value="#eef3ff">Soft white</option>
+              <option value="#111111">Black</option>
+              <option value="#f7f1e3">Warm cream</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="themeSidebarWidth">Sidebar width</label>
+            <input id="themeSidebarWidth" type="number" min="72" max="220" step="2" value="118" />
+          </div>
+          <div class="field">
+            <label for="themeTitleCaps">Title casing</label>
+            <select id="themeTitleCaps">
+              <option value="0" selected>Normal case</option>
+              <option value="1">Uppercase-style titles</option>
+            </select>
+          </div>
+          <div class="field full">
+            <div class="row">
+              <button class="btn mini" type="button" id="applyStyleBuilderBtn">Apply builder to master theme</button>
+              <button class="btn mini" type="button" id="randomizeStyleBtn">Generate variant</button>
+            </div>
+            <div class="help" style="margin-top:.4rem">Generate and apply Beamer-like slide chrome deck-wide.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="animate">
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">Animation tools</div>
+        <div class="help" style="margin-top:.45rem">Select a title, text block, or figure in the preview, then apply build-in / build-out settings. For text blocks, you can also reveal items one at a time on click in the exported presentation.</div>
+        <div class="field-grid" style="margin-top:.7rem">
+          <div class="field full">
+            <label for="animateTargetLabel">Selected object</label>
+            <input id="animateTargetLabel" value="No object selected" readonly />
+          </div>
+          <div class="field">
+            <label for="animateBuildIn">Build in</label>
+            <select id="animateBuildIn">
+              <option value="none" selected>None</option>
+              <option value="appear">Appear</option>
+              <option value="fade">Fade in</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animateBuildOut">Build out</label>
+            <select id="animateBuildOut">
+              <option value="none" selected>None</option>
+              <option value="disappear">Disappear</option>
+              <option value="fade">Fade out</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animateStepMode">Reveal mode</label>
+            <select id="animateStepMode">
+              <option value="all" selected>Whole object</option>
+              <option value="by-item">One item at a time</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animateOrder">Animation order</label>
+            <input id="animateOrder" type="number" min="0" step="1" value="0" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:.75rem">
+          <button class="btn mini" type="button" id="applyAnimationBtn">Apply animation</button>
+          <button class="btn mini" type="button" id="clearAnimationBtn">Clear animation</button>
+        </div>
+        <div class="help" style="margin-top:.55rem">In the exported presentation, clicking the slide or pressing Space / Right Arrow will reveal the next animated item before moving to the next slide.</div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="tools">
+
+      <div class="subtabs" data-subtab-group="tools">
+        <button class="subtab active" type="button" data-subtab="tools:blocks">Block library</button>
+        <button class="subtab" type="button" data-subtab="tools:figures">Figure tools</button>
+      </div>
+      <div class="subpane active" data-subpane="tools:blocks">
+<div class="panel" style="margin-top:1rem;padding:.95rem">
+      <div class="smallcaps">Reusable block library</div>
+      <div class="help" style="margin-top:.45rem">Save the current block as a reusable component or insert a reusable block into the current slide.</div>
+      <div class="template-list" style="margin-top:.7rem">
+        <button data-block-template="theorem"><small>Theorem box</small></button>
+        <button data-block-template="proof"><small>Proof box</small></button>
+        <button data-block-template="recap"><small>Recap box</small></button>
+        <button data-block-template="algorithm"><small>Algorithm box</small></button>
+        <button data-block-template="citation"><small>Citation box</small></button>
+        <button data-block-template="reminder"><small>Speaker reminder box</small></button>
+      </div>
+      <div class="toolbar" style="margin-top:.7rem">
+        <button class="btn mini" id="saveCurrentBlockToLibraryBtn">Save current block to library</button>
+        <button class="btn mini" id="insertLibraryBlockBtn">Insert selected library block</button>
+        <button class="btn mini" id="deleteLibraryBlockBtn">Delete selected saved block</button>
+      </div>
+      <div class="library-list" id="blockLibraryList" style="margin-top:.7rem"></div>
+    </div>
+      </div>
+      <div class="subpane" data-subpane="tools:figures">
+<div class="panel figure-toolbar" style="margin-top:1rem;padding:.95rem">
+      <div class="smallcaps">Figure tools and guides</div>
+      <div class="help">Select one or more figures in the preview. Shift-click adds to the selection.</div>
+      <div class="row" style="margin:.55rem 0 .35rem">
+        <button class="btn mini" type="button" id="toolsAddFigureBtn">Add figure</button>
+        <button class="btn mini" type="button" id="toolsOpenDiagramEditorBtn">Open simple diagram editor</button>
+      </div>
+      <div class="inline-checks">
+        <label><input type="checkbox" id="showGridToggle" style="width:auto" /> Show grid</label>
+        <label><input type="checkbox" id="showMarginsToggle" style="width:auto" /> Show margins</label>
+        <label><input type="checkbox" id="snapToGuidesToggle" style="width:auto" checked /> Snap to guides</label>
+        <label><input type="checkbox" id="lockAspectToggle" style="width:auto" /> Lock aspect ratio</label>
+      </div>
+      <div class="help" id="selectedFiguresStatus">No figure selected.</div>
+      <div class="tool-grid">
+        <button class="btn mini" id="alignFigureLeftBtn">Align left</button>
+        <button class="btn mini" id="alignFigureCenterBtn">Align center</button>
+        <button class="btn mini" id="alignFigureRightBtn">Align right</button>
+        <button class="btn mini" id="alignFigureTopBtn">Align top</button>
+        <button class="btn mini" id="alignFigureMiddleBtn">Align middle</button>
+        <button class="btn mini" id="alignFigureBottomBtn">Align bottom</button>
+      </div>
+      <div class="tool-grid two">
+        <button class="btn mini" id="distributeFigureHorizBtn">Distribute horiz.</button>
+        <button class="btn mini" id="distributeFigureVertBtn">Distribute vert.</button>
+      </div>
+      <div class="tool-grid">
+        <button class="btn mini" id="snapFigureBtn">Snap to grid</button>
+        <button class="btn mini" id="bringForwardBtn">Bring forward</button>
+        <button class="btn mini" id="sendBackwardBtn">Send backward</button>
+        <button class="btn mini" id="cropFigureBtn">Crop</button>
+        <button class="btn mini" id="duplicateFigureBtn">Duplicate</button>
+        <button class="btn mini" id="resetFigureBtn">Reset</button>
+      </div>
+    </div>
+      </div>
+
+    </div>
+
+    <div class="left-pane" data-left-pane="files">
+
+      <div class="subtabs" data-subtab-group="files">
+        <button class="subtab active" type="button" data-subtab="files:save">Save / load</button>
+        <button class="subtab" type="button" data-subtab="files:import">Import</button>
+      </div>
+      <div class="subpane active" data-subpane="files:save">
+        <div class="panel" style="padding:.95rem">
+          <div class="smallcaps">Files and export</div>
+<div class="toolbar">
+      <button class="btn" id="copySnippetBtn">Copy current slide snippet</button>
+      <button class="btn" id="copyMathJaxBtn">Copy MathJax helper</button>
+      <button class="btn" id="downloadStandaloneBtn">Save current slide</button>
+      <button class="btn" id="saveCurrentSlideJsonBtn">Save current slide JSON</button>
+      <button class="btn" id="loadDeckBtn">Load HTML presentation</button>
+      <input id="loadDeckInput" type="file" accept=".html,text/html" hidden />
+      <button class="btn" id="loadPresentationJsonBtn">Load presentation JSON</button>
+      <input id="loadPresentationJsonInput" type="file" accept=".json,application/json" hidden />
+      <button class="btn" id="savePresentationJsonBtn">Save presentation JSON</button>
+      <button class="btn primary" id="downloadDeckBtn">Save full presentation</button>
+    </div>
+          <div class="inline-checks" style="margin-top:.75rem">
+            <label><input type="checkbox" id="enableLiveDrawExport" /> In generated presentation, add a <b>Draw</b> button on every slide</label>
+          </div>
+          <div class="help" style="margin-top:.45rem">
+            When enabled, the saved presentation includes a live drawing popup. Drawings are inserted on the current slide and autosaved in this browser for that presentation.
+          </div>
+        </div>
+      </div>
+
+      <div class="subpane" data-subpane="files:import">
+        <div class="panel" style="padding:.95rem">
+          <div class="smallcaps">Import tools</div>
+          <div class="help" style="margin-top:.45rem">First-pass importers for outlines and reference assets. You can append imported slides to the current deck or replace the current deck.</div>
+
+          <div class="field-grid" style="margin-top:.75rem">
+            <div class="field">
+              <label for="importModeSelect">Import mode</label>
+              <select id="importModeSelect">
+                <option value="append" selected>Append to current deck</option>
+                <option value="replace">Replace current deck</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="importFilesInput">Files to import</label>
+              <input id="importFilesInput" type="file" multiple accept=".md,.markdown,.tex,.ltx,.json,.txt,.pdf,image/*" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:.55rem">
+            <button class="btn mini" type="button" id="importFilesBtn">Import selected files</button>
+          </div>
+
+          <div class="subtabs" data-subtab-group="import">
+            <button class="subtab active" type="button" data-subtab="import:markdown">Markdown</button>
+            <button class="subtab" type="button" data-subtab="import:beamer">LaTeX / Beamer</button>
+            <button class="subtab" type="button" data-subtab="import:json">JSON outline</button>
+            <button class="subtab" type="button" data-subtab="import:ppt">PowerPoint-style text</button>
+          </div>
+
+          <div class="subpane active" data-subpane="import:markdown">
+            <div class="help" style="margin:.45rem 0">Use headings as slide titles. Bullets become bullet lists.</div>
+            <textarea id="importMarkdownText" class="code" placeholder="# Slide title&#10;- bullet&#10;- bullet&#10;&#10;# Another slide&#10;Paragraph text"></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importMarkdownBtn">Import markdown outline</button>
+            </div>
+          </div>
+
+          <div class="subpane" data-subpane="import:beamer">
+            <div class="help" style="margin:.45rem 0">Best for simple Beamer sources using \begin{frame}{Title} ... \end{frame} and itemize/enumerate.</div>
+            <textarea id="importBeamerText" class="code" placeholder="\begin{frame}{Convolution}\begin{itemize}\item Local connectivity\item Weight sharing\end{itemize}\end{frame}"></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importBeamerBtn">Import LaTeX / Beamer outline</button>
+            </div>
+          </div>
+
+          <div class="subpane" data-subpane="import:json">
+            <div class="help" style="margin:.45rem 0">Accepts a full deck JSON with <code>slides</code>, or a simpler JSON outline.</div>
+            <textarea id="importJsonText" class="code" placeholder='{"deckTitle":"Lecture","slides":[{"title":"Intro","leftBlocks":[{"mode":"panel","content":"P: Welcome"}]}]}'></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importJsonBtn">Import JSON outline</button>
+            </div>
+          </div>
+
+          <div class="subpane" data-subpane="import:ppt">
+            <div class="help" style="margin:.45rem 0">Use one slide per paragraph block. First non-empty line becomes the slide title; following lines become bullets or text.</div>
+            <textarea id="importPptText" class="code" placeholder="Convolution&#10;- Local filters&#10;- Weight sharing&#10;&#10;Pooling&#10;- Max pooling&#10;- Average pooling"></textarea>
+            <div class="row" style="margin-top:.55rem">
+              <button class="btn mini" type="button" id="importPptBtn">Import PowerPoint-style text</button>
+            </div>
+          </div>
+
+          <div class="help" style="margin-top:.7rem">
+            PDF/image file import creates <b>reference slides</b> in this first pass:
+            images are imported as figure slides, and PDFs are embedded as reference blocks.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="copilot">
+      <div class="panel copilot-panel" style="padding:.95rem">
+        <div>
+          <div class="smallcaps">ChatGPT copilot</div>
+          <h2 style="margin-top:.25rem">Generate slides or a full deck</h2>
+          <p class="help" style="margin:.45rem 0 0">Describe the audience, goal, tone, and any source notes. Copilot returns editable slide JSON that uses this generator's existing slide and block structure.</p>
+        </div>
+
+        <div class="field-grid">
+          <div class="field full">
+            <label for="copilotPrompt">What should ChatGPT make?</label>
+            <textarea id="copilotPrompt" placeholder="Example: Create a 7-slide lecture deck explaining backpropagation for advanced undergraduates. Include intuition, equations, pseudocode, common mistakes, and a recap."></textarea>
+          </div>
+          <div class="field">
+            <label for="copilotSlideCount">Target slides</label>
+            <input id="copilotSlideCount" type="number" min="1" max="30" step="1" value="6" />
+          </div>
+          <div class="field">
+            <label for="copilotTone">Tone / style</label>
+            <select id="copilotTone">
+              <option value="clear and concise" selected>Clear and concise</option>
+              <option value="lecture-style and explanatory">Lecture-style</option>
+              <option value="executive and decision-focused">Executive</option>
+              <option value="visual and workshop-friendly">Workshop-friendly</option>
+              <option value="technical and rigorous">Technical / rigorous</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="copilotMode">Apply deck generation as</label>
+            <select id="copilotMode">
+              <option value="append" selected>Append to current deck</option>
+              <option value="replace">Replace current deck</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="copilotModel">Model</label>
+            <input id="copilotModel" value="gpt-4.1-mini" />
+          </div>
+          <div class="field full">
+            <label for="copilotEndpoint">API endpoint</label>
+            <input id="copilotEndpoint" value="https://api.openai.com/v1/responses" />
+            <div class="help">For production, point this to your own backend proxy so your OpenAI API key is not exposed in browser code.</div>
+          </div>
+          <div class="field full">
+            <div class="copilot-key-row">
+              <div class="field" style="gap:.35rem">
+                <label for="copilotApiKey">OpenAI API key</label>
+                <input id="copilotApiKey" type="password" autocomplete="off" placeholder="sk-..." />
+              </div>
+              <button class="btn mini" type="button" id="saveCopilotKeyBtn">Save locally</button>
+            </div>
+            <div class="help">Saved keys stay in this browser's localStorage. Leave blank when using a backend proxy that injects credentials server-side.</div>
+          </div>
+        </div>
+
+        <div class="copilot-actions">
+          <button class="btn primary" type="button" id="copilotDraftSlideBtn">Draft current slide</button>
+          <button class="btn" type="button" id="copilotAddSlideBtn">Add generated slide</button>
+          <button class="btn primary full" type="button" id="copilotGenerateDeckBtn">Generate full deck</button>
+        </div>
+
+        <div class="copilot-status" id="copilotStatus">Copilot ready. Enter a prompt, then generate a slide or deck.</div>
+
+        <div class="field">
+          <label for="copilotResultJson">Latest Copilot result</label>
+          <textarea id="copilotResultJson" class="code copilot-json" spellcheck="false" placeholder="Generated JSON will appear here before it is applied."></textarea>
+        </div>
+        <div class="row">
+          <button class="btn mini" type="button" id="copilotApplyFirstSlideBtn">Apply first result slide</button>
+          <button class="btn mini" type="button" id="copilotAppendResultBtn">Append result slides</button>
+          <button class="btn mini" type="button" id="copilotReplaceDeckBtn">Replace deck with result</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-pane" data-left-pane="help">
+
+      <div class="panel" style="padding:.95rem">
+        <div class="smallcaps">How to write content</div>
+        <div class="subtabs" data-subtab-group="help">
+          <button class="subtab active" type="button" data-subtab="help:syntax">Syntax</button>
+          <button class="subtab" type="button" data-subtab="help:math">Math and figures</button>
+        </div>
+        <div class="subpane active" data-subpane="help:syntax">
+<div class="help" style="margin-top:.55rem">
+        <p>For panel/plain modes, you can use:</p>
+        <p><code>\paragraph{Teach the pattern before teaching every symbol.}</code></p>
+        <p><code>\begin{itemize}</code><br><code>\item First key point</code><br><code>\item Second key point</code><br><code>\end{itemize}</code></p>
+        <p><code>\begin{enumerate}</code><br><code>\item A</code><br><code>\item B</code><br><code>\end{enumerate}</code></p>
+        <p><code>\begin{card}{Key idea}</code><br><code>Each neuron turns an incoming sensitivity into an outgoing sensitivity.</code><br><code>\end{card}</code></p>
+      </div>
+        </div>
+        <div class="subpane" data-subpane="help:math">
+<div class="help" style="margin-top:.55rem">
+        <p>For equations, use:</p>
+        <p><code>\begin{equation}</code><br><code>\nabla_w L &= \frac{\partial L}{\partial z}\frac{\partial z}{\partial w}\\</code><br><code>&= \frac{\partial L}{\partial z}\frac{\partial z}{\partial w}</code><br><code>\end{equation}</code></p>
+        <p>For <b>pseudocode</b>, paste plain indented pseudocode.</p>
+        <p>For <b>pseudocode-latex</b>, paste indented pseudocode and write math as <code>\( ... \)</code> or <code>\[ ... \]</code>.</p>
+        <p>Use <b>Add figure</b> in the block editor to insert images or figure-maker diagrams at the cursor position.</p>
+      </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="slide-rail-shell" id="slideRailShell">
+      <div class="slide-rail-header">
+        <div>
+          <div class="smallcaps">Slide rail</div>
+          <div class="help" style="margin-top:.15rem">Quick navigation, reorder, and selection.</div>
+        </div>
+        <button class="btn mini" type="button" id="toggleSlideRailBtn">Hide rail</button>
+      </div>
+      <div class="slide-rail-content" id="slideRailMount"></div>
+    </div>
+  </div>
+
+  <div class="right-shell">
+    <div class="panel preview-wrap">
+    <div class="preview-header">
+      <div>
+        <div class="smallcaps">Live preview</div>
+        <h2 id="previewTitle">Current slide</h2>
+      </div>
+      <span class="badge">Preview and export use the same renderer</span>
+    </div>
+    <div class="preview-viewport"><div class="preview-stage"><div class="preview-frame" id="previewFrame"><div class="preview-grid-overlay" id="previewGridOverlay"></div><div class="preview-margin-overlay" id="previewMarginOverlay"><div class="preview-margin-box"></div><div class="preview-center-v"></div><div class="preview-center-h"></div></div><div class="preview-scale" id="previewScale"><div id="preview"></div></div></div></div></div>
+
+    <div class="panel" style="padding:.95rem">
+      <div class="smallcaps">Selected item inspector</div>
+      <div class="help" style="margin-top:.45rem">Click any content block in the preview to edit its style. Custom HTML inside iframes may not fully honor typography changes.</div>
+      <div class="preview-block-props" style="margin-top:.7rem">
+        <div class="field">
+          <label for="previewBlockLabel">Selected item</label>
+          <input id="previewBlockLabel" value="No block selected" readonly />
+        </div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="previewBlockFontScale">Font scale</label>
+            <input id="previewBlockFontScale" type="number" min="0.6" max="2.5" step="0.05" value="1" />
+          </div>
+          <div class="field">
+            <label for="previewBlockFontFamily">Font family</label>
+            <select id="previewBlockFontFamily">
+              <option value="inherit" selected>Theme default</option>
+              <option value="Inter, Arial, sans-serif">Inter / Sans</option>
+              <option value="Georgia, serif">Georgia / Serif</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="system-ui, sans-serif">System UI</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="previewBlockFontColor">Font color</label>
+            <input id="previewBlockFontColor" type="color" value="#111111" />
+          </div>
+          <div class="field">
+            <label for="previewBlockBulletType">Bullet / list type</label>
+            <select id="previewBlockBulletType">
+              <option value="disc" selected>Disc</option>
+              <option value="circle">Circle</option>
+              <option value="square">Square</option>
+              <option value="decimal">Decimal</option>
+              <option value="lower-alpha">lower-alpha</option>
+              <option value="upper-alpha">Upper-alpha</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn mini" type="button" id="resetPreviewBlockStyleBtn">Reset block style</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="figureModal" hidden>
+  <div class="modal-card">
+    <div class="section-head">
+      <h2>Add figure</h2>
+      <button class="btn mini" id="closeFigureModalBtn">Close</button>
+    </div>
+    <div class="help">Choose how to add a figure into the current block.</div>
+    <div class="row" style="margin-top:.45rem">
+      <button class="btn mini primary" id="figureSourceImageBtn">Image from link or file</button>
+      <button class="btn mini" id="figureSourceEditorBtn">Open simple diagram editor</button>
+    </div>
+    <div id="figureImagePanel" style="margin-top:.8rem;display:grid;gap:.7rem">
+      <div class="field">
+        <label for="figureUrlInput">Image URL</label>
+        <input id="figureUrlInput" placeholder="https://example.com/figure.png" />
+      </div>
+      <div class="field">
+        <label for="figureAltInput">Alt text / caption</label>
+        <input id="figureAltInput" placeholder="Optional description" />
+      </div>
+      <div class="row">
+        <button class="btn mini" id="insertFigureUrlBtn">Insert image from URL</button>
+      </div>
+      <div class="field">
+        <label for="figureFileInput">Or choose an image file</label>
+        <input id="figureFileInput" type="file" accept="image/*,.svg" />
+      </div>
+      <div class="row">
+        <button class="btn mini" id="insertFigureFileBtn">Insert selected image file</button>
+      </div>
+    </div>
+    <div id="figureEditorPanel" style="display:none;margin-top:.8rem" class="help">
+      Open a popup editor where you can draw a simple SVG diagram using your mouse, trackpad, or touchscreen. When you click <b>Insert into slide</b> in that editor, the SVG will be inserted back into the current block.
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="toast">Copied</div>
+
+
+<script defer src="js/utils-stage5restore.js?v=stage5restore-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/utils-stage5restore.js')"></script>
+<script defer src="js/block-library-stage5restore.js?v=stage5restore-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/block-library-stage5restore.js')"></script>
+<script defer src="js/theme-stage5restore.js?v=stage5restore-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/theme-stage5restore.js')"></script>
+<script defer src="js/presets-stage6b.js?v=stage6b-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/presets-stage6b.js')"></script>
+<script defer src="js/parser-stage7.js?v=stage7-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/parser-stage7.js')"></script>
+<script defer src="js/block-style-stage8.js?v=stage8-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/block-style-stage8.js')"></script>
+<script defer src="js/import-stage9b.js?v=stage9b-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/import-stage9b.js')"></script>
+<script defer src="js/state-stage10.js?v=stage10-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/state-stage10.js')"></script>
+<script defer src="js/export-stage11.js?v=stage11-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/export-stage11.js')"></script>
+<script defer src="js/legacy-app-stage11.js?v=stage11-20260424-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/legacy-app-stage11.js')"></script>
+</body>
+</html>
