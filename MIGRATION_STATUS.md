@@ -52,3 +52,12 @@ Recommended next steps:
 ## stage23afix2-20260425-1
 
 Cache-proof repair for Stage 23A. Runtime now loads suffixed stage23afix2 filenames to avoid stale stable `legacy-app.js`.
+
+
+## Stage 23B — Renderer diagnostics cleanup
+
+- Added `window.LuminaRendererApi` as a narrow diagnostics/API bridge for renderer helpers.
+- Updated diagnostics so `rendererFunctionBased` checks the actual renderer API rather than a nonexistent `renderSlide` global.
+- Updated the manifest to expect `LuminaRendererApi`.
+- No behavior changes intended.
+- Copilot remains inside `legacy-app`; ES modules are still deferred.
