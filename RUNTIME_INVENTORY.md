@@ -1,13 +1,13 @@
-# Runtime Inventory — Stage 27B Checkpoint
+# Runtime Inventory — Stage 27C Checkpoint
 
-Stage 27B starts ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then a Stage 27B ES module harness runs after those scripts and reports parity diagnostics.
+Stage 27C starts ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then a Stage 27C ES module harness runs after those scripts and reports parity diagnostics.
 
 ## Root files
 
 ```text
 index.html
 diagnostics.html
-diagnostics-stage27b.html
+diagnostics-stage27c.html
 ```
 
 ## CSS
@@ -19,8 +19,8 @@ css/styles-stage24c.css
 ## Classic JavaScript load order
 
 ```text
-js/diagnostics-stage27b.js
-js/module-manifest-stage27b.js
+js/diagnostics-stage27c.js
+js/module-manifest-stage27c.js
 js/utils-stage24c.js
 js/block-library-stage24c.js
 js/theme-stage24c.js
@@ -47,15 +47,15 @@ js/commands-stage24c.js
 ## ES module harness
 
 ```text
-js/esm/utils-stage27b.js
-js/esm/block-style-stage27b.js
-js/es-module-smoke-stage27b.js
+js/esm/utils-stage27c.js
+js/esm/block-style-stage27c.js
+js/es-module-smoke-stage27c.js
 ```
 
 The harness is loaded with:
 
 ```html
-<script type="module" src="js/es-module-smoke-stage27b.js?v=stage27b-20260425-1"></script>
+<script src="js/es-module-loader-stage27c.js?v=stage27c-20260425-1"></script>
 ```
 
 ## External CDNs

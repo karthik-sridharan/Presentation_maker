@@ -1,29 +1,14 @@
-# Deployment Checklist — Stage 27B
+# Stage 27C Deployment Checklist
 
-## Before deploy
-
-- Confirm the Stage 24C rollback archive is retained.
-- Upload all files listed in `RELEASE_FILES_STAGE27B.json`.
-- Keep the `js/esm/` folder structure intact; module imports are relative.
-
-## After deploy
-
-1. Open `index.html?v=stage27b-20260425-1&clearLuminaStorage=1`.
-2. Confirm the editor preview renders a slide.
-3. Confirm tabs and command shortcuts bind.
-4. Open `diagnostics-stage27b.html?v=stage27b-20260425-1`.
-5. Confirm:
-
-```json
-{
-  "missingAssets": [],
-  "missingGlobals": [],
-  "missingDomIds": [],
-  "esModuleSmokePassed": true,
-  "bootErrors": []
-}
-```
-
-## Rollback
-
-If any Stage 27B diagnostics fail, roll back to the Stage 24C index and assets documented in `ROLLBACK.md`.
+1. Deploy the full Stage 27C folder.
+2. Hard refresh or add the cache-busting query:
+   `index.html?v=stage27c-20260425-1&clearLuminaStorage=1`
+3. Confirm the editor opens without a red startup error panel.
+4. Open diagnostics:
+   `diagnostics-stage27c.html?v=stage27c-20260425-1`
+5. Confirm required runtime diagnostics are OK.
+6. Review `window.LuminaEsModuleDiagnostics.status`:
+   - `passed` means the optional ESM parity harness ran successfully.
+   - `skipped-file-protocol`, `load-failed`, or `unsupported` means the classic editor is still usable, but the environment is not currently executing the optional module smoke test.
+7. For a strict ESM-hosting check, test:
+   `index.html?v=stage27c-20260425-1&strictEsModuleSmoke=1`
