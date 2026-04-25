@@ -1,59 +1,53 @@
-# Migration Status
+# Lumina Presenter Migration Status
 
-## Stage 2 complete
+Current stable baseline: **Stage 21B diagnostics**, built on the last confirmed working **Stage 20** runtime.
 
-This project now uses a modular entrypoint while preserving the working app behavior.
+## Stage 21B changes
 
-### What changed in stage 2
+This is a non-feature migration safety patch. It does **not** split Copilot and does **not** change editor behavior.
 
-- `index.html` now loads `js/main.js` instead of `js/legacy-app.js` directly.
-- `js/main.js` is now a safe compatibility entrypoint that imports the working app.
-- Shared utility functions were removed from `legacy-app.js` and imported from `js/utils.js`.
-- Pure theme helpers were extracted into `js/theme.js`:
-  - `normalizeTheme`
-  - `buildSlideStyleForTheme`
-  - `beamerPresetTheme`
-  - `styleClassForTheme`
-- `legacy-app.js` still owns the DOM-bound editor workflow, but it is smaller and now depends on real modules.
-- `build/bundle.py` now recursively inlines local ES module imports, so the modular app can still be bundled into one standalone HTML file.
+Added:
 
-### Current runtime path
+- `js/diagnostics-stage21b.js`
+- `diagnostics-stage21b.html`
+- cache-proof stage-21B runtime filenames
+- per-script `onload`/`onerror` diagnostics
+- a bottom-right **Diagnostics** button in the app
+- expected-global checks after startup
+
+## Confirmed modular layers through Stage 20
+
+- `utils`
+- `block-library`
+- `theme`
+- `presets`
+- `parser`
+- `block-style`
+- `import`
+- `state/autosave`
+- `export`
+- `renderer`
+- `deck/snippet`
+- `file-io`
+- `ui`
+- `figure-insert`
+- `diagram-editor`
+- `figure-tools` — duplicate fixed; crop still needs UX/behavior review
+- `editor-selection`
+- `block-editor`
+
+## Do not split yet
+
+Copilot has broken startup twice. Leave it inside the main runtime until the remaining app core is cleaner and the diagnostics layer has been tested.
+
+## Test URL
 
 ```text
-index.html
-  -> js/main.js
-      -> js/legacy-app.js
-          -> js/utils.js
-          -> js/theme.js
+http://localhost:8000/index.html?v=stage21b-20260425-1&clearLuminaStorage=1
 ```
 
-### Recommended next migration pass
+## Diagnostic URL
 
-Move the reusable block-library workflow out of `legacy-app.js` into a dedicated module, because it is relatively self-contained:
-
-- `builtinLibraryEntries`
-- `loadBlockLibrary`
-- `persistBlockLibrary`
-- `renderBlockLibrary`
-- `saveCurrentBlockToLibrary`
-- `insertSelectedLibraryBlock`
-- `deleteSelectedLibraryBlock`
-
-The cleanest version of that pass is to create `js/block-library.js` and pass it a small adapter object for editor callbacks such as `currentBlockFromEditor`, `currentColumnName`, `blockArray`, `renderBlockList`, `buildPreview`, and `scheduleAutosave`.
-
-### Things intentionally not done yet
-
-- `state.js`, `renderer.js`, `editor.js`, `export.js`, `import.js`, and `copilot.js` still contain scaffold/stub code from the target architecture.
-- The main production behavior still lives mostly in `legacy-app.js`.
-- No large behavioral rewrite was attempted in this stage.
-
-## Stage 2 hotfix - preview/buttons regression
-
-Fixed a regression introduced during the stage-2 extraction. The original helper extraction accidentally left `currentStyleClass()` and `buildSlideStyle()` with mismatched braces in `js/legacy-app.js`. That made `buildSlideStyle()` unavailable to the renderer, so the initial preview build and several button actions failed after the app loaded.
-
-Validation performed:
-- `node --check js/main.js`
-- `node --check js/legacy-app.js`
-- `node --check js/utils.js`
-- `node --check js/theme.js`
-- regenerated `build/lumina-presenter-bundle.html` with `/usr/bin/python3 build/bundle.py`
+```text
+http://localhost:8000/diagnostics-stage21b.html?v=stage21b-20260425-1
+```

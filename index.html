@@ -23,8 +23,36 @@
   window.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(!window.LUMINA_BOOT_ERRORS.length)return; var box=document.createElement('pre'); box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:999999;max-height:40vh;overflow:auto;background:#fee;color:#600;border:2px solid #c00;padding:12px;border-radius:8px;font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;'; box.textContent='Lumina startup error(s):\n\n'+window.LUMINA_BOOT_ERRORS.join('\n\n'); document.body.appendChild(box);},600);});
 })();
 </script>
+<script>
+window.LUMINA_STAGE = 'stage21b-20260425-1';
+window.LUMINA_EXPECTED_ASSETS = [
+  "css/styles-stage21b.css",
+  "js/diagnostics-stage21b.js",
+  "js/utils-stage21b.js",
+  "js/block-library-stage21b.js",
+  "js/theme-stage21b.js",
+  "js/presets-stage21b.js",
+  "js/parser-stage21b.js",
+  "js/block-style-stage21b.js",
+  "js/import-stage21b.js",
+  "js/state-stage21b.js",
+  "js/export-stage21b.js",
+  "js/renderer-stage21b.js",
+  "js/deck-stage21b.js",
+  "js/file-io-stage21b.js",
+  "js/ui-stage21b.js",
+  "js/figure-insert-stage21b.js",
+  "js/diagram-editor-stage21b.js",
+  "js/figure-tools-stage21b.js",
+  "js/editor-selection-stage21b.js",
+  "js/block-editor-stage21b.js",
+  "js/legacy-app-stage21b.js"
+];
+</script>
+<script src="js/diagnostics-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage21b.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage21b.js')"></script>
 
-<link rel="stylesheet" href="css/styles-stage20safe3.css?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage20safe.css')" />
+
+<link rel="stylesheet" href="css/styles-stage21b.css?v=stage21b-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage21b.css')" />
 
 <script>
 
@@ -880,29 +908,30 @@ window.MathJax = {
   else bindBasicLuminaUi();
 })();
 </script>
-<script src="js/utils-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/utils-stage20safe3.js')"></script>
-<script src="js/block-library-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/block-library-stage20safe3.js')"></script>
-<script src="js/theme-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/theme-stage20safe3.js')"></script>
-<script src="js/presets-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/presets-stage20safe3.js')"></script>
-<script src="js/parser-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/parser-stage20safe3.js')"></script>
-<script src="js/block-style-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/block-style-stage20safe3.js')"></script>
-<script src="js/import-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/import-stage20safe3.js')"></script>
-<script src="js/state-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/state-stage20safe3.js')"></script>
-<script src="js/export-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/export-stage20safe3.js')"></script>
-<script src="js/renderer-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/renderer-stage20safe3.js')"></script>
-<script src="js/deck-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/deck-stage20safe3.js')"></script>
-<script src="js/file-io-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/file-io-stage20safe3.js')"></script>
-<script src="js/ui-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/ui-stage20safe3.js')"></script>
-<script src="js/figure-insert-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/figure-insert-stage20safe3.js')"></script>
-<script src="js/diagram-editor-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagram-editor-stage20safe3.js')"></script>
-<script src="js/figure-tools-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/figure-tools-stage20safe3.js')"></script>
-<script src="js/editor-selection-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/editor-selection-stage20safe3.js')"></script>
-<script src="js/block-editor-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/block-editor-stage20safe3.js')"></script>
-<script src="js/legacy-app-stage20safe3.js?v=stage20safe3-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/legacy-app-stage20safe3.js')"></script>
+<script src="js/utils-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage21b.js')"></script>
+<script src="js/block-library-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage21b.js')"></script>
+<script src="js/theme-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage21b.js')"></script>
+<script src="js/presets-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage21b.js')"></script>
+<script src="js/parser-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage21b.js')"></script>
+<script src="js/block-style-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage21b.js')"></script>
+<script src="js/import-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage21b.js')"></script>
+<script src="js/state-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage21b.js')"></script>
+<script src="js/export-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage21b.js')"></script>
+<script src="js/renderer-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage21b.js')"></script>
+<script src="js/deck-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage21b.js')"></script>
+<script src="js/file-io-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage21b.js')"></script>
+<script src="js/ui-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage21b.js')"></script>
+<script src="js/figure-insert-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage21b.js')"></script>
+<script src="js/diagram-editor-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage21b.js')"></script>
+<script src="js/figure-tools-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage21b.js')"></script>
+<script src="js/editor-selection-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage21b.js')"></script>
+<script src="js/block-editor-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage21b.js')"></script>
+<script src="js/legacy-app-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage21b.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage21b.js')"></script>
+
 <script>
 setTimeout(function(){
   try{
-    var checks=['LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRenderer','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor'];
+    var checks=['LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRenderer','LuminaDeck','LuminaFileIo','LuminaUi','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor'];
     var missing=checks.filter(function(k){return !window[k];});
     if(missing.length) window.luminaBootError && window.luminaBootError('Missing globals after startup: '+missing.join(', '));
     if(!window.__LUMINA_BASIC_UI_BOUND) window.luminaBootError && window.luminaBootError('Basic UI binding marker missing.');
