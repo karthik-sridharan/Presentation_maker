@@ -1,7 +1,5 @@
-# Lumina Copilot default deck prompt
+Fallback deck prompt for Lumina Copilot
 
-Use these instructions only when generating a whole deck.
+This file is used only if prompts/dev.txt is missing or blank.
 
-Create a coherent complete presentation, not a loose collection of slides.
-If reference material is provided as url, use it and stick to the flow there. 
-Make sure to include figures on enough slides and make the figures colorful and nice. Use custom html block to get best results. 
+For full-deck generation, create a coherent lecture-style presentation with specific slide titles, editable content blocks, and speaker notes. When the user provides reference material or URLs, follow that material closely. When figures are requested, include concrete Figure/Diagram placeholder blocks.
