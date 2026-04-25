@@ -1,0 +1,13 @@
+{
+  "stage": "stage34n-20260425-1",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "prompts/dev.txt",
+    "prompts/deck.txt",
+    "DEPLOY_CHECK_STAGE34N.md",
+    "RELEASE_NOTES_STAGE34N.md",
+    "RELEASE_FILES_STAGE34N.json"
+  ]
+}
