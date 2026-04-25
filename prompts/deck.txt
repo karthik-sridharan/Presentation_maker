@@ -1,0 +1,7 @@
+# Lumina Copilot default deck prompt
+
+Use these instructions only when generating a whole deck.
+
+Create a coherent complete presentation, not a loose collection of slides.
+If reference material is provided as url, use it and stick to the flow there. 
+Make sure to include figures on enough slides and make the figures colorful and nice. Use custom html block to get best results. 
