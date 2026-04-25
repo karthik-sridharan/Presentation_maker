@@ -915,6 +915,127 @@ window.MathJax = {
 
 
 <script>
+/* Stage 33A rail hardfix: one authoritative rail toggle, shared by inline and classic UI. */
+(function(){
+  'use strict';
+  var STAGE = 'stage33a-rail-toggle-hardfix-20260425-1';
+  var STORAGE_KEY = 'luminaSlideRailCollapsed';
+
+  function q(id){ return document.getElementById(id); }
+
+  function moveDeckPanelIntoRail(){
+    var railMount = q('slideRailMount');
+    var deckList = q('deckList');
+    var deckPanel = deckList && deckList.closest ? deckList.closest('.panel') : null;
+    if(railMount && deckPanel && !railMount.contains(deckPanel)){
+      railMount.appendChild(deckPanel);
+    }
+    return { railMount: railMount, deckPanel: deckPanel };
+  }
+
+  function readStoredCollapsed(){
+    try { return localStorage.getItem(STORAGE_KEY) === '1'; } catch(_e) { return false; }
+  }
+
+  function writeStoredCollapsed(collapsed){
+    try { localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0'); } catch(_e) {}
+  }
+
+  function applyRailCollapsed(collapsed){
+    var railShell = q('slideRailShell');
+    var toggleBtn = q('toggleSlideRailBtn');
+    var moved = moveDeckPanelIntoRail();
+    var railMount = moved.railMount;
+    var deckPanel = moved.deckPanel;
+    var headerText = railShell ? railShell.querySelector('.slide-rail-header > div') : null;
+    collapsed = !!collapsed;
+    if(!railShell) return false;
+
+    railShell.classList.toggle('collapsed', collapsed);
+    railShell.dataset.collapsed = collapsed ? '1' : '0';
+    railShell.dataset.railFixStage = STAGE;
+    railShell.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+
+    if(railMount){
+      railMount.hidden = collapsed;
+      railMount.style.display = collapsed ? 'none' : '';
+      railMount.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+    }
+    if(deckPanel && railMount && !railMount.contains(deckPanel)){
+      deckPanel.hidden = collapsed;
+      deckPanel.style.display = collapsed ? 'none' : '';
+    }
+    if(headerText){
+      headerText.hidden = collapsed;
+      headerText.style.display = collapsed ? 'none' : '';
+    }
+    if(toggleBtn){
+      toggleBtn.textContent = collapsed ? 'Show rail' : 'Hide rail';
+      toggleBtn.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+      toggleBtn.dataset.luminaRailStableBound = '1';
+      toggleBtn.dataset.bound = '1';
+      toggleBtn.dataset.basicLuminaRailBound = '1';
+      toggleBtn.dataset.railFixStage = STAGE;
+    }
+    writeStoredCollapsed(collapsed);
+    window.__LUMINA_RAIL_STATE = {
+      stage: STAGE,
+      collapsed: collapsed,
+      hasShell: !!railShell,
+      hasMount: !!railMount,
+      hasDeckPanel: !!deckPanel,
+      buttonText: toggleBtn ? toggleBtn.textContent : ''
+    };
+    return true;
+  }
+
+  function installLuminaSlideRailToggle(){
+    var railShell = q('slideRailShell');
+    var toggleBtn = q('toggleSlideRailBtn');
+    moveDeckPanelIntoRail();
+    if(!railShell || !toggleBtn) return false;
+
+    if(toggleBtn.dataset.luminaRailStableBound !== '1'){
+      var fresh = toggleBtn.cloneNode(true);
+      toggleBtn.parentNode.replaceChild(fresh, toggleBtn);
+      toggleBtn = fresh;
+    }
+
+    if(toggleBtn.dataset.luminaRailClickBound !== '1'){
+      toggleBtn.dataset.luminaRailClickBound = '1';
+      toggleBtn.dataset.luminaRailStableBound = '1';
+      toggleBtn.dataset.bound = '1';
+      toggleBtn.dataset.basicLuminaRailBound = '1';
+      toggleBtn.addEventListener('click', function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        applyRailCollapsed(!(railShell.dataset.collapsed === '1'));
+      }, true);
+    }
+    applyRailCollapsed(readStoredCollapsed());
+    window.__LUMINA_RAIL_TOGGLE_FIX = STAGE;
+    return true;
+  }
+
+  window.LuminaSlideRailApi = {
+    stage: STAGE,
+    install: installLuminaSlideRailToggle,
+    setCollapsed: applyRailCollapsed,
+    getCollapsed: function(){
+      var railShell = q('slideRailShell');
+      return !!(railShell && railShell.dataset.collapsed === '1');
+    }
+  };
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', installLuminaSlideRailToggle, { once:false });
+  } else {
+    installLuminaSlideRailToggle();
+  }
+})();
+</script>
+
+<script>
 (function(){
   function bindBasicLuminaUi(){
     try{
