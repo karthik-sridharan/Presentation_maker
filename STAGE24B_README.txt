@@ -1,17 +1,17 @@
-Stage 24B — guarded Copilot binding
+Stage 24C — guarded Copilot binding
 
 Copy/extract this flat patch directly into the Presentation_maker project root.
 
 Runtime URL:
-  index.html?v=stage24b-20260425-1&clearLuminaStorage=1
+  index.html?v=stage24c-20260425-1&clearLuminaStorage=1
 
 Diagnostics:
-  diagnostics-stage24b.html?v=stage24b-20260425-1
+  diagnostics-stage24c.html?v=stage24c-20260425-1
 
 What changed:
 - Copilot core functions are still defined by legacy-app, but exposed through window.LuminaCopilotCore.
-- Copilot UI event binding now lives in js/copilot-stage24b.js.
-- js/copilot-stage24b.js loads after the main app, so Copilot failure should not prevent preview/tabs/editor startup.
+- Copilot UI event binding now lives in js/copilot-stage24c.js.
+- js/copilot-stage24c.js loads after the main app, so Copilot failure should not prevent preview/tabs/editor startup.
 - Diagnostics now reports copilotCoreExposed and copilotGuardBound separately.
 
 Expected diagnostics:

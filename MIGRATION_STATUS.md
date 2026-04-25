@@ -49,9 +49,9 @@ Recommended next steps:
 - Diagnostics live at `diagnostics-stage23a.html` and `diagnostics.html`.
 
 
-## stage24b-20260425-1
+## stage24c-20260425-1
 
-Cache-proof repair for Stage 23A. Runtime now loads suffixed stage24b filenames to avoid stale stable `legacy-app.js`.
+Cache-proof repair for Stage 23A. Runtime now loads suffixed stage24c filenames to avoid stale stable `legacy-app.js`.
 
 
 ## Stage 23B — Renderer diagnostics cleanup
@@ -63,9 +63,17 @@ Cache-proof repair for Stage 23A. Runtime now loads suffixed stage24b filenames 
 - Copilot remains inside `legacy-app`; ES modules are still deferred.
 
 
-## Stage 24B — guarded Copilot binding
+## Stage 24C — guarded Copilot binding
 
 Status: ready for testing.
 
-This stage does not fully remove Copilot core logic from `legacy-app`, but it moves Copilot UI event binding into `js/copilot-stage24b.js`. The Copilot script loads after the main app, so Copilot errors should not freeze the preview, left tabs, or core editor. Diagnostics report `copilotCoreExposed` and `copilotGuardBound`.
+This stage does not fully remove Copilot core logic from `legacy-app`, but it moves Copilot UI event binding into `js/copilot-stage24c.js`. The Copilot script loads after the main app, so Copilot errors should not freeze the preview, left tabs, or core editor. Diagnostics report `copilotCoreExposed` and `copilotGuardBound`.
 
+
+
+## Stage 24C — Copilot UX/security hardening
+
+- Current runtime: `stage24c-20260425-1`.
+- Keeps guarded Copilot binding from Stage 24B.
+- Adds API key validation, local-testing warning, friendly HTTP error messages, and `LuminaCopilotRuntimeStatus`.
+- Core editor/rendering path is unchanged.
