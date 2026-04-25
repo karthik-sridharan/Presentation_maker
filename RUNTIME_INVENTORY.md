@@ -1,13 +1,13 @@
-# Runtime Inventory — Stage 28C Checkpoint
+# Runtime Inventory — Stage 28D Checkpoint
 
-Stage 28C continues ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then an inline optional dynamic import runs the Stage 28C ESM parity harness.
+Stage 28D continues ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then an inline optional dynamic import runs the Stage 28D ESM parity harness.
 
 ## Root files
 
 ```text
 index.html
 diagnostics.html
-diagnostics-stage28c.html
+diagnostics-stage28d.html
 ```
 
 ## Required CSS
@@ -47,11 +47,10 @@ js/commands-stage24c.js
 ## Optional ES module harness
 
 ```text
-js/esm/utils-stage28c.js
-js/esm/block-style-stage28c.js
-js/esm/parser-stage28c.js
-js/esm/import-stage28c.js
-js/es-module-smoke-stage28c.js
+js/esm/utils-stage28d.js
+js/esm/block-style-stage28d.js
+js/esm/parser-stage28d.js
+js/esm/import-stage28d.js
 ```
 
 ## Important globals

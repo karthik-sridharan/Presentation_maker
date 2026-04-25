@@ -7,7 +7,7 @@ Move from classic scripts to ES modules in two tracks:
 1. **Parity track:** create ESM copies of low-risk leaf helpers and compare their output against classic globals.
 2. **Boot track:** only after parity is stable, introduce a separate ESM entry point that imports modules in dependency order.
 
-## Stage 28C status
+## Stage 28D status
 
 Completed:
 

@@ -2,19 +2,18 @@
 
 ## Current checkpoint
 
-**Current migration checkpoint:** Stage 28C  
-**Stage 28C purpose:** expand ES module parity coverage without changing the production boot path  
-**Runtime behavior changed in Stage 28C:** No intentional editor behavior changes
+**Current migration checkpoint:** Stage 28D  
+**Stage 28D purpose:** make the ES module parity harness browser-diagnostic and less fragile  
+**Runtime behavior changed in Stage 28D:** No intentional editor behavior changes
 
-Stage 28C keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness so parser and import helpers now have ESM copies and behavior checks.
+Stage 28D keeps the Stage 24C classic-script editor runtime as the authoritative production path. It removes the static-import smoke module from the browser path and instead performs optional leaf-module dynamic imports from an inline classic loader. This should tell us exactly whether any failure is an HTTP/fetch/MIME problem or a specific ESM leaf import failure.
 
 ## Completed ES module parity coverage
 
-- `js/esm/utils-stage28c.js`
-- `js/esm/block-style-stage28c.js`
-- `js/esm/parser-stage28c.js`
-- `js/esm/import-stage28c.js`
-- `js/es-module-smoke-stage28c.js`
+- `js/esm/utils-stage28d.js`
+- `js/esm/block-style-stage28d.js`
+- `js/esm/parser-stage28d.js`
+- `js/esm/import-stage28d.js`
 
 ## Expected diagnostics
 
@@ -36,18 +35,21 @@ Required runtime health should pass:
 }
 ```
 
-The copied report now also includes:
+The copied report now also includes detailed optional ESM diagnostics:
 
 ```json
 {
   "esModuleDiagnostics": {
     "ok": true,
-    "status": "passed"
+    "status": "passed",
+    "loaderMode": "inline-leaf-dynamic-import",
+    "assetProbeResults": [],
+    "leafImportResults": []
   }
 }
 ```
 
-Optional ES module status is still environment-dependent. If imports are blocked by `file://`, MIME, CSP, or host configuration, the editor should still boot.
+Optional ES module status is still environment-dependent. If imports are blocked by `file://`, MIME, CSP, or host configuration, the editor should still boot and the report should identify the failed leaf import or probe.
 
 ## Still intentionally deferred
 
