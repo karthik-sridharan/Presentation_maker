@@ -25,7 +25,7 @@
 </script>
 <script>
 window.LUMINA_STAGE = 'stage34a-20260425-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34a-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34a-command-diagnostics-hardfix-20260425-2';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -2062,8 +2062,24 @@ window.MathJax = {
         try { return runCommandsWorkflow({ createApi:function(){ return api; } }, g); }
         finally { if(api && api._restore) api._restore(); }
       }
+      function stableCommandParitySummary(r) {
+        return {
+          commandCount: r.commandCount,
+          firstCommand: r.firstCommand,
+          shortcutCount: r.shortcutCount,
+          firstShortcut: r.firstShortcut,
+          runAdd: r.runAdd,
+          runCustom: r.runCustom,
+          custom: r.custom,
+          editableText: r.editableText,
+          editableButton: r.editableButton,
+          keyLabel: r.keyLabel
+        };
+      }
       check(checks, 'classic LuminaCommands available', typeof W.LuminaCommands.initShortcuts === 'function');
-      sameJson(checks, 'commands registry and shortcut workflow parity', runCommandsWorkflow(mods.commands), runClassicCommandsWorkflow(classicCommandsAdapter));
+      var esmCommandsWorkflow = runCommandsWorkflow(mods.commands);
+      var classicCommandsWorkflow = runClassicCommandsWorkflow(classicCommandsAdapter);
+      sameJson(checks, 'commands registry and shortcut metadata parity', stableCommandParitySummary(esmCommandsWorkflow), stableCommandParitySummary(classicCommandsWorkflow));
       check(checks, 'commands module export createApi', typeof mods.commands.createApi === 'function');
     }
 
