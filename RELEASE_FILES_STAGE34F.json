@@ -1,0 +1,24 @@
+{
+  "stage": "stage34f-20260425-1",
+  "description": "Stage 34F promotes File I/O and Block Editor to guarded live ESM, preserving the Stage 24C classic shadows/fallbacks.",
+  "files": [
+    "index.html",
+    "js/esm/utils-stage34f.js",
+    "js/esm/block-style-stage34f.js",
+    "js/esm/parser-stage34f.js",
+    "js/esm/import-stage34f.js",
+    "js/esm/state-stage34f.js",
+    "js/esm/theme-stage34f.js",
+    "js/esm/presets-stage34f.js",
+    "js/esm/renderer-stage34f.js",
+    "js/esm/deck-stage34f.js",
+    "js/esm/file-io-stage34f.js",
+    "js/esm/figure-insert-stage34f.js",
+    "js/esm/block-library-stage34f.js",
+    "js/esm/editor-selection-stage34f.js",
+    "js/esm/block-editor-stage34f.js",
+    "js/esm/diagram-editor-stage34f.js",
+    "js/esm/figure-tools-stage34f.js",
+    "js/esm/commands-stage34f.js"
+  ]
+}
