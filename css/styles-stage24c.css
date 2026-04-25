@@ -365,7 +365,7 @@
   .subpane{display:none}
   .subpane.active{display:grid;gap:1rem}
 
-  /* Stage 33A hotfix: keep the slide rail visible.
+  /* Stage 34A hotfix: keep the slide rail visible.
      The rail lives below the active editor pane inside .editor-shell.
      Without explicit grid rows, long editor panes push the rail below the
      clipped panel because .editor-shell has overflow:hidden. */
@@ -389,7 +389,7 @@
   .slide-rail-shell.collapsed .slide-rail-header .help{display:none}
   .slide-rail-shell.collapsed .slide-rail-content{display:none!important}
 
-  /* Stage 33A rail hardfix: collapsed means only the Show rail button remains. */
+  /* Stage 34A rail hardfix: collapsed means only the Show rail button remains. */
   .slide-rail-shell.collapsed{
     min-height:0!important;
     gap:0!important;
