@@ -1,79 +1,90 @@
 # Lumina Presenter Migration Status
 
-Current known-good stage: **Stage 22B — diagnostics / migration cleanup**.
+## Current checkpoint
 
-Runtime style remains intentionally conservative:
+**Current migration checkpoint:** Stage 27A  
+**Stage 27A purpose:** begin ES module migration safely with a non-blocking parity harness  
+**Runtime behavior changed in Stage 27A:** No intentional editor behavior changes
 
-- Classic browser scripts, not ES modules yet.
-- Full flat runtime patches to avoid missing-file/path issues.
-- Cache-proof stage filenames.
-- Copilot remains inside `legacy-app-stage22b.js` for now.
+Stage 27A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It adds ES module copies of the first low-risk leaf helpers and a browser smoke/parity harness that imports those modules after the app boots, compares them against the existing classic globals, and exposes the result as `window.LuminaEsModuleDiagnostics`.
 
-Successful extractions through this stage:
+This is deliberately an incremental bridge instead of a full script-loader rewrite. The next ES module stage can move more leaf modules once the diagnostics stay clean in production.
 
-1. `utils`
-2. `block-library`
-3. `theme`
-4. `presets`
-5. `parser`
-6. `block-style`
-7. `import`
-8. `state/autosave`
-9. `export`
-10. `renderer`
-11. `deck/snippet`
-12. `file-io`
-13. `ui shell`
-14. `figure insertion`
-15. `diagram editor`
-16. `figure tools` — duplicate works; crop still needs deeper review later.
-17. `editor selection`
-18. `block editor/form synchronization`
-19. `commands / keyboard shortcuts`
-20. `module manifest / diagnostics alignment`
+## Known-good local files
 
-Stage 22B added `js/module-manifest-stage22b.js`, which is now the source of truth for expected runtime assets and diagnostics checks.
+```text
+index.html
+diagnostics-stage27a.html
+diagnostics.html
+```
 
-Recommended next steps:
+## Expected diagnostics at this checkpoint
 
-- Stage 23A: stable filename cleanup / alias files, while keeping stage-tagged files for rollback.
-- Stage 23B: figure crop repair with tests.
-- Stage 24: carefully retry Copilot extraction behind a feature flag.
-- Later: convert to ES modules only after the classic-script architecture is fully stable.
+```json
+{
+  "missingAssets": [],
+  "missingGlobals": [],
+  "missingDomIds": [],
+  "basicUiBound": true,
+  "previewHasContent": true,
+  "rendererFunctionBased": true,
+  "uiFunctionBased": true,
+  "manifestLoaded": true,
+  "copilotCoreExposed": true,
+  "copilotGuardBound": true,
+  "copilotValidationBound": true,
+  "commandsBound": true,
+  "esModuleSmokePassed": true,
+  "bootErrors": [],
+  "capturedErrors": []
+}
+```
 
-## Stage 23A — stable filename cleanup
+## Modularization completed before this stage
 
-- Active runtime now loads stable filenames (`js/utils.js`, `js/theme.js`, `js/legacy-app.js`, etc.).
-- Stage-tagged files can remain as rollback artifacts.
-- No Copilot split, no ES modules, and no intended editor behavior changes.
-- Diagnostics live at `diagnostics-stage23a.html` and `diagnostics.html`.
+- Utilities
+- Reusable block library
+- Theme helpers
+- Presets
+- Parser/import parsing helpers
+- Block style helpers
+- Import workflows
+- State/autosave wrappers
+- Export helpers
+- Renderer helpers and renderer diagnostics bridge
+- Deck/snippet helpers
+- File I/O helpers
+- UI shell/tab/rail helpers
+- Figure insertion
+- Simple diagram editor
+- Figure tools
+- Editor selection
+- Block editor/form synchronization
+- Commands/keyboard shortcuts
+- Diagnostics/manifest
+- Guarded Copilot binding and validation
 
+## Stage 27A additions
 
-## stage24c-20260425-1
+- `js/esm/utils-stage27a.mjs` exports the shared utility helpers as ES modules.
+- `js/esm/block-style-stage27a.mjs` exports block/title style helpers as ES modules.
+- `js/es-module-smoke-stage27a.mjs` imports those ESM helpers and validates parity with `window.LuminaUtils` and `window.LuminaBlockStyle`.
+- `js/diagnostics-stage27a.js` reports `esModuleDiagnostics` and fails startup diagnostics if the ESM smoke check is missing or failed.
+- `js/module-manifest-stage27a.js` tracks the classic runtime plus the new ESM harness assets.
+- `diagnostics-stage27a.html` boots the app in a hidden iframe and checks both asset availability and runtime diagnostics.
 
-Cache-proof repair for Stage 23A. Runtime now loads suffixed stage24c filenames to avoid stale stable `legacy-app.js`.
+## Still intentionally deferred
 
+- Full ES module boot ownership
+- Replacing classic-script globals with imports in the production path
+- Backend proxy for production-safe OpenAI API calls
+- Deeper Copilot extraction from `legacy-app-stage24c.js`
+- Figure crop refinement
+- Deleting old historical stage-tagged files from the repository
 
-## Stage 23B — Renderer diagnostics cleanup
+## Recommended next stages
 
-- Added `window.LuminaRendererApi` as a narrow diagnostics/API bridge for renderer helpers.
-- Updated diagnostics so `rendererFunctionBased` checks the actual renderer API rather than a nonexistent `renderSlide` global.
-- Updated the manifest to expect `LuminaRendererApi`.
-- No behavior changes intended.
-- Copilot remains inside `legacy-app`; ES modules are still deferred.
-
-
-## Stage 24C — guarded Copilot binding
-
-Status: ready for testing.
-
-This stage does not fully remove Copilot core logic from `legacy-app`, but it moves Copilot UI event binding into `js/copilot-stage24c.js`. The Copilot script loads after the main app, so Copilot errors should not freeze the preview, left tabs, or core editor. Diagnostics report `copilotCoreExposed` and `copilotGuardBound`.
-
-
-
-## Stage 24C — Copilot UX/security hardening
-
-- Current runtime: `stage24c-20260425-1`.
-- Keeps guarded Copilot binding from Stage 24B.
-- Adds API key validation, local-testing warning, friendly HTTP error messages, and `LuminaCopilotRuntimeStatus`.
-- Core editor/rendering path is unchanged.
+1. **Stage 27B:** Add ESM copies for parser/import helpers and extend parity tests.
+2. **Stage 27C:** Add an ESM loader prototype on a separate `index-esm.html` without changing `index.html`.
+3. **Stage 28A:** Move the production boot path to ESM only after diagnostics prove the prototype is clean.
+4. **Stage 26A / parallel:** Design backend proxy for Copilot before public deployment.

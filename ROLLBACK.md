@@ -1,105 +1,43 @@
-# Lumina Presenter Rollback Map
+# Rollback — Stage 27A
 
-Current recommended rollback point: **Stage 23B2**.
+Stage 27A is designed to be low risk: the production editor behavior still comes from the Stage 24C classic-script runtime. The new ES module files are diagnostic/parity assets only.
 
-Stage 24A is documentation-only, so rolling back from Stage 24A usually means doing nothing to runtime files.
+## Immediate rollback
 
-## Known-good runtime
+If Stage 27A diagnostics fail after deployment:
 
-Use the Stage 23B2 runtime files:
-
-```text
-index.html
-css/styles-stage23b2.css
-js/diagnostics-stage23b2.js
-js/module-manifest-stage23b2.js
-js/utils-stage23b2.js
-js/block-library-stage23b2.js
-js/theme-stage23b2.js
-js/presets-stage23b2.js
-js/parser-stage23b2.js
-js/block-style-stage23b2.js
-js/import-stage23b2.js
-js/state-stage23b2.js
-js/export-stage23b2.js
-js/renderer-stage23b2.js
-js/deck-stage23b2.js
-js/file-io-stage23b2.js
-js/ui-stage23b2.js
-js/figure-insert-stage23b2.js
-js/diagram-editor-stage23b2.js
-js/figure-tools-stage23b2.js
-js/editor-selection-stage23b2.js
-js/block-editor-stage23b2.js
-js/legacy-app-stage23b2.js
-js/commands-stage23b2.js
-```
-
-Diagnostics page:
+1. Restore the Stage 24C `index.html`.
+2. Restore the Stage 24C diagnostics page or point users to `diagnostics-stage24c.html`.
+3. Keep the Stage 24C classic assets in place:
 
 ```text
-diagnostics-stage23b2.html
+css/styles-stage24c.css
+js/*-stage24c.js
 ```
 
-## How to confirm rollback worked
-
-Open:
+4. Clear cache with a Stage 24C query string, for example:
 
 ```text
-https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage23b2-rollback-check
+index.html?v=stage24c-20260425-2&clearLuminaStorage=1
 ```
 
-Then open diagnostics:
+## What can be removed during rollback
+
+The following Stage 27A-only files can be removed or ignored:
 
 ```text
-https://karthik-sridharan.github.io/Presentation_maker/diagnostics-stage23b2.html?v=stage23b2-rollback-check
+js/diagnostics-stage27a.js
+js/module-manifest-stage27a.js
+js/esm/utils-stage27a.mjs
+js/esm/block-style-stage27a.mjs
+js/es-module-smoke-stage27a.mjs
+diagnostics-stage27a.html
+RELEASE_NOTES_STAGE27A.md
+ES_MODULE_MIGRATION_PLAN.md
+STAGE27A_README.txt
+RELEASE_FILES_STAGE27A.json
 ```
 
-Expected diagnostic essentials:
+## Rollback verification
 
-```json
-{
-  "missingAssets": [],
-  "missingGlobals": [],
-  "missingDomIds": [],
-  "basicUiBound": true,
-  "previewHasContent": true,
-  "rendererFunctionBased": true,
-  "uiFunctionBased": true,
-  "manifestLoaded": true,
-  "commandsBound": true,
-  "bootErrors": [],
-  "capturedErrors": []
-}
-```
-
-## If GitHub Pages still serves an old file
-
-Use a new query string:
-
-```text
-?v=rollback-YYYYMMDD-N
-```
-
-Also verify individual asset URLs directly. For example:
-
-```text
-https://karthik-sridharan.github.io/Presentation_maker/js/legacy-app-stage23b2.js?v=rollback-check
-https://karthik-sridharan.github.io/Presentation_maker/js/renderer-stage23b2.js?v=rollback-check
-https://karthik-sridharan.github.io/Presentation_maker/css/styles-stage23b2.css?v=rollback-check
-```
-
-If direct asset URLs 404, the files were not committed/pushed or landed in the wrong folder.
-
-## Stages to avoid using as rollback points
-
-These stages had known startup or cache/file-path problems:
-
-- Stage 6 Copilot split.
-- Stage 21 Copilot split.
-- Stage 23A stable filename attempt, unless fully repaired.
-- Single-file Stage 20 rescue builds, which were only temporary recovery attempts.
-
-## Safe rollback principle
-
-When in doubt, roll back to the last stage with clean diagnostics, not merely the last stage that visually loaded.
+After rollback, confirm the Stage 24C diagnostics report no missing assets/globals/DOM ids and no boot errors.

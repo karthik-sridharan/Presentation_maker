@@ -1,98 +1,90 @@
-# Runtime Inventory — Stage 23B2 Known-Good
+# Runtime Inventory — Stage 27A Checkpoint
 
-This inventory documents the current known-good runtime used before Stage 24A.
+Stage 27A starts ES module migration without changing the core editor behavior. The editor still boots through Stage 24C classic scripts, then a Stage 27A ES module harness runs after those scripts and reports parity diagnostics.
 
-Stage 24A does not alter these runtime files.
-
-## Entry points
+## Root files
 
 ```text
 index.html
-diagnostics-stage23b2.html
+diagnostics.html
+diagnostics-stage27a.html
 ```
 
-## Stylesheet
+## CSS
 
 ```text
-css/styles-stage23b2.css
+css/styles-stage24c.css
 ```
 
-## Script load order
-
-The current app uses classic scripts, loaded in this order:
-
-1. `js/diagnostics-stage23b2.js`
-2. `js/module-manifest-stage23b2.js`
-3. `js/utils-stage23b2.js`
-4. `js/block-library-stage23b2.js`
-5. `js/theme-stage23b2.js`
-6. `js/presets-stage23b2.js`
-7. `js/parser-stage23b2.js`
-8. `js/block-style-stage23b2.js`
-9. `js/import-stage23b2.js`
-10. `js/state-stage23b2.js`
-11. `js/export-stage23b2.js`
-12. `js/renderer-stage23b2.js`
-13. `js/deck-stage23b2.js`
-14. `js/file-io-stage23b2.js`
-15. `js/ui-stage23b2.js`
-16. `js/figure-insert-stage23b2.js`
-17. `js/diagram-editor-stage23b2.js`
-18. `js/figure-tools-stage23b2.js`
-19. `js/editor-selection-stage23b2.js`
-20. `js/block-editor-stage23b2.js`
-21. `js/legacy-app-stage23b2.js`
-22. `js/commands-stage23b2.js`
-
-## External async libraries
-
-These are loaded asynchronously by `index.html`:
+## Classic JavaScript load order
 
 ```text
-MathJax
-html2canvas
-jsPDF
+js/diagnostics-stage27a.js
+js/module-manifest-stage27a.js
+js/utils-stage24c.js
+js/block-library-stage24c.js
+js/theme-stage24c.js
+js/presets-stage24c.js
+js/parser-stage24c.js
+js/block-style-stage24c.js
+js/import-stage24c.js
+js/state-stage24c.js
+js/export-stage24c.js
+js/renderer-stage24c.js
+js/deck-stage24c.js
+js/file-io-stage24c.js
+js/ui-stage24c.js
+js/figure-insert-stage24c.js
+js/diagram-editor-stage24c.js
+js/figure-tools-stage24c.js
+js/editor-selection-stage24c.js
+js/block-editor-stage24c.js
+js/legacy-app-stage24c.js
+js/copilot-stage24c.js
+js/commands-stage24c.js
 ```
 
-They should not block the local app shell from booting.
-
-## Runtime globals expected by diagnostics
-
-Key runtime/global checks include:
+## ES module harness
 
 ```text
-LuminaDiagnostics
-LuminaModuleManifest
-LuminaRendererApi
-LuminaAppCommands
-LuminaCommands
+js/esm/utils-stage27a.mjs
+js/esm/block-style-stage27a.mjs
+js/es-module-smoke-stage27a.mjs
 ```
 
-The renderer API bridge exposes:
+The harness is loaded with:
+
+```html
+<script type="module" src="js/es-module-smoke-stage27a.mjs?v=stage27a-20260425-1"></script>
+```
+
+## External CDNs
+
+These are loaded asynchronously and should not block the local app shell:
 
 ```text
-LuminaRendererApi.buildSlideMarkup
-LuminaRendererApi.normalizeSlide
-LuminaRendererApi.legacyBuildPreview
+https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js
+https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js
+https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js
 ```
 
-## DOM ids expected by diagnostics
-
-Important shell DOM ids include:
+## Important global APIs exposed
 
 ```text
-preview
-deckList
-tabFiles
-tabSlides
-tabInsert
-tabDesign
-tabCopilot
+window.LuminaDiagnostics
+window.LuminaModuleManifest
+window.LuminaRendererApi
+window.LuminaAppCommands
+window.LuminaCommands
+window.LuminaCopilotCore
+window.LuminaCopilotGuard
+window.LuminaCopilotRuntimeStatus
+window.LuminaEsModuleDiagnostics
 ```
 
-## Known caveats
+## Notes
 
-- `legacy-app-stage23b2.js` still contains Copilot logic.
-- Copilot has not yet been safely extracted.
-- Figure crop is still inconsistent and should be repaired with a dedicated test workflow.
-- Stage-tagged files should remain until a stable-file deployment is proven clean.
+- `index.html` remains the safe classic runtime entry point.
+- The new ESM files are not yet authoritative for production behavior.
+- `window.LuminaEsModuleDiagnostics.ok === true` is the gate for continuing ES module conversion.
+- A full ESM runtime should not replace this path until all startup diagnostics and parity checks are stable.
