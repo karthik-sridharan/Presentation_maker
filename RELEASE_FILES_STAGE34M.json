@@ -1,0 +1,16 @@
+{
+  "stage": "stage34m-20260425-1",
+  "kind": "root-relative patch",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "js/legacy-app-stage24c.js",
+    "prompts/deck.txt",
+    "DEPLOY_CHECK_STAGE34M.md",
+    "RELEASE_NOTES_STAGE34M.md",
+    "RELEASE_FILES_STAGE34M.json"
+  ],
+  "feature": "Deck-only Copilot prompt file with built-in fallback",
+  "testUrl": "index.html?v=stage34m-20260425-1&clearLuminaStorage=1"
+}
