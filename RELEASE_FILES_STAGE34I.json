@@ -1,0 +1,11 @@
+{
+  "stage": "stage34i-20260425-1",
+  "files": [
+    "index.html",
+    "js/esm/*.js",
+    "STAGE34I_NOTES.md",
+    "RELEASE_NOTES_STAGE34I.md",
+    "RELEASE_FILES_STAGE34I.json"
+  ],
+  "notes": "Overlay on the current deployed app. Stage 24C classic scripts are still referenced as fallback/shadow runtimes."
+}
