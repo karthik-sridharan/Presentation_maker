@@ -11,11 +11,24 @@
       railMount.appendChild(deckPanel);
     }
     const toggleBtn=document.getElementById('toggleSlideRailBtn');
+    const storageKey='luminaSlideRailCollapsed';
+    function setRailCollapsed(collapsed){
+      if(!railShell) return;
+      railShell.classList.toggle('collapsed', !!collapsed);
+      railShell.dataset.collapsed = collapsed ? '1' : '0';
+      railShell.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      if(railMount) railMount.style.display = collapsed ? 'none' : '';
+      if(toggleBtn) toggleBtn.textContent = collapsed ? 'Show rail' : 'Hide rail';
+      try{ localStorage.setItem(storageKey, collapsed ? '1' : '0'); }catch(_e){}
+    }
+    let initial=false;
+    try{ initial = localStorage.getItem(storageKey) === '1'; }catch(_e){}
+    setRailCollapsed(initial);
     if(toggleBtn && railShell && !toggleBtn.dataset.bound){
       toggleBtn.dataset.bound='1';
-      toggleBtn.addEventListener('click', ()=>{
-        railShell.classList.toggle('collapsed');
-        toggleBtn.textContent = railShell.classList.contains('collapsed') ? 'Show rail' : 'Hide rail';
+      toggleBtn.addEventListener('click', (event)=>{
+        event.preventDefault();
+        setRailCollapsed(!railShell.classList.contains('collapsed'));
       });
     }
   }
