@@ -365,17 +365,40 @@
   .subpane{display:none}
   .subpane.active{display:grid;gap:1rem}
 
-  .editor-shell{max-height:calc(100svh - 1.2rem);overflow:hidden}
+  /* Stage 33A hotfix: keep the slide rail visible.
+     The rail lives below the active editor pane inside .editor-shell.
+     Without explicit grid rows, long editor panes push the rail below the
+     clipped panel because .editor-shell has overflow:hidden. */
+  .editor-shell{
+    max-height:calc(100svh - 1.2rem);
+    overflow:hidden;
+    display:grid;
+    grid-template-rows:auto auto minmax(0,1fr) auto;
+  }
   .editor-intro h1{font-size:2rem}
   .editor-intro .help{max-width:58ch;margin-top:.35rem}
   .mode-bar{position:sticky;top:0;z-index:6;padding:.15rem 0 .2rem;background:linear-gradient(180deg, rgba(10,16,32,.98), rgba(10,16,32,.92))}
   .mode-bar .left-tab{border-radius:999px;padding:.58rem .95rem}
-  .editor-shell>.left-pane.active{overflow:auto;padding-right:.15rem}
-  .slide-rail-shell{margin-top:.35rem;border-top:1px solid rgba(255,255,255,.10);padding-top:.85rem;display:grid;gap:.7rem}
+  .editor-shell>.left-pane.active{min-height:0;overflow:auto;padding-right:.15rem}
+  .slide-rail-shell{min-height:0;margin-top:.35rem;border-top:1px solid rgba(255,255,255,.10);padding-top:.85rem;display:grid;gap:.7rem}
   .slide-rail-header{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
-  .slide-rail-content{display:grid;gap:.7rem;max-height:280px;overflow:auto;padding-right:.15rem}
+  .slide-rail-content{display:grid;gap:.7rem;max-height:min(280px,26svh);overflow:auto;padding-right:.15rem}
   .slide-rail-shell.collapsed .slide-rail-content{display:none}
   .slide-rail-shell .panel{margin:0}
+  .slide-rail-shell.collapsed{gap:.35rem;padding-top:.55rem}
+  .slide-rail-shell.collapsed .slide-rail-header .help{display:none}
+  .slide-rail-shell.collapsed .slide-rail-content{display:none!important}
+  .deck-empty{
+    border:1px dashed rgba(255,255,255,.18);
+    background:rgba(255,255,255,.035);
+    border-radius:14px;
+    padding:.85rem;
+    color:var(--muted);
+    display:grid;
+    gap:.6rem;
+  }
+  .deck-empty strong{color:var(--text)}
+  .deck-empty .btn{justify-self:start}
   .panel.preview-wrap{display:grid;gap:.95rem}
   .panel.preview-wrap>.panel{margin:0}
   .preview-header h2{font-size:1.15rem}
