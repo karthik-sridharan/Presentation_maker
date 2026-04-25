@@ -2,22 +2,22 @@
 
 ## Current checkpoint
 
-**Current migration checkpoint:** Stage 31A  
-**Stage 31A purpose:** expand optional ES module parity coverage to renderer helpers  
-**Runtime behavior changed in Stage 31A:** No intentional editor behavior changes
+**Current migration checkpoint:** Stage 32A  
+**Stage 32A purpose:** expand optional ES module parity coverage to renderer helpers  
+**Runtime behavior changed in Stage 32A:** No intentional editor behavior changes
 
-Stage 31A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from seven helper modules to eight modules, adding renderer helper parity.
+Stage 32A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from seven helper modules to eight modules, adding renderer helper parity.
 
 ## Completed ES module parity coverage
 
-- `js/esm/utils-stage31a.js`
-- `js/esm/block-style-stage31a.js`
-- `js/esm/parser-stage31a.js`
-- `js/esm/import-stage31a.js`
-- `js/esm/state-stage31a.js`
-- `js/esm/theme-stage31a.js`
-- `js/esm/presets-stage31a.js`
-- `js/esm/renderer-stage31a.js`
+- `js/esm/utils-stage32a.js`
+- `js/esm/block-style-stage32a.js`
+- `js/esm/parser-stage32a.js`
+- `js/esm/import-stage32a.js`
+- `js/esm/state-stage32a.js`
+- `js/esm/theme-stage32a.js`
+- `js/esm/presets-stage32a.js`
+- `js/esm/renderer-stage32a.js`
 
 ## Expected diagnostics
 
@@ -46,6 +46,6 @@ Required runtime health should pass with no missing assets/globals/DOM ids and n
 - Figure crop refinement
 
 
-## Stage 31A
+## Stage 32A
 
 Added optional ES module parity leaves for deck, file I/O/import bridge, figure insertion, and reusable block library. Classic Stage 24C remains authoritative.

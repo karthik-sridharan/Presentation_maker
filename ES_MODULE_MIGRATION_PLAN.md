@@ -7,7 +7,7 @@ Move from classic scripts to ES modules in two tracks:
 1. **Parity track:** create ESM copies of low-risk helpers and compare their output against classic globals.
 2. **Boot track:** only after parity is stable, introduce a separate ESM entry point that imports modules in dependency order.
 
-## Stage 31A status
+## Stage 32A status
 
 Completed:
 
@@ -26,14 +26,14 @@ Completed:
 ## Current optional ESM modules
 
 ```text
-js/esm/utils-stage31a.js
-js/esm/block-style-stage31a.js
-js/esm/parser-stage31a.js
-js/esm/import-stage31a.js
-js/esm/state-stage31a.js
-js/esm/theme-stage31a.js
-js/esm/presets-stage31a.js
-js/esm/renderer-stage31a.js
+js/esm/utils-stage32a.js
+js/esm/block-style-stage32a.js
+js/esm/parser-stage32a.js
+js/esm/import-stage32a.js
+js/esm/state-stage32a.js
+js/esm/theme-stage32a.js
+js/esm/presets-stage32a.js
+js/esm/renderer-stage32a.js
 ```
 
 ## Next parity candidates
