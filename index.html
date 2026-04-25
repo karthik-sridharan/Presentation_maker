@@ -942,11 +942,24 @@ window.MathJax = {
       var deckPanel=deckList && deckList.closest('.panel');
       if(railMount && deckPanel && !railMount.contains(deckPanel)) railMount.appendChild(deckPanel);
       var toggleBtn=document.getElementById('toggleSlideRailBtn');
+      var railStorageKey='luminaSlideRailCollapsed';
+      function setRailCollapsed(collapsed){
+        if(!railShell) return;
+        railShell.classList.toggle('collapsed', !!collapsed);
+        railShell.dataset.collapsed = collapsed ? '1' : '0';
+        railShell.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        if(railMount) railMount.style.display = collapsed ? 'none' : '';
+        if(toggleBtn) toggleBtn.textContent = collapsed ? 'Show rail' : 'Hide rail';
+        try{ localStorage.setItem(railStorageKey, collapsed ? '1' : '0'); }catch(_e){}
+      }
+      var initialRailCollapsed=false;
+      try{ initialRailCollapsed = localStorage.getItem(railStorageKey) === '1'; }catch(_e){}
+      setRailCollapsed(initialRailCollapsed);
       if(toggleBtn && railShell && !toggleBtn.dataset.basicLuminaRailBound){
         toggleBtn.dataset.basicLuminaRailBound='1';
-        toggleBtn.addEventListener('click', function(){
-          railShell.classList.toggle('collapsed');
-          toggleBtn.textContent = railShell.classList.contains('collapsed') ? 'Show rail' : 'Hide rail';
+        toggleBtn.addEventListener('click', function(event){
+          event.preventDefault();
+          setRailCollapsed(!railShell.classList.contains('collapsed'));
         });
       }
       window.__LUMINA_BASIC_UI_BOUND = true;
