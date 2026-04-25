@@ -47,3 +47,8 @@ Recommended next steps:
 - Stage-tagged files can remain as rollback artifacts.
 - No Copilot split, no ES modules, and no intended editor behavior changes.
 - Diagnostics live at `diagnostics-stage23a.html` and `diagnostics.html`.
+
+
+## stage23afix2-20260425-1
+
+Cache-proof repair for Stage 23A. Runtime now loads suffixed stage23afix2 filenames to avoid stale stable `legacy-app.js`.
