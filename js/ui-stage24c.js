@@ -4,6 +4,10 @@
   'use strict';
 
   function initUiCleanupLayout(){
+    if(window.LuminaSlideRailApi && typeof window.LuminaSlideRailApi.install === 'function'){
+      window.LuminaSlideRailApi.install();
+      return;
+    }
     const railShell=document.getElementById('slideRailShell');
     const railMount=document.getElementById('slideRailMount');
     const deckPanel=document.getElementById('deckList')?.closest('.panel');
@@ -17,19 +21,23 @@
       railShell.classList.toggle('collapsed', !!collapsed);
       railShell.dataset.collapsed = collapsed ? '1' : '0';
       railShell.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-      if(railMount) railMount.style.display = collapsed ? 'none' : '';
+      const headerText = railShell.querySelector('.slide-rail-header > div');
+      if(railMount){ railMount.hidden = !!collapsed; railMount.style.display = collapsed ? 'none' : ''; }
+      if(headerText){ headerText.hidden = !!collapsed; headerText.style.display = collapsed ? 'none' : ''; }
       if(toggleBtn) toggleBtn.textContent = collapsed ? 'Show rail' : 'Hide rail';
       try{ localStorage.setItem(storageKey, collapsed ? '1' : '0'); }catch(_e){}
     }
     let initial=false;
     try{ initial = localStorage.getItem(storageKey) === '1'; }catch(_e){}
     setRailCollapsed(initial);
-    if(toggleBtn && railShell && !toggleBtn.dataset.bound){
+    if(toggleBtn && railShell && !toggleBtn.dataset.bound && !toggleBtn.dataset.basicLuminaRailBound){
       toggleBtn.dataset.bound='1';
+      toggleBtn.dataset.basicLuminaRailBound='1';
       toggleBtn.addEventListener('click', (event)=>{
         event.preventDefault();
-        setRailCollapsed(!railShell.classList.contains('collapsed'));
-      });
+        event.stopPropagation();
+        setRailCollapsed(!(railShell.dataset.collapsed === '1'));
+      }, true);
     }
   }
 
