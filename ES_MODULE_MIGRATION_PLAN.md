@@ -4,10 +4,10 @@
 
 Move from classic scripts to ES modules in two tracks:
 
-1. **Parity track:** create ESM copies of low-risk leaf helpers and compare their output against classic globals.
+1. **Parity track:** create ESM copies of low-risk helpers and compare their output against classic globals.
 2. **Boot track:** only after parity is stable, introduce a separate ESM entry point that imports modules in dependency order.
 
-## Stage 28D status
+## Stage 29A status
 
 Completed:
 
@@ -15,18 +15,32 @@ Completed:
 - Block/title style helper ESM exports.
 - Structured text parser ESM exports.
 - Import helper/parser ESM exports.
-- Optional browser smoke/parity harness.
-- Diagnostics copy path now includes `window.LuminaEsModuleDiagnostics`.
+- Autosave/state helper ESM exports.
+- Theme/style-builder helper ESM exports.
+- Slide preset ESM exports.
+- Optional browser leaf-import smoke/parity harness.
+- Diagnostics copy path includes `window.LuminaEsModuleDiagnostics`.
 - Classic production runtime remains the Stage 24C script graph.
+
+## Current optional ESM modules
+
+```text
+js/esm/utils-stage29a.js
+js/esm/block-style-stage29a.js
+js/esm/parser-stage29a.js
+js/esm/import-stage29a.js
+js/esm/state-stage29a.js
+js/esm/theme-stage29a.js
+js/esm/presets-stage29a.js
+```
 
 ## Next parity candidates
 
 Add ESM copies and parity checks for:
 
-- Pure pieces of `state-stage24c.js`
-- `theme-stage24c.js`
-- `presets-stage24c.js`
-- Small renderer helpers after dependency boundaries are explicit
+- Renderer helpers with explicit dependencies.
+- Deck/file-IO helpers that can be tested without mutating production state.
+- Small editor helper modules after side-effect boundaries are identified.
 
 Do not replace classic runtime imports yet.
 

@@ -2,18 +2,21 @@
 
 ## Current checkpoint
 
-**Current migration checkpoint:** Stage 28D  
-**Stage 28D purpose:** make the ES module parity harness browser-diagnostic and less fragile  
-**Runtime behavior changed in Stage 28D:** No intentional editor behavior changes
+**Current migration checkpoint:** Stage 29A  
+**Stage 29A purpose:** expand optional ES module parity coverage to state, theme, and presets  
+**Runtime behavior changed in Stage 29A:** No intentional editor behavior changes
 
-Stage 28D keeps the Stage 24C classic-script editor runtime as the authoritative production path. It removes the static-import smoke module from the browser path and instead performs optional leaf-module dynamic imports from an inline classic loader. This should tell us exactly whether any failure is an HTTP/fetch/MIME problem or a specific ESM leaf import failure.
+Stage 29A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It extends the optional ES module parity harness from four leaf modules to seven modules, using dynamic imports that never block the editor from booting.
 
 ## Completed ES module parity coverage
 
-- `js/esm/utils-stage28d.js`
-- `js/esm/block-style-stage28d.js`
-- `js/esm/parser-stage28d.js`
-- `js/esm/import-stage28d.js`
+- `js/esm/utils-stage29a.js`
+- `js/esm/block-style-stage29a.js`
+- `js/esm/parser-stage29a.js`
+- `js/esm/import-stage29a.js`
+- `js/esm/state-stage29a.js`
+- `js/esm/theme-stage29a.js`
+- `js/esm/presets-stage29a.js`
 
 ## Expected diagnostics
 
@@ -35,7 +38,7 @@ Required runtime health should pass:
 }
 ```
 
-The copied report now also includes detailed optional ESM diagnostics:
+The copied report should also include optional ESM diagnostics:
 
 ```json
 {
@@ -43,13 +46,15 @@ The copied report now also includes detailed optional ESM diagnostics:
     "ok": true,
     "status": "passed",
     "loaderMode": "inline-leaf-dynamic-import",
-    "assetProbeResults": [],
-    "leafImportResults": []
-  }
+    "checkCount": 46
+  },
+  "esModuleSmokePassed": true,
+  "esModuleSmokeStatus": "passed",
+  "optionalEsmAssetCount": 7
 }
 ```
 
-Optional ES module status is still environment-dependent. If imports are blocked by `file://`, MIME, CSP, or host configuration, the editor should still boot and the report should identify the failed leaf import or probe.
+The exact `checkCount` may increase if more parity cases are added, but it should not decrease unexpectedly.
 
 ## Still intentionally deferred
 
