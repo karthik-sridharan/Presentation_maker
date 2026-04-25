@@ -7,7 +7,7 @@ Move from classic scripts to ES modules in two tracks:
 1. **Parity track:** create ESM copies of low-risk leaf helpers and compare their output against classic globals.
 2. **Boot-track:** only after parity is stable, introduce a separate ESM entry point that imports modules in dependency order.
 
-## Stage 27A status
+## Stage 27B status
 
 Completed:
 
@@ -39,7 +39,7 @@ Create `index-esm.html` as an experimental entry point. It should:
 
 Promote the ESM entry point only when:
 
-- `diagnostics-stage27a.html` and the future ESM diagnostics page show no missing assets/globals/DOM ids.
+- `diagnostics-stage27b.html` and the future ESM diagnostics page show no missing assets/globals/DOM ids.
 - The preview renders content.
 - Commands and basic UI binding are active.
 - Copilot failures remain isolated from the core editor.

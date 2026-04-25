@@ -2,11 +2,11 @@
 
 ## Current checkpoint
 
-**Current migration checkpoint:** Stage 27A  
-**Stage 27A purpose:** begin ES module migration safely with a non-blocking parity harness  
-**Runtime behavior changed in Stage 27A:** No intentional editor behavior changes
+**Current migration checkpoint:** Stage 27B  
+**Stage 27B purpose:** begin ES module migration safely with a non-blocking parity harness  
+**Runtime behavior changed in Stage 27B:** No intentional editor behavior changes
 
-Stage 27A keeps the Stage 24C classic-script editor runtime as the authoritative production path. It adds ES module copies of the first low-risk leaf helpers and a browser smoke/parity harness that imports those modules after the app boots, compares them against the existing classic globals, and exposes the result as `window.LuminaEsModuleDiagnostics`.
+Stage 27B keeps the Stage 24C classic-script editor runtime as the authoritative production path. It adds ES module copies of the first low-risk leaf helpers and a browser smoke/parity harness that imports those modules after the app boots, compares them against the existing classic globals, and exposes the result as `window.LuminaEsModuleDiagnostics`.
 
 This is deliberately an incremental bridge instead of a full script-loader rewrite. The next ES module stage can move more leaf modules once the diagnostics stay clean in production.
 
@@ -14,7 +14,7 @@ This is deliberately an incremental bridge instead of a full script-loader rewri
 
 ```text
 index.html
-diagnostics-stage27a.html
+diagnostics-stage27b.html
 diagnostics.html
 ```
 
@@ -64,14 +64,14 @@ diagnostics.html
 - Diagnostics/manifest
 - Guarded Copilot binding and validation
 
-## Stage 27A additions
+## Stage 27B additions
 
-- `js/esm/utils-stage27a.mjs` exports the shared utility helpers as ES modules.
-- `js/esm/block-style-stage27a.mjs` exports block/title style helpers as ES modules.
-- `js/es-module-smoke-stage27a.mjs` imports those ESM helpers and validates parity with `window.LuminaUtils` and `window.LuminaBlockStyle`.
-- `js/diagnostics-stage27a.js` reports `esModuleDiagnostics` and fails startup diagnostics if the ESM smoke check is missing or failed.
-- `js/module-manifest-stage27a.js` tracks the classic runtime plus the new ESM harness assets.
-- `diagnostics-stage27a.html` boots the app in a hidden iframe and checks both asset availability and runtime diagnostics.
+- `js/esm/utils-stage27b.js` exports the shared utility helpers as ES modules.
+- `js/esm/block-style-stage27b.js` exports block/title style helpers as ES modules.
+- `js/es-module-smoke-stage27b.js` imports those ESM helpers and validates parity with `window.LuminaUtils` and `window.LuminaBlockStyle`.
+- `js/diagnostics-stage27b.js` reports `esModuleDiagnostics` and fails startup diagnostics if the ESM smoke check is missing or failed.
+- `js/module-manifest-stage27b.js` tracks the classic runtime plus the new ESM harness assets.
+- `diagnostics-stage27b.html` boots the app in a hidden iframe and checks both asset availability and runtime diagnostics.
 
 ## Still intentionally deferred
 
