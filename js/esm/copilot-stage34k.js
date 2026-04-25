@@ -19,6 +19,16 @@ function createApi(deps){
   const COPILOT_API_KEY_STORAGE = deps.apiKeyStorage || 'html-presentation-generator-openai-api-key-v1';
   const COPILOT_SETTINGS_STORAGE = deps.settingsStorage || 'html-presentation-generator-copilot-settings-v1';
   const COPILOT_DEFAULT_ENDPOINT = deps.defaultEndpoint || 'https://api.openai.com/v1/responses';
+  const COPILOT_DECK_PROMPT_FILE = deps.deckPromptFile || 'prompts/deck.txt';
+  const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
+    'Deck-level generation instructions:',
+    'Create a coherent complete presentation, not a loose collection of slides.',
+    'Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.',
+    'Make slide titles specific and informative.',
+    'Use speaker notes to explain transitions, emphasis, and teaching guidance.',
+    'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
+  ].join('\n');
+  let deckPromptPrefixCache = null;
   const store = deps.localStorage || (typeof globalThis !== 'undefined' ? globalThis.localStorage : null);
   const fetchImpl = deps.fetch || (typeof globalThis !== 'undefined' ? globalThis.fetch : null);
   const showToast = typeof deps.showToast === 'function' ? deps.showToast : noop;
@@ -26,14 +36,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34l-20260425-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34m-20260425-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage34l-20260425-1', lastRuntimeLoadedAt:new Date().toISOString() });
+  updateCopilotRuntime({ stage:'stage34m-20260425-1', lastRuntimeLoadedAt:new Date().toISOString(), deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -230,21 +240,71 @@ function createApi(deps){
       }))
     };
   }
-  function buildCopilotUserPrompt(kind){
+  function deckPromptUrl(){
+    const base = safeString(COPILOT_DECK_PROMPT_FILE || 'prompts/deck.txt').trim() || 'prompts/deck.txt';
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage34m-20260425-1');
+    if(/^data:/i.test(base)) return base;
+    return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
+  }
+  async function loadDeckPromptPrefix(){
+    if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
+    let fileText = '';
+    let source = 'builtin-default';
+    let status = 'builtin-default';
+    try{
+      if(typeof fetchImpl === 'function'){
+        const url = deckPromptUrl();
+        const res = await fetchImpl(url, { cache:'no-store' });
+        if(res && res.ok){
+          fileText = safeString(await res.text()).trim();
+          if(fileText){
+            source = COPILOT_DECK_PROMPT_FILE;
+            status = 'loaded-file';
+          }else{
+            status = 'blank-file-used-builtin-default';
+          }
+        }else if(res){
+          status = 'file-http-' + res.status + '-used-builtin-default';
+        }
+      }else{
+        status = 'fetch-unavailable-used-builtin-default';
+      }
+    }catch(err){
+      status = 'file-load-error-used-builtin-default';
+      updateCopilotRuntime({ deckPromptLastError: (err && err.message) || safeString(err) });
+    }
+    deckPromptPrefixCache = fileText || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
+    updateCopilotRuntime({
+      deckPromptFile: COPILOT_DECK_PROMPT_FILE,
+      deckPromptSource: source,
+      deckPromptStatus: status,
+      deckPromptAppliesTo: 'deck-only',
+      deckPromptLoadedAt: new Date().toISOString()
+    });
+    return deckPromptPrefixCache;
+  }
+  async function buildCopilotUserPrompt(kind){
     const prompt = (copilotEls.prompt?.value || '').trim();
     if(!prompt) throw new Error('Tell Copilot what to create first.');
     const count = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || 1)));
     const tone = copilotEls.tone?.value || 'clear and concise';
     const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
-    return [
-      mode,
+    const parts = [mode];
+    if(kind === 'deck'){
+      const deckPromptPrefix = await loadDeckPromptPrefix();
+      if(deckPromptPrefix){
+        parts.push('Deck prompt file instructions (from prompts/deck.txt, or built-in fallback if missing/blank):\n' + deckPromptPrefix);
+      }
+    }
+    parts.push(
       'User request: ' + prompt,
       'Target slide count: ' + (kind === 'deck' ? count : 1),
       'Tone/style: ' + tone,
       'Current deck context JSON:',
       JSON.stringify(compactDeckForCopilot(), null, 2),
       'Important: output JSON with deckTitle, summary, and slides. For single-slide requests, slides must contain exactly one slide.'
-    ].join('\n\n');
+    );
+    return parts.join('\n\n');
   }
   function extractResponsesOutputText(data){
     if(data && typeof data.output_text === 'string') return data.output_text;
@@ -267,11 +327,12 @@ function createApi(deps){
     updateCopilotKeyWarning();
     const headers = { 'Content-Type':'application/json' };
     if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
+    const userPrompt = await buildCopilotUserPrompt(kind);
     const body = {
       model,
       input:[
         { role:'system', content: copilotSystemPrompt() },
-        { role:'user', content: buildCopilotUserPrompt(kind) }
+        { role:'user', content: userPrompt }
       ],
       text:{ format:{ type:'json_schema', name:'presentation_deck', schema:copilotDeckSchema(), strict:true } },
       store:false
@@ -405,7 +466,7 @@ function createApi(deps){
   }
 
   return Object.freeze({
-    __stage:'stage34l-20260425-1',
+    __stage:'stage34m-20260425-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
@@ -423,6 +484,7 @@ function createApi(deps){
     copilotSystemPrompt: maybeClassic('copilotSystemPrompt', copilotSystemPrompt),
     compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
     buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
+    loadDeckPromptPrefix: maybeClassic('loadDeckPromptPrefix', loadDeckPromptPrefix),
     extractResponsesOutputText: maybeClassic('extractResponsesOutputText', extractResponsesOutputText),
     callCopilot: maybeClassic('callCopilot', callCopilot),
     normalizeCopilotDeck: maybeClassic('normalizeCopilotDeck', normalizeCopilotDeck),
