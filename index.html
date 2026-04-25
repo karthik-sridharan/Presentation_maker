@@ -24,7 +24,7 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage21b-20260425-1';
+window.LUMINA_STAGE = 'stage21b-20260425-1-diagnostics-fix';
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage21b.css",
   "js/diagnostics-stage21b.js",
@@ -49,7 +49,7 @@ window.LUMINA_EXPECTED_ASSETS = [
   "js/legacy-app-stage21b.js"
 ];
 </script>
-<script src="js/diagnostics-stage21b.js?v=stage21b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage21b.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage21b.js')"></script>
+<script src="js/diagnostics-stage21b.js?v=stage21b-diagnostics-fix-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage21b.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage21b.js')"></script>
 
 
 <link rel="stylesheet" href="css/styles-stage21b.css?v=stage21b-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage21b.css')" />
@@ -931,7 +931,7 @@ window.MathJax = {
 <script>
 setTimeout(function(){
   try{
-    var checks=['LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaRenderer','LuminaDeck','LuminaFileIo','LuminaUi','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor'];
+    var checks=['LuminaUtils','LuminaBlockLibrary','LuminaTheme','LuminaPresets','LuminaParser','LuminaBlockStyle','LuminaImport','LuminaState','LuminaExport','LuminaDeck','LuminaFileIo','LuminaFigureInsert','LuminaDiagramEditor','LuminaFigureTools','LuminaEditorSelection','LuminaBlockEditor'];
     var missing=checks.filter(function(k){return !window[k];});
     if(missing.length) window.luminaBootError && window.luminaBootError('Missing globals after startup: '+missing.join(', '));
     if(!window.__LUMINA_BASIC_UI_BOUND) window.luminaBootError && window.luminaBootError('Basic UI binding marker missing.');

@@ -51,3 +51,8 @@ http://localhost:8000/index.html?v=stage21b-20260425-1&clearLuminaStorage=1
 ```text
 http://localhost:8000/diagnostics-stage21b.html?v=stage21b-20260425-1
 ```
+
+
+## Stage 21B diagnostics fix
+
+Corrected diagnostics false positives: renderer and UI are function-based modules in the current classic-script migration, and the slide rail list id is `deckList`, not `slideList`. Runtime/editor behavior is unchanged.
