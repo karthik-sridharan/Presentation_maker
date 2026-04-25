@@ -1,0 +1,10 @@
+{
+  "stage": "stage34j-20260425-1",
+  "purpose": "Fresh redeploy marker for guarded live ESM export/UI promotion after the stage34i URL still served stage34h index.html.",
+  "expected_optional_esm_asset_count": 19,
+  "new_live_esm_modules": [
+    "js/esm/export-stage34j.js",
+    "js/esm/ui-stage34j.js"
+  ],
+  "deploy_mismatch_rule": "If stageFromWindow or indexStageSignature still says stage34h, replace the root index.html from this package."
+}
