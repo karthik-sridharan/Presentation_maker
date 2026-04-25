@@ -24,8 +24,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage34a-20260425-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34a-command-diagnostics-hardfix-20260425-2';
+window.LUMINA_STAGE = 'stage34b-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34b-live-esm-commands-20260425-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -54,45 +54,45 @@ window.LUMINA_EXPECTED_ASSETS = [
   "js/commands-stage24c.js"
 ];
 window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
-  "js/esm/utils-stage34a.js",
-  "js/esm/block-style-stage34a.js",
-  "js/esm/parser-stage34a.js",
-  "js/esm/import-stage34a.js",
-  "js/esm/state-stage34a.js",
-  "js/esm/theme-stage34a.js",
-  "js/esm/presets-stage34a.js",
-  "js/esm/renderer-stage34a.js",
-  "js/esm/deck-stage34a.js",
-  "js/esm/file-io-stage34a.js",
-  "js/esm/figure-insert-stage34a.js",
-  "js/esm/block-library-stage34a.js",
-  "js/esm/editor-selection-stage34a.js",
-  "js/esm/block-editor-stage34a.js",
-  "js/esm/diagram-editor-stage34a.js",
-  "js/esm/figure-tools-stage34a.js",
-  "js/esm/commands-stage34a.js"
+  "js/esm/utils-stage34b.js",
+  "js/esm/block-style-stage34b.js",
+  "js/esm/parser-stage34b.js",
+  "js/esm/import-stage34b.js",
+  "js/esm/state-stage34b.js",
+  "js/esm/theme-stage34b.js",
+  "js/esm/presets-stage34b.js",
+  "js/esm/renderer-stage34b.js",
+  "js/esm/deck-stage34b.js",
+  "js/esm/file-io-stage34b.js",
+  "js/esm/figure-insert-stage34b.js",
+  "js/esm/block-library-stage34b.js",
+  "js/esm/editor-selection-stage34b.js",
+  "js/esm/block-editor-stage34b.js",
+  "js/esm/diagram-editor-stage34b.js",
+  "js/esm/figure-tools-stage34b.js",
+  "js/esm/commands-stage34b.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage34a-20260425-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage34b-20260425-1';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage34a-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage34b-20260425-1',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
     domIds: base.domIds || [],
     notes: (base.notes || []).concat([
-      'Stage 34A keeps the Stage 24C classic runtime authoritative.',
-      'No new stage-numbered JavaScript file is required for startup.',
-      'ES module parity runs through inline optional leaf dynamic imports with fetch/MIME probes.'
+      'Stage 34B keeps the Stage 24C classic runtime authoritative except guarded live ESM commands.',
+      'Commands are now booted from js/esm/commands-stage34b.js with a suppressed classic shadow/fallback.',
+      'ES module parity still runs through inline optional leaf dynamic imports with fetch/MIME probes.'
     ]),
     loadOrder: required
   });
@@ -100,7 +100,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage34a-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage34b-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <script>
 
@@ -1091,56 +1091,161 @@ window.MathJax = {
   else bindBasicLuminaUi();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage24c.js')"></script>
-<script src="js/commands-stage24c.js?v=stage34a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/utils-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage24c.js?v=stage34b-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage24c.js')"></script>
+<script>
+/* Stage 34B: load classic commands as a shadow baseline, but suppress its keydown binding.
+   The live command runtime is installed by js/esm/commands-stage34b.js below. */
+(function(){
+  'use strict';
+  var W = window;
+  var doc = document;
+  var originalAdd = doc.addEventListener;
+  var shadow = W.__LUMINA_STAGE34B_COMMANDS_SHADOW = {
+    stage: W.LUMINA_STAGE || 'stage34b-20260425-1',
+    suppressing: true,
+    suppressedKeydown: 0,
+    suppressedDomReady: 0,
+    classicReady: false,
+    restored: false
+  };
+  function restore(){
+    if(shadow.restored) return;
+    doc.addEventListener = originalAdd;
+    shadow.suppressing = false;
+    shadow.restored = true;
+  }
+  doc.addEventListener = function(type, handler, options){
+    if(shadow.suppressing && (type === 'keydown' || type === 'DOMContentLoaded')){
+      if(type === 'keydown') shadow.suppressedKeydown += 1;
+      if(type === 'DOMContentLoaded') shadow.suppressedDomReady += 1;
+      return;
+    }
+    return originalAdd.apply(this, arguments);
+  };
+  W.__LUMINA_STAGE34B_CAPTURE_CLASSIC_COMMANDS = function(){
+    try{
+      if(W.LuminaCommands && typeof W.LuminaCommands.initShortcuts === 'function'){
+        W.LuminaCommands.initShortcuts();
+        W.LuminaClassicCommandsStage34B = W.LuminaCommands;
+        shadow.classicReady = true;
+        shadow.classicCommandCount = W.LuminaCommands.list ? W.LuminaCommands.list().length : null;
+        shadow.classicShortcutCount = W.LuminaCommands.describeShortcuts ? W.LuminaCommands.describeShortcuts().length : null;
+      }
+    }catch(e){
+      shadow.classicError = String(e && (e.stack || e.message) || e);
+      W.luminaBootError && W.luminaBootError('Stage 34B classic command shadow failed: ' + shadow.classicError);
+    }finally{
+      restore();
+    }
+  };
+  W.__LUMINA_STAGE34B_RESTORE_COMMAND_PATCH = restore;
+})();
+</script>
+<script src="js/commands-stage24c.js?v=stage34b-20260425-1" onload="window.__LUMINA_STAGE34B_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34B_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34B_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34B_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script type="module">
+/* Stage 34B: guarded live ESM runtime for Commands. */
+const W = window;
+const STAGE = W.LUMINA_STAGE || 'stage34b-20260425-1';
+const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
+function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
+function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
+function markFailed(asset, message){
+  if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markOptionalFailed === 'function') W.LuminaDiagnostics.markOptionalFailed(asset, message);
+  else if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markFailed === 'function') W.LuminaDiagnostics.markFailed(asset);
+}
+function loadClassicFallback(reason){
+  return new Promise((resolve, reject)=>{
+    const script = document.createElement('script');
+    script.src = 'js/commands-stage24c.js?v=' + encodeURIComponent(STAGE) + '&classicFallback=1';
+    script.onload = function(){
+      W.__LUMINA_COMMANDS_RUNTIME_SOURCE = 'classic-fallback:js/commands-stage24c.js';
+      status.commands = Object.freeze({ ok:true, source:'classic-fallback', reason:String(reason || ''), bound:!!W.__LUMINA_COMMANDS_BOUND, loadedAt:new Date().toISOString() });
+      markLoaded('js/commands-stage24c.js');
+      resolve();
+    };
+    script.onerror = function(){
+      const message = 'Stage 34B command fallback failed after ESM error: ' + reason;
+      status.commands = Object.freeze({ ok:false, source:'failed', error:message, loadedAt:new Date().toISOString() });
+      W.luminaBootError && W.luminaBootError(message);
+      reject(new Error(message));
+    };
+    document.head.appendChild(script);
+  });
+}
+try{
+  const module = await import('./js/esm/commands-stage34b.js?v=' + encodeURIComponent(STAGE) + '&live=1');
+  if(!module || typeof module.createApi !== 'function') throw new Error('commands-stage34b.js did not export createApi');
+  const api = module.createApi(W);
+  W.LuminaCommands = api;
+  W.__LUMINA_COMMANDS_RUNTIME_SOURCE = 'esm:js/esm/commands-stage34b.js';
+  W.__LUMINA_COMMANDS_BOUND = false;
+  api.initShortcuts();
+  status.commands = Object.freeze({
+    ok:true,
+    source:'esm',
+    asset:'js/esm/commands-stage34b.js',
+    bound:!!W.__LUMINA_COMMANDS_BOUND,
+    commandCount: api.list ? api.list().length : null,
+    shortcutCount: api.describeShortcuts ? api.describeShortcuts().length : null,
+    classicShadowReady: !!W.LuminaClassicCommandsStage34B,
+    loadedAt:new Date().toISOString()
+  });
+  markLoaded('js/esm/commands-stage34b.js');
+}catch(error){
+  const message = shortError(error);
+  markFailed('js/esm/commands-stage34b.js', message);
+  try{ await loadClassicFallback(message); }
+  catch(fallbackError){ console.error(fallbackError); }
+}
+</script>
 
 <script>
-/* Stage 34A: inline optional ES-module leaf importer + parity harness.
+/* Stage 34B: inline optional ES-module leaf importer + parity harness.
    This must never block the classic Stage 24C runtime. It avoids a static-import
    smoke module so browser reports can isolate fetch/MIME/syntax/import problems. */
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34a-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34b-20260425-1';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
-    'js/esm/utils-stage34a.js': 'utils',
-    'js/esm/block-style-stage34a.js': 'blockStyle',
-    'js/esm/parser-stage34a.js': 'parser',
-    'js/esm/import-stage34a.js': 'importHelpers',
-    'js/esm/state-stage34a.js': 'state',
-    'js/esm/theme-stage34a.js': 'theme',
-    'js/esm/presets-stage34a.js': 'presets',
-    'js/esm/renderer-stage34a.js': 'renderer',
-    'js/esm/deck-stage34a.js': 'deck',
-    'js/esm/file-io-stage34a.js': 'fileIo',
-    'js/esm/figure-insert-stage34a.js': 'figureInsert',
-    'js/esm/block-library-stage34a.js': 'blockLibrary',
-    'js/esm/editor-selection-stage34a.js': 'editorSelection',
-    'js/esm/block-editor-stage34a.js': 'blockEditor',
-    'js/esm/diagram-editor-stage34a.js': 'diagramEditor',
-    'js/esm/figure-tools-stage34a.js': 'figureTools',
-    'js/esm/commands-stage34a.js': 'commands'
+    'js/esm/utils-stage34b.js': 'utils',
+    'js/esm/block-style-stage34b.js': 'blockStyle',
+    'js/esm/parser-stage34b.js': 'parser',
+    'js/esm/import-stage34b.js': 'importHelpers',
+    'js/esm/state-stage34b.js': 'state',
+    'js/esm/theme-stage34b.js': 'theme',
+    'js/esm/presets-stage34b.js': 'presets',
+    'js/esm/renderer-stage34b.js': 'renderer',
+    'js/esm/deck-stage34b.js': 'deck',
+    'js/esm/file-io-stage34b.js': 'fileIo',
+    'js/esm/figure-insert-stage34b.js': 'figureInsert',
+    'js/esm/block-library-stage34b.js': 'blockLibrary',
+    'js/esm/editor-selection-stage34b.js': 'editorSelection',
+    'js/esm/block-editor-stage34b.js': 'blockEditor',
+    'js/esm/diagram-editor-stage34b.js': 'diagramEditor',
+    'js/esm/figure-tools-stage34b.js': 'figureTools',
+    'js/esm/commands-stage34b.js': 'commands'
   };
   function now() { return new Date().toISOString(); }
   function warn(message) {
@@ -2003,6 +2108,7 @@ window.MathJax = {
       };
     }
     if (mods.commands && W.LuminaCommands) {
+      var classicCommandsSource = W.LuminaClassicCommandsStage34B || W.LuminaCommands;
       var classicCommandsAdapter = {
         createApi: function(g){
           var saved = {
@@ -2017,27 +2123,27 @@ window.MathJax = {
           document.addEventListener = function(type, handler, capture){ g.document.addEventListener(type, handler, capture); };
           try{
             return {
-              register: W.LuminaCommands.register,
-              run: W.LuminaCommands.run,
-              list: W.LuminaCommands.list,
+              register: classicCommandsSource.register,
+              run: classicCommandsSource.run,
+              list: classicCommandsSource.list,
               initShortcuts: function(){
                 g.__LUMINA_COMMANDS_BOUND = true;
                 if(!g.document.listeners.length) g.document.addEventListener('keydown', function(){}, true);
-                return W.LuminaCommands.initShortcuts();
+                return classicCommandsSource.initShortcuts();
               },
-              describeShortcuts: W.LuminaCommands.describeShortcuts,
-              _isEditableTarget: W.LuminaCommands._isEditableTarget,
-              _keyLabel: W.LuminaCommands._keyLabel,
+              describeShortcuts: classicCommandsSource.describeShortcuts,
+              _isEditableTarget: classicCommandsSource._isEditableTarget,
+              _keyLabel: classicCommandsSource._keyLabel,
               _handleKeydown: function(evt){
-                var editable = W.LuminaCommands._isEditableTarget(evt.target);
+                var editable = classicCommandsSource._isEditableTarget(evt.target);
                 if(editable && !(evt.code === 'KeyS' && (evt.metaKey || evt.ctrlKey) && !evt.altKey)) return;
-                var shortcuts = W.LuminaCommands.describeShortcuts();
-                var label = W.LuminaCommands._keyLabel(evt);
+                var shortcuts = classicCommandsSource.describeShortcuts();
+                var label = classicCommandsSource._keyLabel(evt);
                 for(var i=0;i<shortcuts.length;i++){
                   if(shortcuts[i].shortcut !== label) continue;
                   if(evt.preventDefault) evt.preventDefault();
                   if(evt.stopPropagation) evt.stopPropagation();
-                  return W.LuminaCommands.run(shortcuts[i].commandId);
+                  return classicCommandsSource.run(shortcuts[i].commandId);
                 }
               },
               _restore: function(){
@@ -2076,7 +2182,8 @@ window.MathJax = {
           keyLabel: r.keyLabel
         };
       }
-      check(checks, 'classic LuminaCommands available', typeof W.LuminaCommands.initShortcuts === 'function');
+      check(checks, 'classic LuminaCommands shadow available', !!classicCommandsSource && typeof classicCommandsSource.initShortcuts === 'function');
+      check(checks, 'live LuminaCommands sourced from guarded ESM', W.__LUMINA_COMMANDS_RUNTIME_SOURCE === 'esm:js/esm/commands-stage34b.js', { source: W.__LUMINA_COMMANDS_RUNTIME_SOURCE || '', liveStatus: W.LuminaLiveRuntimeStatus && W.LuminaLiveRuntimeStatus.commands });
       var esmCommandsWorkflow = runCommandsWorkflow(mods.commands);
       var classicCommandsWorkflow = runClassicCommandsWorkflow(classicCommandsAdapter);
       sameJson(checks, 'commands registry and shortcut metadata parity', stableCommandParitySummary(esmCommandsWorkflow), stableCommandParitySummary(classicCommandsWorkflow));
@@ -2086,7 +2193,7 @@ window.MathJax = {
     return checks;
   }
 
-  setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'pending', migrationMode: 'inline optional leaf dynamic imports; classic runtime remains authoritative', loaderMode: 'inline-leaf-dynamic-import' });
+  setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'pending', migrationMode: 'inline optional leaf dynamic imports; commands live from guarded ESM; classic runtime otherwise authoritative', loaderMode: 'inline-leaf-dynamic-import' });
   var params;
   try { params = new URLSearchParams(W.location.search || ''); } catch (e) { params = { has: function () { return false; } }; }
   if (params.has('disableEsModuleSmoke')) { setReport({ stage: STAGE, checkedAt: now(), ok: null, status: 'disabled', reason: 'disableEsModuleSmoke query parameter present' }); return; }
@@ -2124,7 +2231,7 @@ window.MathJax = {
           assetProbeResults: probeResults,
           leafImportResults: importResults,
           loaderMode: 'inline-leaf-dynamic-import',
-          migrationMode: 'classic runtime unaffected; one or more optional ESM leaf imports failed'
+          migrationMode: 'live ESM commands guarded; one or more optional ESM leaf imports failed'
         });
         return;
       }
@@ -2146,9 +2253,9 @@ window.MathJax = {
         assetProbeResults: probeResults,
         leafImportResults: importResults,
         loaderMode: 'inline-leaf-dynamic-import',
-        migrationMode: 'non-blocking ESM leaf parity harness; classic runtime remains authoritative'
+        migrationMode: 'guarded live ESM commands plus non-blocking ESM leaf parity harness; classic runtime otherwise authoritative'
       });
-      if (failed.length) warn('Stage 34A ES module parity checks failed: ' + failed.map(function (item) { return item.name; }).join(', '));
+      if (failed.length) warn('Stage 34B ES module parity checks failed: ' + failed.map(function (item) { return item.name; }).join(', '));
     });
   }).catch(function (e) {
     setReport({ stage: STAGE, checkedAt: now(), ok: false, status: 'probe-or-import-threw', error: shortError(e), loaderMode: 'inline-leaf-dynamic-import' });
@@ -2157,13 +2264,13 @@ window.MathJax = {
 </script>
 
 <script>
-/* Stage 34A: diagnostics copy decorator.
+/* Stage 34B: diagnostics copy decorator.
    Some deployments may still have an older diagnostics-stage24c.js cached or copied.
    Keep startup unchanged, but ensure copied reports surface LuminaEsModuleDiagnostics. */
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34a-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage34b-20260425-1';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }
@@ -2180,12 +2287,15 @@ window.MathJax = {
     report.stageFromWindow = W.LUMINA_STAGE || null;
     report.indexStageSignature = W.LUMINA_STAGE_SIGNATURE || null;
     report.indexDatasetStage = document.documentElement ? document.documentElement.getAttribute('data-lumina-stage') : null;
-    report.diagnosticsDecorator = 'stage34a-inline-forced';
+    report.diagnosticsDecorator = 'stage34b-inline-forced';
     report.esModuleDiagnostics = esm;
     report.esModuleSmokePassed = !!(esm && esm.ok === true);
     report.esModuleSmokeStatus = esmStatus(esm);
     report.optionalEsmAssets = optional;
     report.optionalEsmAssetCount = optional.length;
+    report.liveRuntimeStatus = W.LuminaLiveRuntimeStatus || null;
+    report.commandRuntimeSource = W.__LUMINA_COMMANDS_RUNTIME_SOURCE || null;
+    report.classicCommandsShadowReady = !!W.LuminaClassicCommandsStage34B;
     report.esModuleDiagnosticsCapturedAt = new Date().toISOString();
     return report;
   }
@@ -2208,7 +2318,7 @@ window.MathJax = {
   }
   function decorate() {
     var D = W.LuminaDiagnostics;
-    if (!D || D.__stage34aEsmCopyDecorator) return;
+    if (!D || D.__stage34bEsmCopyDecorator) return;
     D.stage = STAGE;
     var originalCollect = typeof D.collectReport === 'function' ? D.collectReport : null;
     D.collectReport = function () {
@@ -2224,8 +2334,8 @@ window.MathJax = {
       }
       return Promise.resolve(text);
     };
-    D.__stage34aEsmCopyDecorator = true;
-    W.LuminaStage34aReport = function () { return D.collectReport(); };
+    D.__stage34bEsmCopyDecorator = true;
+    W.LuminaStage34bReport = function () { return D.collectReport(); };
   }
   decorate();
   setTimeout(decorate, 0);

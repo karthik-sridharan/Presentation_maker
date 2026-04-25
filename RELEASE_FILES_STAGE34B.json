@@ -1,0 +1,26 @@
+{
+  "stage": "stage34b-20260425-1",
+  "files": [
+    "index.html",
+    "js/esm/block-editor-stage34b.js",
+    "js/esm/block-library-stage34b.js",
+    "js/esm/block-style-stage34b.js",
+    "js/esm/commands-stage34b.js",
+    "js/esm/deck-stage34b.js",
+    "js/esm/diagram-editor-stage34b.js",
+    "js/esm/editor-selection-stage34b.js",
+    "js/esm/figure-insert-stage34b.js",
+    "js/esm/figure-tools-stage34b.js",
+    "js/esm/file-io-stage34b.js",
+    "js/esm/import-stage34b.js",
+    "js/esm/parser-stage34b.js",
+    "js/esm/presets-stage34b.js",
+    "js/esm/renderer-stage34b.js",
+    "js/esm/state-stage34b.js",
+    "js/esm/theme-stage34b.js",
+    "js/esm/utils-stage34b.js",
+    "STAGE34B_NOTES.md",
+    "RELEASE_NOTES_STAGE34B.md",
+    "RELEASE_FILES_STAGE34B.json"
+  ]
+}
