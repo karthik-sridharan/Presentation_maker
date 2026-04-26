@@ -75,7 +75,8 @@ function createApi(globalLike) {
   }
   function handleKeydown(evt){
     var editable = isEditableTarget(evt.target);
-    if(editable && !(evt.code === 'KeyS' && (evt.metaKey || evt.ctrlKey) && !evt.altKey)) return;
+    var appEditableShortcut = ((evt.code === 'KeyS' || evt.code === 'KeyZ' || evt.code === 'KeyY') && (evt.metaKey || evt.ctrlKey) && !evt.altKey);
+    if(editable && !appEditableShortcut) return;
     for(var i=0; i<shortcuts.length; i++){
       var shortcut = shortcuts[i];
       if(!matches(evt, shortcut)) continue;
@@ -103,11 +104,19 @@ function createApi(globalLike) {
     register('block.delete', 'Delete selected block', function(){ return app().deleteBlock && app().deleteBlock(); }, { group: 'Blocks' });
     register('block.moveUp', 'Move block up', function(){ return app().moveBlock && app().moveBlock(-1); }, { group: 'Blocks' });
     register('block.moveDown', 'Move block down', function(){ return app().moveBlock && app().moveBlock(1); }, { group: 'Blocks' });
+    register('history.undo', 'Undo', function(){ return app().undo && app().undo(); }, { group: 'History' });
+    register('history.redo', 'Redo', function(){ return app().redo && app().redo(); }, { group: 'History' });
     register('modal.closeFigure', 'Close figure modal', function(){ return app().closeFigureModal && app().closeFigureModal(); }, { group: 'UI' });
   }
   function registerDefaultShortcuts(){
     addShortcut('KeyS', 'deck.saveCurrent', { ctrlKey: true, allowInEditable: true });
     addShortcut('KeyS', 'deck.saveCurrent', { metaKey: true, allowInEditable: true });
+    addShortcut('KeyZ', 'history.undo', { ctrlKey: true, allowInEditable: true });
+    addShortcut('KeyZ', 'history.undo', { metaKey: true, allowInEditable: true });
+    addShortcut('KeyZ', 'history.redo', { ctrlKey: true, shiftKey: true, allowInEditable: true });
+    addShortcut('KeyZ', 'history.redo', { metaKey: true, shiftKey: true, allowInEditable: true });
+    addShortcut('KeyY', 'history.redo', { ctrlKey: true, allowInEditable: true });
+    addShortcut('KeyY', 'history.redo', { metaKey: true, allowInEditable: true });
     addShortcut('KeyP', 'preview.refresh', { altKey: true, shiftKey: true });
     addShortcut('KeyN', 'slide.add', { altKey: true, shiftKey: true });
     addShortcut('KeyU', 'slide.update', { altKey: true, shiftKey: true });
