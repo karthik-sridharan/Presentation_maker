@@ -123,8 +123,9 @@
   .tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem}
   .tool-grid .btn{width:100%}
   .tool-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .inline-checks{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start}
-  .inline-checks label{display:flex;gap:.45rem;align-items:flex-start;white-space:normal;line-height:1.35;max-width:100%}
+  .inline-checks{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;min-width:0;max-width:100%}
+  .inline-checks label{display:flex;gap:.45rem;align-items:flex-start;white-space:normal;line-height:1.35;max-width:100%;min-width:0;flex:1 1 100%;overflow-wrap:anywhere}
+  .inline-checks input[type="checkbox"]{flex:0 0 auto;margin-top:.15rem}
 
   .copy-toast{
     position:fixed;right:1rem;bottom:1rem;background:rgba(15,22,48,.96);border:1px solid rgba(255,255,255,.16);
