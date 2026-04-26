@@ -26,8 +26,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage35y-20260426-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35y-figure-drag-responsiveness-hotfix-20260426-1';
+window.LUMINA_STAGE = 'stage35z-20260426-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35z-figure-actions-drag-selection-hotfix-20260426-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -78,18 +78,18 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
   "js/esm/copilot-stage34k.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage35y-20260426-1',
+    stage: W.LUMINA_STAGE || 'stage35z-20260426-1',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
@@ -105,7 +105,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
       'Stage 35I adds a non-visual contrast audit to copied diagnostics so future white-on-white regressions are easy to detect.',
       'Stage 35Q disables sticky left-panel subtabs so Build/Assets subtabs scroll naturally with their content instead of floating above the scrolled pane.',
       'Stage 35S changes the slide rail from text-only entries to compact thumbnail cards while preserving data-index and deck click behavior.',
-      'Stage 35T adds guarded direct preview editing for visible title, kicker, lede, and text-like content blocks; edits commit back into the existing form and JSON workflow on blur or Ctrl/⌘+Enter. Stage 35U adds double-click figure editing for diagram SVG figures. Stage 35V hotfix adds robust double-tap/click handling and a visible Edit figure button so iPad/Safari users can reopen diagram figures reliably. Stage 35W fixes the save-back path so edited diagrams replace the original SVG instead of being overwritten by the old preview figure. Stage 35X normalizes reopened SVG diagrams to editor-canvas scale, preserves existing figure box geometry when saving back, and removes unintended guide-snap quantization from drag/resize interactions. Stage 35Y keeps figure dragging/resizing freeform during pointer movement, defers guide snapping until release, and leaves Snap to guides off by default for smoother Safari/iPad movement.'
+      'Stage 35T adds guarded direct preview editing for visible title, kicker, lede, and text-like content blocks; edits commit back into the existing form and JSON workflow on blur or Ctrl/⌘+Enter. Stage 35U adds double-click figure editing for diagram SVG figures. Stage 35V hotfix adds robust double-tap/click handling and a visible Edit figure button so iPad/Safari users can reopen diagram figures reliably. Stage 35W fixes the save-back path so edited diagrams replace the original SVG instead of being overwritten by the old preview figure. Stage 35X normalizes reopened SVG diagrams to editor-canvas scale, preserves existing figure box geometry when saving back, and removes unintended guide-snap quantization from drag/resize interactions. Stage 35Z keeps figure dragging/resizing freeform during pointer movement, defers guide snapping until release, and leaves Snap to guides off by default for smoother Safari/iPad movement.'
     ]),
     loadOrder: required
   });
@@ -113,7 +113,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35y-20260426-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35z-20260426-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -1592,6 +1592,22 @@ window.MathJax = {
   }
 </style>
 
+
+<style id="stage35z-figure-selection-actions-css">
+  #preview .figure-embed[data-column],
+  #preview .figure-embed[data-column] *,
+  #preview .figure-box,
+  #preview .figure-box * { touch-action:none !important; -webkit-user-select:none; user-select:none; -webkit-user-drag:none; }
+  #preview .figure-box { cursor:grab !important; position:relative; }
+  #preview .figure-box.selected,
+  #preview .figure-box[data-stage35z-selected="1"] { outline:3px solid rgba(37,99,235,.78) !important; outline-offset:5px !important; box-shadow:0 0 0 7px rgba(37,99,235,.12) !important; }
+  #preview .figure-box.selected .figure-resize-handle,
+  #preview .figure-box[data-stage35z-selected="1"] .figure-resize-handle { opacity:1 !important; pointer-events:auto !important; }
+  #stage35zFigureActionPalette { position:fixed; z-index:2147483601; display:none; align-items:center; flex-wrap:wrap; gap:.32rem; max-width:min(560px,calc(100vw - 18px)); padding:.38rem; border:1px solid rgba(15,42,74,.25); border-radius:14px; background:rgba(255,255,255,.97); box-shadow:0 14px 34px rgba(15,42,74,.26); color:#10233b; font:750 12px/1 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+  #stage35zFigureActionPalette button { border:1px solid rgba(23,54,93,.18); border-radius:999px; padding:.42rem .56rem; background:#eef4fb; color:#17365d; font:inherit; cursor:pointer; touch-action:manipulation; }
+  #stage35zFigureActionPalette button[data-stage35z-primary="1"] { background:#17365d; color:#fff; }
+</style>
+
 </head>
 <body data-beamer-style="${escapeHtml((payload.theme&&payload.theme.beamerStyle)||"classic")}">
 <div class="page">
@@ -1630,7 +1646,7 @@ window.MathJax = {
         <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
       </div>
       <div class="subpane active" data-subpane="edit:slide">
-      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35y-20260426-1">
+      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35z-20260426-1">
         <div class="section-head">
           <div>
             <div class="smallcaps">Quick slide actions</div>
@@ -2429,7 +2445,7 @@ window.MathJax = {
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var STATUS = {
     stage: STAGE,
     directPreviewEdit: true,
@@ -2659,7 +2675,7 @@ window.MathJax = {
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var STATUS = {
     stage: STAGE,
     editableFigures: true,
@@ -3030,7 +3046,7 @@ window.MathJax = {
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var STATUS = {
     stage: STAGE,
     hotfix: true,
@@ -3197,22 +3213,56 @@ window.MathJax = {
 </script>
 
 
-<script id="stage35y-figure-drag-responsiveness-hotfix-status">
+
+<script id="stage35z-figure-selection-actions-script">
+(function(){
+  'use strict';
+  var W=window, STAGE=W.LUMINA_STAGE||'stage35z-20260426-1';
+  var STATUS={stage:STAGE,contextualFigureActions:true,robustFigureBoxSelection:true,freeformTouchDragAssist:true,bound:false,wrappedCount:0,selected:false,selectedHasSvg:false,lastAction:'',lastSelectAt:'',lastError:'',behaviorChanged:false};
+  var selectedBox=null, palette=null;
+  function publish(){ W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS=Object.assign({},STATUS); return W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS; }
+  function byId(id){return document.getElementById(id);} function preview(){return byId('preview');}
+  function toast(m){var a=W.LuminaAppCommands||{}; if(typeof a.showToast==='function') a.showToast(m);}
+  function closestBox(t){return t&&t.closest?t.closest('#preview .figure-box'):null;}
+  function media(box){return box?box.querySelector(':scope > img,:scope > svg,:scope > canvas,:scope > iframe,:scope > figure > img,:scope > figure > svg,:scope > figure > canvas,:scope > figure > iframe'):null;}
+  function meta(box){return box?box.querySelector(':scope > figure[data-figure-kind="image"],:scope > figure[data-box-x],:scope > figure[data-box-y],:scope > figure[data-box-w],:scope > figure[data-box-h]'):null;}
+  function applyMeta(box){var f=meta(box), m=media(box); if(!box||!f||!m) return false; var x=parseFloat(f.dataset.boxX||'0')||0,y=parseFloat(f.dataset.boxY||'0')||0,w=parseFloat(f.dataset.boxW||'')||0,h=parseFloat(f.dataset.boxH||'')||0,ow=parseFloat(f.dataset.originalW||'')||w||m.naturalWidth||220,oh=parseFloat(f.dataset.originalH||'')||h||m.naturalHeight||160; box.style.transform='translate('+Math.round(x)+'px, '+Math.round(y)+'px)'; if(w>0)box.style.width=Math.round(w)+'px'; if(h>0)box.style.height=Math.round(h)+'px'; box.dataset.originalW=String(Math.round(ow)); box.dataset.originalH=String(Math.round(oh)); box.dataset.lockAspect=f.dataset.lockAspect||box.dataset.lockAspect||'1'; box.dataset.userMoved=f.dataset.userMoved||(Math.abs(x)>0.5||Math.abs(y)>0.5?'1':'0'); box.dataset.userSized=f.dataset.userSized||(w>0&&h>0?'1':'0'); box.dataset.crop=f.dataset.crop||box.dataset.crop||'0'; box.dataset.zIndex=f.dataset.zIndex||box.dataset.zIndex||'1'; box.style.zIndex=box.dataset.zIndex; box.dataset.buildIn=f.dataset.buildIn||box.dataset.buildIn||'none'; box.dataset.buildOut=f.dataset.buildOut||box.dataset.buildOut||'none'; box.dataset.stepMode=f.dataset.stepMode||box.dataset.stepMode||'all'; box.dataset.animOrder=f.dataset.animOrder||box.dataset.animOrder||'0'; box.style.overflow=box.dataset.crop==='1'?'hidden':'visible'; m.style.maxWidth='none'; m.style.maxHeight='none'; m.style.touchAction='none'; if(w>0||h>0){m.style.width='100%'; m.style.height='100%'; m.style.objectFit=f.dataset.objectFit||(box.dataset.crop==='1'?'cover':'contain');} return true;}
+  function ensureBox(embed){ if(!embed||!embed.querySelector) return null; var box=embed.querySelector(':scope > .figure-box'), created=false; if(!box){ box=document.createElement('div'); box.className='figure-box'; while(embed.firstChild) box.appendChild(embed.firstChild); embed.appendChild(box); STATUS.wrappedCount++; created=true; } if(!box.querySelector(':scope > .figure-resize-handle')){var h=document.createElement('div');h.className='figure-resize-handle';box.appendChild(h);} box.style.touchAction='none'; box.style.cursor='grab'; box.style.webkitUserSelect='none'; box.style.userSelect='none'; box.querySelectorAll('img,svg,canvas,iframe,figure').forEach(function(el){el.style.touchAction='none';el.style.webkitUserSelect='none';el.style.userSelect='none';try{el.setAttribute('draggable','false');}catch(_){}}); if(!box.style.transform) box.style.transform='translate(0px, 0px)'; if(created || !box.dataset.originalW || !box.dataset.originalH){ if(!applyMeta(box)){ var r=box.getBoundingClientRect(), m=media(box), ow=Math.max(80,Math.round(r.width||(m&&m.naturalWidth)||220)), oh=Math.max(60,Math.round(r.height||(m&&m.naturalHeight)||160)); box.dataset.originalW=String(ow); box.dataset.originalH=String(oh); } } return box; }
+  function ensureAll(){ var p=preview(); STATUS.wrappedCount=0; if(!p)return 0; var n=0; Array.from(p.querySelectorAll('.figure-embed[data-column]')).forEach(function(e){if(ensureBox(e))n++;}); publish(); return n; }
+  function syncStatus(){var p=preview(), boxes=p?Array.from(p.querySelectorAll('.figure-box.selected')):[], st=byId('selectedFiguresStatus'); if(st) st.textContent=boxes.length?(boxes.length+' figure'+(boxes.length===1?'':'s')+' selected.'):'No figure selected.'; var lock=byId('lockAspectToggle'); if(lock&&boxes.length===1) lock.checked=boxes[0].dataset.lockAspect==='1';}
+  function hasSvg(box){return !!(box&&box.querySelector&&box.querySelector('svg'));}
+  function selectBox(box,add){var p=preview(); if(!box||!p)return false; if(!add) p.querySelectorAll('.figure-box.selected,.figure-box[data-stage35z-selected="1"]').forEach(function(el){if(el!==box){el.classList.remove('selected');delete el.dataset.stage35zSelected;}}); box.classList.add('selected'); box.dataset.stage35zSelected='1'; selectedBox=box; STATUS.selected=true; STATUS.selectedHasSvg=hasSvg(box); STATUS.lastSelectAt=new Date().toISOString(); STATUS.lastError=''; syncStatus(); positionPalette(); publish(); return true;}
+  function clear(){var p=preview(); if(p)p.querySelectorAll('.figure-box.selected,.figure-box[data-stage35z-selected="1"]').forEach(function(el){el.classList.remove('selected');delete el.dataset.stage35zSelected;}); selectedBox=null; STATUS.selected=false; STATUS.selectedHasSvg=false; hidePalette(); syncStatus(); publish();}
+  function ensurePalette(){ if(palette&&document.body.contains(palette))return palette; palette=document.createElement('div'); palette.id='stage35zFigureActionPalette'; palette.setAttribute('role','toolbar'); palette.innerHTML='<button type="button" data-stage35z-action="edit" data-stage35z-primary="1">Edit</button><button type="button" data-stage35z-action="duplicate">Duplicate</button><button type="button" data-stage35z-action="front">Bring front</button><button type="button" data-stage35z-action="back">Send back</button><button type="button" data-stage35z-action="crop">Crop</button><button type="button" data-stage35z-action="snap">Snap</button><button type="button" data-stage35z-action="reset">Reset</button>'; palette.addEventListener('pointerdown',function(e){e.stopPropagation();}); palette.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('[data-stage35z-action]'):null;if(!b)return;e.preventDefault();e.stopPropagation();runAction(b.dataset.stage35zAction||'');}); document.body.appendChild(palette); return palette;}
+  function hidePalette(){if(palette)palette.style.display='none';}
+  function positionPalette(){ if(!selectedBox||!document.body.contains(selectedBox)){hidePalette();return;} var pal=ensurePalette(), r=selectedBox.getBoundingClientRect(); if(!r||!isFinite(r.left)){hidePalette();return;} pal.style.display='flex'; var eb=pal.querySelector('[data-stage35z-action="edit"]'); if(eb) eb.style.display=hasSvg(selectedBox)?'':'none'; var h=pal.offsetHeight||42,w=pal.offsetWidth||320,top=r.top-h-10; if(top<8) top=r.bottom+10; var left=Math.min(window.innerWidth-w-8,Math.max(8,r.left+Math.min(r.width,80))); pal.style.top=Math.max(8,Math.min(window.innerHeight-h-8,top))+'px'; pal.style.left=Math.max(8,left)+'px';}
+  function clickBtn(id){var b=byId(id); if(b&&typeof b.click==='function'){b.click(); STATUS.lastAction=id; publish(); return true;} return false;}
+  function runAction(a){try{if(!selectedBox||!document.body.contains(selectedBox))throw new Error('No selected figure.'); selectBox(selectedBox,false); if(a==='edit'){var api=W.LuminaStage35UEditableFigures; if(!hasSvg(selectedBox)) throw new Error('Only SVG/diagram figures can be reopened in the diagram editor.'); if(!api||typeof api.openFromPreview!=='function') throw new Error('Editable figure bridge is not available.'); STATUS.lastAction='edit'; publish(); return api.openFromPreview(selectedBox);} var map={duplicate:'duplicateFigureBtn',front:'bringForwardBtn',back:'sendBackwardBtn',crop:'cropFigureBtn',snap:'snapFigureBtn',reset:'resetFigureBtn'}; if(map[a]&&clickBtn(map[a])){setTimeout(function(){ensureAll();syncStatus();positionPalette();},140);return true;} throw new Error('Figure action was not available: '+a);}catch(err){STATUS.lastError=err&&err.message?err.message:String(err||'Figure action failed.'); publish(); toast(STATUS.lastError); return false;}}
+  function onPointerDown(e){var p=preview(); if(!p)return; ensureAll(); var box=closestBox(e.target); if(!box||!p.contains(box))return; selectBox(box,e.shiftKey||e.metaKey||e.ctrlKey);}
+  function onClick(e){var p=preview(), box=closestBox(e.target); if(box&&p&&p.contains(box)) selectBox(box,e.shiftKey||e.metaKey||e.ctrlKey);}
+  function init(){var p=preview(); if(!p){publish();return;} if(p.dataset.stage35zFigureActionsBound==='1')return publish(); p.dataset.stage35zFigureActionsBound='1'; ensureAll(); p.addEventListener('pointerdown',onPointerDown,true); p.addEventListener('click',onClick,true); window.addEventListener('resize',positionPalette); window.addEventListener('scroll',positionPalette,true); document.addEventListener('keydown',function(e){if(e.key==='Escape')clear();},true); try{var obs=new MutationObserver(function(){var old=selectedBox; ensureAll(); if(old&&!document.body.contains(old))hidePalette(); else{syncStatus();positionPalette();}}); obs.observe(p,{childList:true,subtree:true}); W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS_OBSERVER=obs;}catch(err){STATUS.lastError=String(err&&(err.message||err)||err);} STATUS.bound=true; publish();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  W.LuminaStage35ZFigureSelectionActions={stage:STAGE,init:init,status:publish,ensureAllBoxes:ensureAll,selectBox:selectBox,clearSelection:clear,runAction:runAction};
+})();
+</script>
+
+
+<script id="stage35z-figure-actions-drag-selection-hotfix-status">
 (function(){
   'use strict';
   var W = window;
   var status = {
-    stage: W.LUMINA_STAGE || 'stage35y-20260426-1',
+    stage: W.LUMINA_STAGE || 'stage35z-20260426-1',
     editorCanvasNormalization: true,
     saveBackPreservesFigureBoxGeometry: true,
-    dragGridQuantizationOnlyWhenGridShown: true,
+    dragGridQuantizationOnlyWhenGridShown: false,
     liveGuideSnappingDuringPointerMove: false,
     guideSnappingDeferredUntilRelease: true,
     snapToGuidesDefaultChecked: false,
     resizeMediaPreparedOncePerGesture: true,
-    note: 'Reopened SVG roots strip slide-size width/height/style before loading into the popup; save-back replaces only the inner SVG when possible; Stage 35Y keeps movement freeform while dragging and snaps only on release if Snap to guides is enabled.'
+    note: 'Stage 35Z adds a contextual figure action palette, forces figure boxes to be selected on single click, and keeps drag/resize freeform during pointer movement. Grid and guide snapping are no longer applied live while dragging.'
   };
-  W.__LUMINA_STAGE35Y_FIGURE_DRAG_RESPONSIVENESS_HOTFIX = status;
+  W.__LUMINA_STAGE35Z_FIGURE_DRAG_RESPONSIVENESS_HOTFIX = status;
 })();
 </script>
 
@@ -3220,7 +3270,7 @@ window.MathJax = {
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var tight = false;
   var lastStatus = null;
   function rectOf(sel){
@@ -3551,7 +3601,7 @@ window.MathJax = {
    Hotfix retained: quick slide actions count handler dispatch as success unless it explicitly returns false. */
 (function(){
   'use strict';
-  var STAGE = 'stage35y-20260426-1';
+  var STAGE = 'stage35z-20260426-1';
   var compactKey = 'luminaStage35cCompactWorkspace';
   function byId(id){ return document.getElementById(id); }
   function clickById(id){ var el = byId(id); if(el && typeof el.click === 'function'){ el.click(); return true; } return false; }
@@ -3680,7 +3730,7 @@ window.MathJax = {
 /* Stage 35K: discoverability polish — keyboard/workflow help overlay. */
 (function(){
   'use strict';
-  var STAGE = 'stage35y-20260426-1';
+  var STAGE = 'stage35z-20260426-1';
   var HELP_ID = 'stage35k-help-overlay';
   var retryTimers = [];
 
@@ -3858,7 +3908,7 @@ window.MathJax = {
 /* Stage 35L: feature polish — searchable jump-to-slide overlay backed by the existing deck rail. */
 (function(){
   'use strict';
-  var STAGE = 'stage35y-20260426-1';
+  var STAGE = 'stage35z-20260426-1';
   var OVERLAY_ID = 'stage35l-slide-jump-overlay';
   var retryTimers = [];
 
@@ -4051,7 +4101,7 @@ window.MathJax = {
 /* Stage 35M/N: export diagnostics overlay plus persistent deck outline navigator. */
 (function(){
   'use strict';
-  var STAGE = 'stage35y-20260426-1';
+  var STAGE = 'stage35z-20260426-1';
   var EXPORT_OVERLAY_ID = 'stage35m-export-diagnostics-overlay';
   var OUTLINE_PANEL_ID = 'stage35n-deck-outline-panel';
   var exportRetryTimers = [];
@@ -4498,7 +4548,7 @@ window.MathJax = {
    guarded live ESM deck runtime remains authoritative. */
 (function(){
   'use strict';
-  var STAGE = 'stage35y-20260426-1-slide-actions-restore';
+  var STAGE = 'stage35z-20260426-1-slide-actions-restore';
   var actionToCommand = {
     add: 'addSlide',
     update: 'updateSlide',
@@ -4578,31 +4628,31 @@ window.MathJax = {
   else bindSlideActionRestore();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage34k.js?v=stage35y-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
+<script src="js/utils-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage34k.js?v=stage35z-20260426-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
 <script type="module">
 /* Stage 34K: guarded live ESM runtime for Copilot core.
    The classic core exposed by legacy-app-stage24c.js remains captured as a fallback. */
 const W34K = window;
-const STAGE34K = W34K.LUMINA_STAGE || 'stage35y-20260426-1';
+const STAGE34K = W34K.LUMINA_STAGE || 'stage35z-20260426-1';
 const status34K = W34K.LuminaLiveRuntimeStatus = W34K.LuminaLiveRuntimeStatus || {};
 function shortCopilotError34K(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markCopilotLoaded34K(asset){ if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markLoaded === 'function') W34K.LuminaDiagnostics.markLoaded(asset); }
@@ -4693,7 +4743,7 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   var doc = document;
   var originalAdd = doc.addEventListener;
   var shadow = W.__LUMINA_STAGE34J_COMMANDS_SHADOW = {
-    stage: W.LUMINA_STAGE || 'stage35y-20260426-1',
+    stage: W.LUMINA_STAGE || 'stage35z-20260426-1',
     suppressing: true,
     suppressedKeydown: 0,
     suppressedDomReady: 0,
@@ -4733,12 +4783,12 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   W.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH = restore;
 })();
 </script>
-<script src="js/commands-stage24c.js?v=stage35y-20260426-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage35z-20260426-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
 <script type="module">
 /* Stage 34J hotfix: guarded live ESM runtime for Commands.
    ESM import failure is non-blocking; activate the captured classic shadow instead of surfacing startup errors. */
 const W = window;
-const STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+const STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
 const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
 function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -4837,7 +4887,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -4915,7 +4965,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -5096,7 +5146,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -5269,7 +5319,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -5352,7 +5402,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
@@ -6462,7 +6512,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35y-20260426-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35z-20260426-1';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }
@@ -6503,21 +6553,21 @@ try{
     report.copilotDeckPromptStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.deckPromptStatus || null;
     report.copilotWebSearchEnabled = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchEnabled || false;
     report.copilotWebSearchStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchStatus || null;
-    report.visualPolishStage = 'stage35y-20260426-1';
-    report.visualContrastAuditStage = 'stage35y-20260426-1';
+    report.visualPolishStage = 'stage35z-20260426-1';
+    report.visualContrastAuditStage = 'stage35z-20260426-1';
     report.visualPolishSummary = {
       navigation: 'Five workflow tabs preserved from Stage 35A.',
       hierarchy: 'Cards, subtabs, buttons, fields, preview, rail, Copilot panel, the help overlay, slide jump, Stage 35M export diagnostics, Stage 35N outline navigator, and Stage 35O right-panel fitting, Stage 35R final fit diagnostics, Stage 35S thumbnail rail, and Stage 35T direct preview editing, and Stage 35U editable preview figures keep Stage 35B spacing/radius/shadow polish.',
-      colorBalance: 'Stage 35H keeps the Stage 35F classic palette and applies late high-specificity contrast; Stage 35J adds solid fallbacks; Stage 35K reuses those controls for help; Stage 35L adds slide jump; Stage 35M/N add export diagnostics and outline navigation; Stage 35O compresses the preview/inspector column without changing slide rendering; Stage 35R adds a final tight-mode trim and post-fit remeasurement; Stage 35S turns the slide rail into thumbnail cards; Stage 35T adds direct text editing in preview with commit-to-form sync; Stage 35U lets SVG figures reopen in a diagram editor on double-click and save back into the same figure slot.',
+      colorBalance: 'Stage 35H keeps the Stage 35F classic palette and applies late high-specificity contrast; Stage 35J adds solid fallbacks; Stage 35K reuses those controls for help; Stage 35L adds slide jump; Stage 35M/N add export diagnostics and outline navigation; Stage 35O compresses the preview/inspector column without changing slide rendering; Stage 35R adds a final tight-mode trim and post-fit remeasurement; Stage 35S turns the slide rail into thumbnail cards; Stage 35T adds direct text editing in preview with commit-to-form sync; Stage 35U lets SVG figures reopen in a diagram editor on double-click and save back into the same figure slot; Stage 35Z adds contextual figure actions and robust click-to-select figure boxes.',
       behaviorChanged: false
     };
-    report.colorBalanceStage = 'stage35y-20260426-1';
+    report.colorBalanceStage = 'stage35z-20260426-1';
     report.colorBalanceSummary = {
       palette: 'Classic blue/gray UI palette restored while keeping Stage 35B layout polish.',
       contrastFixes: ['workflow tabs', 'subtabs', 'quick dock', 'active deck/block/library cards', 'Copilot status', 'core preset cards', 'layout template cards'],
       behaviorChanged: false
     };
-    report.templateContrastStage = 'stage35y-20260426-1';
+    report.templateContrastStage = 'stage35z-20260426-1';
     report.templateContrastSummary = {
       scope: 'Core presets, layout templates, reusable block template buttons, and their subtabs now force readable classic text/background colors.',
       behaviorChanged: false,
@@ -6620,7 +6670,7 @@ try{
       ];
       var presentSamples = contrastSamples.filter(function(s){ return s.present; });
       var failures = presentSamples.filter(function(s){ return s.ok === false; });
-      report.visualContrastAuditStage = 'stage35y-20260426-1';
+      report.visualContrastAuditStage = 'stage35z-20260426-1';
       report.visualContrastSmokePassed = failures.length === 0 && presentSamples.length > 0;
       report.visualContrastAudit = {
         checkedAt: new Date().toISOString(),
@@ -6635,7 +6685,7 @@ try{
     } catch(e) {
       report.visualContrastAuditError = e && e.message ? e.message : String(e);
     }
-    report.efficiencyStage = 'stage35y-20260426-1';
+    report.efficiencyStage = 'stage35z-20260426-1';
     report.efficiencySummary = {
       quickDock: !!W.__LUMINA_STAGE35C_EFFICIENCY,
       quickDockButtonCount: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickButtonCount,
@@ -6644,7 +6694,7 @@ try{
       quickActionReturnHotfix: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickActionReturnHotfix,
       behaviorChanged: false
     };
-    report.featurePolishStage = 'stage35y-20260426-1';
+    report.featurePolishStage = 'stage35z-20260426-1';
     report.featurePolishSummary = {
       helpOverlay: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.helpOverlay),
       helpDockButton: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.helpDockButton),
@@ -6663,9 +6713,9 @@ try{
       rightPanelTightMode: W.__LUMINA_STAGE35O_RIGHT_PANEL_FIT && W.__LUMINA_STAGE35O_RIGHT_PANEL_FIT.rightTightMode,
       rightPanelDeltaPx: W.__LUMINA_STAGE35O_RIGHT_PANEL_FIT && W.__LUMINA_STAGE35O_RIGHT_PANEL_FIT.rightMinusLeft,
       rightPanelPostTightRemeasure: true,
-      figureDragResponsivenessHotfix: !!W.__LUMINA_STAGE35Y_FIGURE_DRAG_RESPONSIVENESS_HOTFIX,
-      figureLiveGuideSnappingDuringPointerMove: W.__LUMINA_STAGE35Y_FIGURE_DRAG_RESPONSIVENESS_HOTFIX && W.__LUMINA_STAGE35Y_FIGURE_DRAG_RESPONSIVENESS_HOTFIX.liveGuideSnappingDuringPointerMove,
-      figureGuideSnappingDeferredUntilRelease: W.__LUMINA_STAGE35Y_FIGURE_DRAG_RESPONSIVENESS_HOTFIX && W.__LUMINA_STAGE35Y_FIGURE_DRAG_RESPONSIVENESS_HOTFIX.guideSnappingDeferredUntilRelease,
+      figureDragResponsivenessHotfix: !!W.__LUMINA_STAGE35Z_FIGURE_DRAG_RESPONSIVENESS_HOTFIX,
+      figureLiveGuideSnappingDuringPointerMove: W.__LUMINA_STAGE35Z_FIGURE_DRAG_RESPONSIVENESS_HOTFIX && W.__LUMINA_STAGE35Z_FIGURE_DRAG_RESPONSIVENESS_HOTFIX.liveGuideSnappingDuringPointerMove,
+      figureGuideSnappingDeferredUntilRelease: W.__LUMINA_STAGE35Z_FIGURE_DRAG_RESPONSIVENESS_HOTFIX && W.__LUMINA_STAGE35Z_FIGURE_DRAG_RESPONSIVENESS_HOTFIX.guideSnappingDeferredUntilRelease,
       figureSnapToGuidesDefaultChecked: !!(document.getElementById('snapToGuidesToggle') && document.getElementById('snapToGuidesToggle').checked),
       slideJumpLiveDiagnostics: true,
       subtabStickyDisabled: true,
@@ -6679,6 +6729,9 @@ try{
       editableFigures: !!(W.__LUMINA_STAGE35U_EDITABLE_FIGURES && W.__LUMINA_STAGE35U_EDITABLE_FIGURES.editableFigures),
       editableFigureCount: W.__LUMINA_STAGE35U_EDITABLE_FIGURES && W.__LUMINA_STAGE35U_EDITABLE_FIGURES.annotatedCount,
       editableFigureDoubleClick: W.__LUMINA_STAGE35U_EDITABLE_FIGURES && W.__LUMINA_STAGE35U_EDITABLE_FIGURES.doubleClickToEdit,
+      contextualFigureActions: !!(W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS && W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS.contextualFigureActions),
+      robustFigureBoxSelection: !!(W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS && W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS.robustFigureBoxSelection),
+      figureActionPaletteBound: !!(W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS && W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS.bound),
       commandRegistryBacked: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.commandCount),
       behaviorChanged: false
     };
@@ -6703,7 +6756,7 @@ try{
         return { selector: sel, present: true, position: cs.position, top: cs.top, zIndex: cs.zIndex };
       }
       report.leftPanelSubtabScrollStatus = {
-        stage: 'stage35y-20260426-1',
+        stage: 'stage35z-20260426-1',
         stickyDisabled: true,
         scrollsWithContent: true,
         samples: [
@@ -6714,7 +6767,7 @@ try{
         ]
       };
     } catch(e) {
-      report.leftPanelSubtabScrollStatus = { stage: 'stage35y-20260426-1', stickyDisabled: true, error: e && e.message ? e.message : String(e) };
+      report.leftPanelSubtabScrollStatus = { stage: 'stage35z-20260426-1', stickyDisabled: true, error: e && e.message ? e.message : String(e) };
     }
 
     report.copilotManualSmokeChecklist = [
@@ -6727,7 +6780,7 @@ try{
       "Confirm slideJumpStatus.slideCount matches deckOutlineStatus.slideCount even before opening Jump slide.",
       "Scroll Build and Assets panels and confirm inner subtabs scroll away with content instead of staying fixed.",
       "Confirm the slide rail uses thumbnail cards and slideRailThumbnailStatus.renderedThumbCount equals the deck slide count.",
-      "Click the preview title and a normal text block, edit text, blur or press Ctrl/⌘+Enter, and confirm the left form/snippet update. Double-click a diagram figure, edit it, save back, and confirm the edited SVG remains in the preview/block content. Then click a diagram figure once to reveal Edit figure, and double-click/double-tap it to reopen the diagram editor."
+      "Click the preview title and a normal text block, edit text, blur or press Ctrl/⌘+Enter, and confirm the left form/snippet update. Double-click a diagram figure, edit it, save back, and confirm the edited SVG remains in the preview/block content. Then single-click a figure and confirm the contextual action palette appears; drag/resize should feel freeform, and Edit should reopen SVG diagrams."
     ];
     report.utilsRuntimeSource = W.__LUMINA_UTILS_RUNTIME_SOURCE || null;
     report.blockStyleRuntimeSource = W.__LUMINA_BLOCK_STYLE_RUNTIME_SOURCE || null;

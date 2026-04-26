@@ -1,0 +1,12 @@
+{
+  "stage": "stage35z-20260426-1",
+  "description": "Figure action palette, robust single-click selection, and freer drag/resize hotfix on top of Stage 35Y.",
+  "files": [
+    "index.html",
+    "js/figure-tools-stage24c.js",
+    "js/esm/figure-tools-stage34j.js",
+    "RELEASE_NOTES_STAGE35Z.md",
+    "DEPLOY_CHECK_STAGE35Z.md",
+    "RELEASE_FILES_STAGE35Z.json"
+  ]
+}
