@@ -116,6 +116,8 @@ body{color:var(--deck-text);overflow:hidden}
 
 .deck-slide.laser-active{cursor:none}
 .deck-toolbar{position:fixed;left:1rem;top:1rem;display:flex;gap:.65rem;z-index:30}
+.deck-toolbar,.slide-actions,.draw-session-toolbar{transition:opacity .24s ease,transform .24s ease}
+body.controls-hidden .deck-toolbar,body.controls-hidden .slide-actions,body.controls-hidden .draw-session-toolbar{opacity:0;pointer-events:none;transform:translateY(-8px)}
 .deck-toolbar button,.slide-map button,.nav-btn{border:1px solid rgba(255,255,255,.14);background:rgba(10,16,32,.82);color:#eef3ff;border-radius:14px;padding:.78rem .95rem;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 18px 45px rgba(0,0,0,.25)}
 .slide-map{position:fixed;top:0;right:0;height:100svh;width:min(420px,92vw);background:rgba(7,11,23,.96);border-left:1px solid rgba(255,255,255,.10);padding:1rem;display:none;z-index:35;overflow:auto}
 .slide-map.open{display:block}.slide-map h3{margin:.2rem 0 1rem 0;font-size:1.2rem}.slide-map-list{display:grid;gap:.6rem}.slide-map-item{display:flex;gap:.6rem;align-items:flex-start;text-align:left}.slide-map-item span:first-child{opacity:.7;min-width:2.2rem}
@@ -129,7 +131,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"><\/script>
 </head>
 <body>
-<div class="deck-toolbar"><button class="nav-btn" id="prevBtn">◀</button><button class="nav-btn" id="nextBtn">▶</button></div>
+<div class="deck-toolbar"><button class="nav-btn" id="prevBtn" title="Previous slide" aria-label="Previous slide">◀</button><button class="nav-btn" id="nextBtn" title="Next slide" aria-label="Next slide">▶</button><button class="nav-btn" id="fullscreenBtn" title="Full screen (⌘F)" aria-label="Full screen">⛶</button></div>
 <div class="slide-actions" id="deckActions" hidden></div>
 <div class="slide-map" id="slideMap"><button id="closeMapBtn" style="float:right;">Close</button><h3 id="deckTitle"></h3><div class="slide-map-list" id="slideMapList"></div></div>
 <div class="draw-session-toolbar" id="drawSessionToolbar" hidden>
@@ -228,6 +230,14 @@ const pdfSlidesPerPage=document.getElementById('pdfSlidesPerPage');
 const pdfCancelBtn=document.getElementById('pdfCancelBtn');
 const pdfGenerateBtn=document.getElementById('pdfGenerateBtn');
 const pdfStatus=document.getElementById('pdfStatus');
+let controlsFadeTimer=0;
+function controlsShouldStayVisible(){return !!(drawingMode||(slideMap&&slideMap.classList.contains('open'))||(pdfModal&&!pdfModal.hidden));}
+function showPresentationControls(){document.body.classList.remove('controls-hidden');}
+function hidePresentationControls(){if(!controlsShouldStayVisible()) document.body.classList.add('controls-hidden');}
+function schedulePresentationControlsFade(){showPresentationControls();window.clearTimeout(controlsFadeTimer);controlsFadeTimer=window.setTimeout(hidePresentationControls,2000);}
+function holdPresentationControlsVisible(){showPresentationControls();window.clearTimeout(controlsFadeTimer);}
+function togglePresentationFullscreen(){const doc=document;const root=doc.documentElement;const current=doc.fullscreenElement||doc.webkitFullscreenElement||doc.mozFullScreenElement||doc.msFullscreenElement;try{if(current){const exit=doc.exitFullscreen||doc.webkitExitFullscreen||doc.mozCancelFullScreen||doc.msExitFullscreen;if(exit) exit.call(doc);return;}const request=root.requestFullscreen||root.webkitRequestFullscreen||root.mozRequestFullScreen||root.msRequestFullscreen;if(request) request.call(root);}catch(err){console.error(err);}}
+function isFullscreenShortcut(evt){return !!(evt&&evt.metaKey&&!evt.ctrlKey&&!evt.altKey&&!evt.shiftKey&&String(evt.key||'').toLowerCase()==='f');}
 function fitFiguresInSlide(slideEl){if(!slideEl)return;const figures=Array.from(slideEl.querySelectorAll('.figure-embed'));if(!figures.length)return;const isManual=embed=>{const box=embed&&embed.querySelector('.figure-box');return !!(box&&(box.dataset.userMoved==='1'||box.dataset.userSized==='1'));};figures.forEach(embed=>{if(isManual(embed))return;embed.style.maxHeight='';embed.style.maxWidth='';embed.style.height='';embed.style.width='';const media=embed.querySelector('img,svg,canvas,iframe');if(media){media.style.maxHeight='';media.style.maxWidth='';media.style.height='';media.style.width='';}});const maxHeight=slideEl.clientHeight||window.innerHeight||900;let guard=0;while(slideEl.scrollHeight>maxHeight+2&&guard<16){const overflow=slideEl.scrollHeight-maxHeight;const candidates=figures.map(embed=>{if(isManual(embed))return null;const media=embed.querySelector('img,svg,canvas,iframe');const rect=(media||embed).getBoundingClientRect();return {embed,media,h:rect.height||0};}).filter(x=>x&&x.h>40).sort((a,b)=>b.h-a.h);if(!candidates.length)break;const c=candidates[0];const current=parseFloat((c.media&&c.media.style.maxHeight)||c.h);const reduce=Math.min(Math.max(overflow+8,24),current*0.35);const next=Math.max(70,current-reduce);c.embed.style.maxHeight=(next+12)+'px';if(c.media)c.media.style.maxHeight=next+'px';guard+=1;}}
 function fitFiguresIn(root){(root||document).querySelectorAll('.deck-slide.active,.print-cell .slide,.slide').forEach(fitFiguresInSlide);}
 function getDrawSurface(slideIndex){return document.querySelector('.slide-draw-surface[data-draw-surface="'+slideIndex+'"]');}
@@ -448,8 +458,9 @@ function go(i){if(i<0||i>=slideEls.length)return;active=i;if(drawingMode) drawin
 function advanceOrGoNext(){ if(activeSlideHasPendingAnimations()){ advanceSlideAnimation(slideEls[active]); return; } go(active+1); }
 document.getElementById('prevBtn').addEventListener('click',()=>go(active-1));
 document.getElementById('nextBtn').addEventListener('click',()=>advanceOrGoNext());
-document.getElementById('closeMapBtn').addEventListener('click',()=>slideMap.classList.remove('open'));
-document.querySelectorAll('.slides-button').forEach(btn=>btn.addEventListener('click',()=>slideMap.classList.add('open')));
+document.getElementById('fullscreenBtn').addEventListener('click',()=>{schedulePresentationControlsFade();togglePresentationFullscreen();});
+document.getElementById('closeMapBtn').addEventListener('click',()=>{slideMap.classList.remove('open');schedulePresentationControlsFade();});
+document.querySelectorAll('.slides-button').forEach(btn=>btn.addEventListener('click',()=>{slideMap.classList.add('open');holdPresentationControlsVisible();}));
 if(exportControls.draw){
   document.querySelectorAll('.draw-button').forEach(btn=>btn.addEventListener('click',()=>{ if(drawingMode && drawingSlideIndex===active) exitDrawingMode(); else { enterDrawingMode(active); } }));
 }
@@ -488,6 +499,7 @@ function maybeAdvanceFromSlidePointer(evt, activeSlide){
   advanceOrGoNext();
 }
 deck.addEventListener('pointerdown',evt=>{
+  schedulePresentationControlsFade();
   if(pdfModal && !pdfModal.hidden && evt.target===pdfModal) closePdfModal();
   if(drawingMode){
     const svg=getDrawSurface(active);
@@ -501,15 +513,15 @@ deck.addEventListener('pointerdown',evt=>{
   if(evt.target.closest('.slide-actions') || evt.target.closest('.deck-toolbar') || evt.target.closest('.pdf-modal')) return;
   maybeAdvanceFromSlidePointer(evt, slideEls[active]);
 });
-window.addEventListener('pointermove',evt=>{ if(drawingMode && drawingState.drawing){ updateShape(evt); return; } updateLaserPointer(evt); });
+window.addEventListener('pointermove',evt=>{ schedulePresentationControlsFade(); if(drawingMode && drawingState.drawing){ updateShape(evt); return; } updateLaserPointer(evt); });
 window.addEventListener('pointerup',()=>endShape());
 window.addEventListener('pointercancel',()=>endShape());
-window.addEventListener('mousemove', updateLaserPointer);
+window.addEventListener('mousemove', evt=>{ schedulePresentationControlsFade(); updateLaserPointer(evt); });
 window.addEventListener('mouseleave', hideLaserPointer);
 window.addEventListener('blur', ()=>{ endShape(); hideLaserPointer(); });
 slideMap.addEventListener('mouseenter', hideLaserPointer);
 document.querySelectorAll('.deck-slide').forEach(slide=>slide.addEventListener('mouseleave', ()=>{ if(!drawingMode) hideLaserPointer(); }));
-window.addEventListener('keydown',e=>{if(e.key==='Escape' && drawingMode){ e.preventDefault(); exitDrawingMode(); return; }if(e.key==='Escape' && pdfModal && !pdfModal.hidden){ e.preventDefault(); closePdfModal(); return; }if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();advanceOrGoNext();}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(active-1);}if(e.key==='Escape') slideMap.classList.remove('open');});render();
+window.addEventListener('keydown',e=>{schedulePresentationControlsFade();if(isFullscreenShortcut(e)){e.preventDefault();togglePresentationFullscreen();return;}if(e.key==='Escape' && drawingMode){ e.preventDefault(); exitDrawingMode(); return; }if(e.key==='Escape' && pdfModal && !pdfModal.hidden){ e.preventDefault(); closePdfModal(); return; }if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();advanceOrGoNext();}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(active-1);}if(e.key==='Escape'){ slideMap.classList.remove('open');schedulePresentationControlsFade();}});['.deck-toolbar','.slide-actions','.draw-session-toolbar'].forEach(sel=>{const el=document.querySelector(sel);if(!el)return;el.addEventListener('mouseenter',holdPresentationControlsVisible);el.addEventListener('mouseleave',schedulePresentationControlsFade);el.addEventListener('focusin',holdPresentationControlsVisible);el.addEventListener('focusout',schedulePresentationControlsFade);});render();schedulePresentationControlsFade();
 <\/script>
 </body>
 </html>`;
