@@ -1,0 +1,7 @@
+{
+  "stage": "stage36h-20260426-1",
+  "root": "lumina-presenter-stage36h-deploy",
+  "notes": "Clean deploy package. Optional generated-HTML controls are right-aligned away from Previous/Next, and the export controls dropdown summary is compact and readable.",
+  "entrypoint": "index.html",
+  "deploy": "Upload all files in this folder to the Presentation_maker site root."
+}
