@@ -17,6 +17,7 @@
    Interactive figure editing helpers live in js/figure-tools.js.
    Preview block/title selection and animation controls live in js/editor-selection.js.
    Block editor/form synchronization and current-slide draft helpers live in js/block-editor.js.
+   Stage 36E adds deck/editor undo-redo history around autosaved mutations.
    legacy-app.js intentionally remains a classic script while we migrate gradually.
 */
 const LuminaUtils = window.LuminaUtils;
@@ -307,6 +308,15 @@ let autosaveTimer = null;
 let autosaveDirtyCount = 0;
 let blockLibrary = [];
 
+const HISTORY_LIMIT = 80;
+let undoStack = [];
+let redoStack = [];
+let lastHistoryState = null;
+let lastHistoryKey = '';
+let historyApplying = false;
+let historyTypingOpen = false;
+let historyTypingTimer = null;
+
 
 function showToast(message){
   toast.textContent = message;
@@ -428,10 +438,166 @@ const autosaveApi = LuminaState.createAutosaveApi({
   }
 });
 
+function serializeHistoryState(state){
+  try{ return JSON.stringify(state || {}); }catch(_err){ return ''; }
+}
+function captureHistoryState(){
+  try{
+    if(typeof syncPreviewFiguresToDraft === 'function' && !syncingPreviewFigures) syncPreviewFiguresToDraft(false);
+    if(typeof saveCurrentBlockToDraft === 'function') saveCurrentBlockToDraft();
+    if(typeof saveCurrentSlideToDeck === 'function') saveCurrentSlideToDeck();
+  }catch(err){ console.warn('Could not fully sync before history snapshot', err); }
+  return {
+    deckTitle: fields.deckTitle.value || 'My HTML Presentation',
+    theme: currentThemeFromFields(),
+    presentationOptions: currentPresentationOptions(),
+    slides: Array.isArray(slides) ? slides.map(normalizeSlide) : [],
+    activeIndex,
+    draftSlide: (typeof currentDraftSlide === 'function') ? normalizeSlide(currentDraftSlide()) : null,
+    selectedBlock: { left: selectedBlock ? (selectedBlock.left ?? -1) : -1, right: selectedBlock ? (selectedBlock.right ?? -1) : -1 },
+    blockColumn: blockFields.column.value
+  };
+}
+function applyHistoryState(state){
+  if(!state) return false;
+  clearScheduledAutosave();
+  if(state.deckTitle) fields.deckTitle.value = state.deckTitle;
+  if(state.theme) applyThemeToForm(state.theme);
+  if(state.presentationOptions) applyPresentationOptions(state.presentationOptions);
+  slides = Array.isArray(state.slides) ? state.slides.map(normalizeSlide) : [];
+  activeIndex = typeof state.activeIndex === 'number' ? state.activeIndex : (slides.length ? 0 : -1);
+  if(activeIndex >= slides.length) activeIndex = slides.length - 1;
+  if(activeIndex >= 0 && activeIndex < slides.length){
+    applySlideToForm(slides[activeIndex]);
+  }else if(state.draftSlide){
+    applySlideToForm(normalizeSlide(state.draftSlide));
+    activeIndex = -1;
+  }else{
+    clearForm(false);
+    activeIndex = -1;
+  }
+  if(state.selectedBlock && typeof state.selectedBlock === 'object'){
+    selectedBlock = { left: state.selectedBlock.left ?? -1, right: state.selectedBlock.right ?? -1 };
+  }
+  if(state.blockColumn) blockFields.column.value = state.blockColumn;
+  try{ loadSelectedBlockIntoEditor(); }catch(_err){}
+  renderDeckList();
+  buildPreview();
+  return true;
+}
+function pushUndoState(state){
+  if(!state) return;
+  const key = serializeHistoryState(state);
+  if(!key) return;
+  const last = undoStack.length ? serializeHistoryState(undoStack[undoStack.length - 1]) : '';
+  if(last && last === key) return;
+  undoStack.push(JSON.parse(key));
+  if(undoStack.length > HISTORY_LIMIT) undoStack.shift();
+}
+function updateHistoryButtons(){
+  const canUndo = undoStack.length > 0;
+  const canRedo = redoStack.length > 0;
+  document.querySelectorAll('[data-history-action="undo"]').forEach(btn=>{
+    btn.disabled = !canUndo;
+    btn.setAttribute('aria-disabled', canUndo ? 'false' : 'true');
+  });
+  document.querySelectorAll('[data-history-action="redo"]').forEach(btn=>{
+    btn.disabled = !canRedo;
+    btn.setAttribute('aria-disabled', canRedo ? 'false' : 'true');
+  });
+  window.__LUMINA_STAGE36E_HISTORY = Object.freeze({
+    stage: window.LUMINA_STAGE || 'stage36e-20260426-1',
+    undoDepth: undoStack.length,
+    redoDepth: redoStack.length,
+    limit: HISTORY_LIMIT,
+    canUndo,
+    canRedo
+  });
+}
+function resetUndoRedoHistory(){
+  undoStack = [];
+  redoStack = [];
+  historyTypingOpen = false;
+  clearTimeout(historyTypingTimer);
+  lastHistoryState = captureHistoryState();
+  lastHistoryKey = serializeHistoryState(lastHistoryState);
+  updateHistoryButtons();
+}
+function recordHistoryChange(reason){
+  if(historyApplying) return;
+  const current = captureHistoryState();
+  const currentKey = serializeHistoryState(current);
+  if(!currentKey) return;
+  if(!lastHistoryState){
+    lastHistoryState = current;
+    lastHistoryKey = currentKey;
+    updateHistoryButtons();
+    return;
+  }
+  if(currentKey === lastHistoryKey) return;
+  const isTypingLike = !reason || String(reason) === 'Autosaved.';
+  if(isTypingLike){
+    if(!historyTypingOpen) pushUndoState(lastHistoryState);
+    historyTypingOpen = true;
+    clearTimeout(historyTypingTimer);
+    historyTypingTimer = setTimeout(()=>{ historyTypingOpen = false; }, 900);
+  }else{
+    historyTypingOpen = false;
+    clearTimeout(historyTypingTimer);
+    pushUndoState(lastHistoryState);
+  }
+  redoStack = [];
+  lastHistoryState = current;
+  lastHistoryKey = currentKey;
+  updateHistoryButtons();
+}
+function undoHistory(){
+  if(!undoStack.length){ showToast('Nothing to undo.'); updateHistoryButtons(); return false; }
+  const current = captureHistoryState();
+  const prev = undoStack.pop();
+  redoStack.push(current);
+  if(redoStack.length > HISTORY_LIMIT) redoStack.shift();
+  historyApplying = true;
+  try{
+    applyHistoryState(prev);
+    lastHistoryState = captureHistoryState();
+    lastHistoryKey = serializeHistoryState(lastHistoryState);
+    autosaveApi.persistAutosaveNow('Autosaved after undo.');
+    showToast('Undo.');
+  }finally{
+    historyApplying = false;
+    historyTypingOpen = false;
+    clearTimeout(historyTypingTimer);
+    updateHistoryButtons();
+  }
+  return true;
+}
+function redoHistory(){
+  if(!redoStack.length){ showToast('Nothing to redo.'); updateHistoryButtons(); return false; }
+  const current = captureHistoryState();
+  const next = redoStack.pop();
+  pushUndoState(current);
+  historyApplying = true;
+  try{
+    applyHistoryState(next);
+    lastHistoryState = captureHistoryState();
+    lastHistoryKey = serializeHistoryState(lastHistoryState);
+    autosaveApi.persistAutosaveNow('Autosaved after redo.');
+    showToast('Redo.');
+  }finally{
+    historyApplying = false;
+    historyTypingOpen = false;
+    clearTimeout(historyTypingTimer);
+    updateHistoryButtons();
+  }
+  return true;
+}
 function persistAutosaveNow(reason){
+  recordHistoryChange(reason || 'Autosaved.');
   return autosaveApi.persistAutosaveNow(reason);
 }
 function scheduleAutosave(reason){
+  recordHistoryChange(reason);
   return autosaveApi.scheduleAutosave(reason);
 }
 function restoreAutosave(){
@@ -1190,6 +1356,7 @@ const presets = LuminaPresets.presets || {};
 function applyPreset(name){
   applySlideToForm(presets[name]);
   buildPreview();
+  scheduleAutosave('Autosaved after preset apply.');
 }
 
 Object.values(fields).forEach(el=>{
@@ -1205,6 +1372,10 @@ blockFields.column.addEventListener('change', ()=>{
 blockFields.mode.addEventListener('change', ()=>{ saveCurrentBlockToDraft(); buildPreview(); scheduleAutosave(); });
 blockFields.title.addEventListener('input', ()=>{ saveCurrentBlockToDraft(); buildPreview(); scheduleAutosave(); });
 blockFields.content.addEventListener('input', ()=>{ saveCurrentBlockToDraft(); buildPreview(); scheduleAutosave(); });
+
+document.querySelectorAll('[data-history-action="undo"]').forEach(btn=>btn.addEventListener('click', undoHistory));
+document.querySelectorAll('[data-history-action="redo"]').forEach(btn=>btn.addEventListener('click', redoHistory));
+updateHistoryButtons();
 
 document.getElementById('addBlockBtn').addEventListener('click', addBlock);
 document.getElementById('updateBlockBtn').addEventListener('click', updateBlock);
@@ -1433,6 +1604,7 @@ if(!restoreAutosave()){
   buildPreview();
   renderDeckList();
 }
+resetUndoRedoHistory();
 initPanelTabs();
 initUiCleanupLayout();
 
@@ -1452,6 +1624,11 @@ window.LuminaAppCommands = {
   deleteBlock,
   moveBlock,
   clearBlockEditor,
+  undo: () => undoHistory(),
+  redo: () => redoHistory(),
+  canUndo: () => undoStack.length > 0,
+  canRedo: () => redoStack.length > 0,
+  resetUndoRedoHistory,
   saveCurrentBlockToDraft,
   saveCurrentSlideToDeck,
   scheduleAutosave,
