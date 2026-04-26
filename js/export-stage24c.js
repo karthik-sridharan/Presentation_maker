@@ -448,6 +448,31 @@ if(pdfGenerateBtn) pdfGenerateBtn.addEventListener('click',()=>generatePdfFromSl
 document.querySelectorAll('[data-go]').forEach(btn=>btn.addEventListener('click',()=>go(Number(btn.dataset.go))));
 if(drawClearBtn) drawClearBtn.addEventListener('click',()=>{ const svg=getDrawSurface(active); if(svg){ svg.innerHTML=''; saveSurface(active); } });
 if(drawExitBtn) drawExitBtn.addEventListener('click',()=>exitDrawingMode());
+const touchAdvanceTap={time:0,x:0,y:0,slide:-1};
+function isTouchSlideAdvanceEvent(evt){
+  if(!evt) return false;
+  if(evt.pointerType==='touch' || evt.pointerType==='pen') return true;
+  if(evt.pointerType==='mouse') return false;
+  return !!(navigator.maxTouchPoints>0 && window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+}
+function maybeAdvanceFromSlidePointer(evt, activeSlide){
+  if(!activeSlide || !activeSlide.contains(evt.target)) return;
+  if(isTouchSlideAdvanceEvent(evt)){
+    evt.preventDefault();
+    updateLaserPointer(evt);
+    const now=Date.now();
+    const dx=evt.clientX-touchAdvanceTap.x;
+    const dy=evt.clientY-touchAdvanceTap.y;
+    const isDoubleTap=touchAdvanceTap.slide===active && (now-touchAdvanceTap.time)<520 && Math.sqrt(dx*dx+dy*dy)<48;
+    touchAdvanceTap.time=now;
+    touchAdvanceTap.x=evt.clientX;
+    touchAdvanceTap.y=evt.clientY;
+    touchAdvanceTap.slide=active;
+    if(isDoubleTap){ touchAdvanceTap.time=0; advanceOrGoNext(); }
+    return;
+  }
+  advanceOrGoNext();
+}
 deck.addEventListener('pointerdown',evt=>{
   if(pdfModal && !pdfModal.hidden && evt.target===pdfModal) closePdfModal();
   if(drawingMode){
@@ -460,8 +485,7 @@ deck.addEventListener('pointerdown',evt=>{
   }
   if(slideMap.classList.contains('open')) return;
   if(evt.target.closest('.slide-actions') || evt.target.closest('.deck-toolbar') || evt.target.closest('.pdf-modal')) return;
-  const activeSlide=slideEls[active];
-  if(activeSlide && activeSlide.contains(evt.target)){ advanceOrGoNext(); }
+  maybeAdvanceFromSlidePointer(evt, slideEls[active]);
 });
 window.addEventListener('pointermove',evt=>{ if(drawingMode && drawingState.drawing){ updateShape(evt); return; } updateLaserPointer(evt); });
 window.addEventListener('pointerup',()=>endShape());
