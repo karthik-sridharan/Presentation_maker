@@ -26,8 +26,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage35l-20260425-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35l-slide-jump-feature-polish-20260425-1';
+window.LUMINA_STAGE = 'stage35n-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35n-export-diagnostics-outline-feature-polish-20260425-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -78,18 +78,18 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
   "js/esm/copilot-stage34k.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35n-20260425-1';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage35l-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage35n-20260425-1',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
@@ -110,7 +110,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35l-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35n-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -804,6 +804,183 @@ window.MathJax = {
     background-color: #f4f8ff !important;
     color: #0f2a4a !important;
   }
+<style id="stage35mn-export-outline-css">
+  /* Stage 35M/N: export diagnostics and persistent deck outline navigator. */
+  .stage35m-export-button,
+  .stage35n-outline-dock-button { font-weight: 760 !important; }
+  .stage35m-export-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+    background: rgba(15, 23, 42, .42);
+    backdrop-filter: blur(6px);
+  }
+  .stage35m-export-backdrop.active { display: flex; }
+  .stage35m-export-dialog {
+    width: min(860px, calc(100vw - 2rem));
+    max-height: min(84vh, 760px);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(23,54,93,.22);
+    background: linear-gradient(180deg, #ffffff, #f6f8fb);
+    box-shadow: 0 26px 80px rgba(15,23,42,.34), inset 0 1px 0 rgba(255,255,255,.84);
+    color: #10233b;
+  }
+  .stage35m-export-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.1rem .75rem;
+    border-bottom: 1px solid rgba(23,54,93,.14);
+    background: #e8f0fb;
+  }
+  .stage35m-export-head h2 { margin: .12rem 0 .18rem; font-size: 1.18rem; color: #10233b; }
+  .stage35m-export-close { min-width: 2.2rem; min-height: 2.2rem; border-radius: 999px !important; padding: 0 !important; }
+  .stage35m-export-body {
+    overflow: auto;
+    padding: .9rem 1.1rem 1rem;
+    display: grid;
+    gap: .75rem;
+  }
+  .stage35m-export-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+  }
+  .stage35m-export-card {
+    border: 1px solid rgba(23,54,93,.16);
+    border-radius: 16px;
+    padding: .72rem .78rem;
+    background: #f8fafc;
+    color: #10233b;
+  }
+  .stage35m-export-card strong { display: block; font-size: .82rem; color: #17365d; margin-bottom: .2rem; }
+  .stage35m-export-card span { color: #475569; font-size: .78rem; line-height: 1.35; }
+  .stage35m-export-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .18rem .5rem;
+    background: #e8f0fb;
+    color: #17365d;
+    font-size: .72rem;
+    font-weight: 800;
+  }
+  .stage35m-export-pre {
+    max-height: 210px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-radius: 15px;
+    border: 1px solid rgba(23,54,93,.16);
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: .8rem;
+    font-size: .76rem;
+    line-height: 1.4;
+  }
+  .stage35m-export-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    align-items: center;
+    justify-content: flex-end;
+    padding: .8rem 1.1rem 1rem;
+    border-top: 1px solid rgba(23,54,93,.12);
+    background: rgba(255,255,255,.78);
+  }
+  .stage35n-outline-panel {
+    margin-top: .85rem;
+    padding: .86rem .9rem;
+    border-radius: 18px;
+    border: 1px solid rgba(23,54,93,.16);
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 12px 28px rgba(15,23,42,.08);
+    color: #10233b;
+  }
+  .stage35n-outline-panel .section-head { margin-bottom: .55rem; }
+  .stage35n-outline-list {
+    display: grid;
+    gap: .38rem;
+    max-height: 32vh;
+    overflow: auto;
+    padding-right: .15rem;
+  }
+  .stage35n-outline-section {
+    margin-top: .35rem;
+    padding: .16rem .22rem;
+    color: #475569;
+    font-size: .7rem;
+    font-weight: 850;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+  }
+  .stage35n-outline-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .5rem;
+    align-items: center;
+    border: 1px solid rgba(23,54,93,.12);
+    border-radius: 13px;
+    background: #f8fafc;
+    color: #17365d;
+    padding: .46rem .52rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .stage35n-outline-item:hover,
+  .stage35n-outline-item:focus {
+    background: #e8f0fb;
+    border-color: rgba(23,54,93,.34);
+    outline: none;
+  }
+  .stage35n-outline-item.active {
+    background: linear-gradient(180deg, #1f4e79, #17365d);
+    color: #ffffff;
+    border-color: rgba(15,42,74,.85);
+  }
+  .stage35n-outline-num {
+    min-width: 1.85rem;
+    border-radius: 999px;
+    padding: .14rem .36rem;
+    text-align: center;
+    background: rgba(23,54,93,.11);
+    color: #17365d;
+    font-size: .68rem;
+    font-weight: 820;
+  }
+  .stage35n-outline-item.active .stage35n-outline-num { background: rgba(255,255,255,.22); color: #ffffff; }
+  .stage35n-outline-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .78rem;
+    font-weight: 760;
+    color: inherit;
+  }
+  .stage35n-outline-empty {
+    border: 1px dashed rgba(23,54,93,.22);
+    border-radius: 14px;
+    padding: .65rem;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: .78rem;
+  }
+  @media (max-width: 780px) {
+    .stage35m-export-grid { grid-template-columns: 1fr; }
+    .stage35m-export-dialog { width: calc(100vw - 1.2rem); }
+  }
+</style>
 <style id="stage35l-slide-jump-css">
   /* Stage 35L: feature-polish searchable slide jump overlay. */
   .stage35l-jump-button {
@@ -1120,7 +1297,7 @@ window.MathJax = {
         <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
       </div>
       <div class="subpane active" data-subpane="edit:slide">
-      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35l-20260425-1">
+      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35n-20260425-1">
         <div class="section-head">
           <div>
             <div class="smallcaps">Quick slide actions</div>
@@ -2152,7 +2329,7 @@ window.MathJax = {
    Hotfix retained: quick slide actions count handler dispatch as success unless it explicitly returns false. */
 (function(){
   'use strict';
-  var STAGE = 'stage35l-20260425-1';
+  var STAGE = 'stage35n-20260425-1';
   var compactKey = 'luminaStage35cCompactWorkspace';
   function byId(id){ return document.getElementById(id); }
   function clickById(id){ var el = byId(id); if(el && typeof el.click === 'function'){ el.click(); return true; } return false; }
@@ -2281,7 +2458,7 @@ window.MathJax = {
 /* Stage 35K: discoverability polish — keyboard/workflow help overlay. */
 (function(){
   'use strict';
-  var STAGE = 'stage35l-20260425-1';
+  var STAGE = 'stage35n-20260425-1';
   var HELP_ID = 'stage35k-help-overlay';
   var retryTimers = [];
 
@@ -2459,7 +2636,7 @@ window.MathJax = {
 /* Stage 35L: feature polish — searchable jump-to-slide overlay backed by the existing deck rail. */
 (function(){
   'use strict';
-  var STAGE = 'stage35l-20260425-1';
+  var STAGE = 'stage35n-20260425-1';
   var OVERLAY_ID = 'stage35l-slide-jump-overlay';
   var retryTimers = [];
 
@@ -2482,7 +2659,7 @@ window.MathJax = {
   function cleanTitle(btn, fallback){
     var clone = btn.cloneNode(true);
     clone.querySelectorAll('.meta, small, .badge').forEach(function(node){ node.remove(); });
-    var title = (clone.textContent || '').replace(/s+/g,' ').trim();
+    var title = (clone.textContent || '').replace(/\s+/g,' ').trim();
     return title || ('Slide ' + fallback);
   }
   function collectSlides(){
@@ -2496,7 +2673,7 @@ window.MathJax = {
         index: index,
         number: index + 1,
         title: cleanTitle(btn, index + 1),
-        meta: metaNode ? (metaNode.textContent || '').replace(/s+/g,' ').trim() : '',
+        meta: metaNode ? (metaNode.textContent || '').replace(/\s+/g,' ').trim() : '',
         active: btn.classList.contains('active') || btn.getAttribute('aria-selected') === 'true',
         button: btn
       };
@@ -2640,13 +2817,468 @@ window.MathJax = {
 })();
 </script>
 
+<script id="stage35mn-export-outline-script">
+/* Stage 35M/N: export diagnostics overlay plus persistent deck outline navigator. */
+(function(){
+  'use strict';
+  var STAGE = 'stage35n-20260425-1';
+  var EXPORT_OVERLAY_ID = 'stage35m-export-diagnostics-overlay';
+  var OUTLINE_PANEL_ID = 'stage35n-deck-outline-panel';
+  var exportRetryTimers = [];
+  var outlineRetryTimers = [];
+  var lastExport = {
+    action: '',
+    type: '',
+    at: '',
+    status: 'No export action recorded yet.',
+    error: '',
+    probe: null
+  };
+
+  function esc(value){
+    return String(value == null ? '' : value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+  function compact(value){ return String(value || '').replace(/\s+/g, ' ').trim(); }
+  function editableTarget(target){
+    if(!target) return false;
+    var tag = String(target.tagName || '').toLowerCase();
+    return !!(target.isContentEditable || tag === 'input' || tag === 'textarea' || tag === 'select');
+  }
+  function now(){ return new Date().toISOString(); }
+  function exportSupportProbe(){
+    var probe = {
+      checkedAt: now(),
+      blob: typeof Blob === 'function',
+      urlCreateObjectURL: !!(window.URL && typeof window.URL.createObjectURL === 'function'),
+      urlRevokeObjectURL: !!(window.URL && typeof window.URL.revokeObjectURL === 'function'),
+      anchorDownload: false,
+      clipboard: !!(navigator.clipboard && typeof navigator.clipboard.writeText === 'function'),
+      fileReader: typeof FileReader === 'function',
+      localStorage: false,
+      userAgent: navigator.userAgent,
+      href: location.href,
+      testBlobUrlCreated: false,
+      ok: false,
+      warnings: []
+    };
+    try { probe.anchorDownload = 'download' in document.createElement('a'); } catch(_e) {}
+    try {
+      var key = 'lumina_stage35m_probe';
+      localStorage.setItem(key, '1');
+      probe.localStorage = localStorage.getItem(key) === '1';
+      localStorage.removeItem(key);
+    } catch(e) { probe.warnings.push('localStorage unavailable: ' + (e && e.message ? e.message : e)); }
+    try {
+      if(probe.blob && probe.urlCreateObjectURL){
+        var blob = new Blob(['stage35m export probe'], { type:'text/plain' });
+        var url = URL.createObjectURL(blob);
+        probe.testBlobUrlCreated = !!url;
+        if(url && probe.urlRevokeObjectURL) URL.revokeObjectURL(url);
+      }
+    } catch(e) { probe.warnings.push('Blob URL probe failed: ' + (e && e.message ? e.message : e)); }
+    probe.ok = !!(probe.blob && probe.urlCreateObjectURL && probe.anchorDownload && probe.testBlobUrlCreated);
+    if(!probe.anchorDownload) probe.warnings.push('Anchor download attribute is not available; browser may open files instead of downloading.');
+    if(!probe.urlCreateObjectURL) probe.warnings.push('URL.createObjectURL is unavailable; Blob-based downloads may fail.');
+    if(!probe.blob) probe.warnings.push('Blob constructor is unavailable; generated file export cannot be packaged normally.');
+    lastExport.probe = probe;
+    window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(false);
+    return probe;
+  }
+  function inferExportType(id){
+    if(id === 'downloadDeckBtn') return 'standalone-html-deck';
+    if(id === 'downloadStandaloneBtn') return 'standalone-html-current-slide';
+    if(id === 'savePresentationJsonBtn') return 'presentation-json';
+    if(id === 'saveCurrentSlideJsonBtn') return 'current-slide-json';
+    if(id === 'copySnippetBtn') return 'copy-current-slide-snippet';
+    if(id === 'copyMathJaxBtn') return 'copy-mathjax-helper';
+    return id || 'export-action';
+  }
+  function noteExportClick(button){
+    var id = button && button.id || '';
+    lastExport.action = id || compact(button && button.textContent) || 'export';
+    lastExport.type = inferExportType(id);
+    lastExport.at = now();
+    lastExport.status = 'Export action clicked; waiting for browser handoff.';
+    lastExport.error = '';
+    exportSupportProbe();
+    setTimeout(function(){
+      if(lastExport.status === 'Export action clicked; waiting for browser handoff.'){
+        lastExport.status = 'No JavaScript exception captured after export click; if Safari still reports download failed, copy this diagnostics report.';
+        window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(false);
+        renderExportBody();
+      }
+    }, 900);
+    window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(false);
+    renderExportBody();
+  }
+  function installExportHooks(){
+    var ids = ['downloadDeckBtn','downloadStandaloneBtn','savePresentationJsonBtn','saveCurrentSlideJsonBtn','copySnippetBtn','copyMathJaxBtn'];
+    ids.forEach(function(id){
+      var btn = document.getElementById(id);
+      if(btn && btn.dataset.stage35mExportHooked !== '1'){
+        btn.dataset.stage35mExportHooked = '1';
+        btn.addEventListener('click', function(){ noteExportClick(btn); }, true);
+      }
+    });
+  }
+  function captureExportError(message){
+    lastExport.error = compact(message || 'Unknown export/runtime error');
+    lastExport.status = 'JavaScript error captured after export attempt.';
+    lastExport.at = lastExport.at || now();
+    window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(false);
+    renderExportBody();
+  }
+  window.addEventListener('error', function(event){
+    if(lastExport && lastExport.at) captureExportError(event.message || (event.error && event.error.message) || 'window error');
+  });
+  window.addEventListener('unhandledrejection', function(event){
+    if(lastExport && lastExport.at){
+      var reason = event.reason;
+      captureExportError((reason && reason.message) || String(reason || 'unhandled rejection'));
+    }
+  });
+  function exportReport(){
+    var probe = lastExport.probe || exportSupportProbe();
+    return {
+      stage: STAGE,
+      checkedAt: now(),
+      lastExport: {
+        action: lastExport.action,
+        type: lastExport.type,
+        at: lastExport.at,
+        status: lastExport.status,
+        error: lastExport.error
+      },
+      support: probe,
+      deck: {
+        title: (document.getElementById('deckTitle') && document.getElementById('deckTitle').value) || '',
+        slideCount: collectSlides().length,
+        activeSlideNumber: activeSlideNumber()
+      },
+      hints: [
+        'If Safari says download failed, try Save presentation JSON first to isolate JSON vs standalone HTML export.',
+        'If Blob URL support is false, generated file downloads cannot use the normal browser export path.',
+        'If no JavaScript exception is captured, the failure is likely browser download policy, file size, popup/download blocking, or storage/permission handling.'
+      ]
+    };
+  }
+  function renderExportBody(){
+    var overlay = document.getElementById(EXPORT_OVERLAY_ID);
+    if(!overlay) return;
+    var body = overlay.querySelector('[data-stage35m-export-body]');
+    if(!body) return;
+    var report = exportReport();
+    var support = report.support || {};
+    var cards = [
+      ['Blob support', support.blob ? 'available' : 'missing'],
+      ['Blob URL creation', support.testBlobUrlCreated ? 'probe passed' : 'probe failed'],
+      ['Anchor download', support.anchorDownload ? 'available' : 'missing'],
+      ['Clipboard copy', support.clipboard ? 'available' : 'missing'],
+      ['Last action', report.lastExport.type || 'none'],
+      ['Last status', report.lastExport.status || 'not recorded']
+    ];
+    body.innerHTML = '<div class="stage35m-export-grid">' + cards.map(function(card){
+      return '<div class="stage35m-export-card"><strong>' + esc(card[0]) + '</strong><span>' + esc(card[1]) + '</span></div>';
+    }).join('') + '</div>'
+      + (support.warnings && support.warnings.length ? '<div class="stage35m-export-card"><strong>Warnings</strong><span>' + esc(support.warnings.join(' | ')) + '</span></div>' : '')
+      + (report.lastExport.error ? '<div class="stage35m-export-card"><strong>Captured error</strong><span>' + esc(report.lastExport.error) + '</span></div>' : '')
+      + '<div><span class="stage35m-export-pill">Copy/paste report</span><pre class="stage35m-export-pre" data-stage35m-export-pre>' + esc(JSON.stringify(report, null, 2)) + '</pre></div>';
+  }
+  function ensureExportOverlay(){
+    var existing = document.getElementById(EXPORT_OVERLAY_ID);
+    if(existing) return existing;
+    var overlay = document.createElement('div');
+    overlay.id = EXPORT_OVERLAY_ID;
+    overlay.className = 'stage35m-export-backdrop';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'stage35m-export-title');
+    overlay.innerHTML = '<div class="stage35m-export-dialog" role="document">'
+      + '<div class="stage35m-export-head"><div><div class="smallcaps">Export reliability</div><h2 id="stage35m-export-title">Export diagnostics</h2><div class="stage35k-help-muted">Checks browser download support, records export attempts, and gives you a copyable report for Safari download failures.</div></div><button class="btn mini stage35m-export-close" type="button" data-stage35m-export-close aria-label="Close export diagnostics">×</button></div>'
+      + '<div class="stage35m-export-body" data-stage35m-export-body></div>'
+      + '<div class="stage35m-export-foot"><button class="btn mini" type="button" data-stage35m-export-refresh>Run probe</button><button class="btn mini primary" type="button" data-stage35m-export-copy>Copy report</button><button class="btn mini" type="button" data-stage35m-export-close>Close</button></div>'
+      + '</div>';
+    overlay.addEventListener('click', function(event){
+      if(event.target === overlay || event.target.closest('[data-stage35m-export-close]')) closeExportDiagnostics();
+      if(event.target.closest('[data-stage35m-export-refresh]')) { exportSupportProbe(); renderExportBody(); }
+      if(event.target.closest('[data-stage35m-export-copy]')) copyExportReport();
+    });
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+  function openExportDiagnostics(){
+    var overlay = ensureExportOverlay();
+    exportSupportProbe();
+    renderExportBody();
+    overlay.classList.add('active');
+    document.body.classList.add('stage35m-export-open');
+    window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(true);
+    return true;
+  }
+  function closeExportDiagnostics(){
+    var overlay = document.getElementById(EXPORT_OVERLAY_ID);
+    if(overlay) overlay.classList.remove('active');
+    document.body.classList.remove('stage35m-export-open');
+    window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(false);
+    return true;
+  }
+  function copyText(text){
+    if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    return new Promise(function(resolve, reject){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly','');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        ta.remove();
+        ok ? resolve() : reject(new Error('execCommand copy returned false'));
+      } catch(e) { reject(e); }
+    });
+  }
+  function toast(message){
+    var t = document.getElementById('toast');
+    if(t){
+      t.textContent = message;
+      t.classList.add('show');
+      setTimeout(function(){ t.classList.remove('show'); }, 1300);
+    }
+  }
+  function copyExportReport(){
+    var text = JSON.stringify(exportReport(), null, 2);
+    return copyText(text).then(function(){ toast('Copied export diagnostics.'); }).catch(function(e){
+      captureExportError('Copy diagnostics failed: ' + (e && e.message ? e.message : e));
+    });
+  }
+  function installExportButton(){
+    var dock = document.querySelector('.stage35c-quick-dock');
+    if(!dock) return false;
+    if(dock.querySelector('[data-stage35m-export-button]')) return true;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn mini stage35m-export-button';
+    btn.textContent = 'Export health';
+    btn.setAttribute('aria-haspopup','dialog');
+    btn.dataset.stage35mExportButton = '1';
+    btn.addEventListener('click', function(event){ event.preventDefault(); openExportDiagnostics(); });
+    var help = dock.querySelector('[data-stage35k-help-button]');
+    if(help) dock.insertBefore(btn, help);
+    else dock.appendChild(btn);
+    return true;
+  }
+  function currentExportStatus(open){
+    var probe = lastExport.probe || null;
+    return {
+      stage: STAGE,
+      exportDiagnosticsOverlay: !!document.getElementById(EXPORT_OVERLAY_ID),
+      exportDiagnosticsButton: !!document.querySelector('[data-stage35m-export-button]'),
+      open: !!open,
+      browserDownloadSupport: probe ? !!probe.ok : null,
+      lastExportType: lastExport.type || '',
+      lastExportStatus: lastExport.status || '',
+      lastExportError: lastExport.error || '',
+      behaviorChanged: false
+    };
+  }
+
+  function deckButtons(){
+    return Array.prototype.slice.call(document.querySelectorAll('#deckList .deck-item[data-index], #deckList [data-index]'));
+  }
+  function cleanSlideTitle(btn, fallback){
+    var clone = btn.cloneNode(true);
+    clone.querySelectorAll('.meta, small, .badge').forEach(function(node){ node.remove(); });
+    var title = compact(clone.textContent || '');
+    return title || ('Slide ' + fallback);
+  }
+  function collectSlides(){
+    return deckButtons().map(function(btn, i){
+      var rawIndex = btn.getAttribute('data-index');
+      var index = Number(rawIndex);
+      if(!Number.isFinite(index)) index = i;
+      var metaNode = btn.querySelector('.meta, small');
+      var meta = metaNode ? compact(metaNode.textContent || '') : '';
+      var title = cleanSlideTitle(btn, index + 1);
+      var isSection = /section-divider/i.test(meta) || /^section/i.test(title);
+      return {
+        index: index,
+        number: index + 1,
+        title: title,
+        meta: meta,
+        isSection: isSection,
+        active: btn.classList.contains('active') || btn.getAttribute('aria-selected') === 'true'
+      };
+    });
+  }
+  function activeSlideNumber(){
+    var slides = collectSlides();
+    var active = slides.find(function(s){ return s.active; });
+    return active ? active.number : null;
+  }
+  function jumpToSlide(index){
+    if(window.LuminaStage35LFeaturePolish && typeof window.LuminaStage35LFeaturePolish.jumpTo === 'function'){
+      return window.LuminaStage35LFeaturePolish.jumpTo(index);
+    }
+    var target = document.querySelector('#deckList .deck-item[data-index="' + index + '"], #deckList [data-index="' + index + '"]');
+    if(target && typeof target.click === 'function'){
+      target.click();
+      return true;
+    }
+    return false;
+  }
+  function ensureOutlinePanel(){
+    var existing = document.getElementById(OUTLINE_PANEL_ID);
+    var railMount = document.getElementById('slideRailMount');
+    var deckList = document.getElementById('deckList');
+    var deckPanel = deckList && deckList.closest ? deckList.closest('.panel') : null;
+    var parent = (railMount && (deckPanel ? deckPanel.parentNode : railMount)) || (deckPanel && deckPanel.parentNode);
+    if(existing) return existing;
+    if(!parent) return null;
+    var panel = document.createElement('div');
+    panel.id = OUTLINE_PANEL_ID;
+    panel.className = 'stage35n-outline-panel';
+    panel.innerHTML = '<div class="section-head"><div><div class="smallcaps">Deck outline</div><div class="muted">Persistent table of contents grouped by section divider slides.</div></div><button class="btn mini" type="button" data-stage35n-outline-refresh>Refresh</button></div><div class="stage35n-outline-list" data-stage35n-outline-list></div>';
+    panel.addEventListener('click', function(event){
+      var refresh = event.target.closest('[data-stage35n-outline-refresh]');
+      if(refresh){ event.preventDefault(); renderOutline(); return; }
+      var item = event.target.closest('[data-stage35n-outline-index]');
+      if(item){ event.preventDefault(); jumpToSlide(item.getAttribute('data-stage35n-outline-index')); setTimeout(renderOutline, 80); }
+    });
+    if(deckPanel && deckPanel.parentNode === parent) parent.insertBefore(panel, deckPanel.nextSibling);
+    else parent.appendChild(panel);
+    return panel;
+  }
+  function renderOutline(){
+    var panel = ensureOutlinePanel();
+    if(!panel) return false;
+    var list = panel.querySelector('[data-stage35n-outline-list]');
+    if(!list) return false;
+    var slides = collectSlides();
+    if(!slides.length){
+      list.innerHTML = '<div class="stage35n-outline-empty">No slides yet. Add or import slides to populate the deck outline.</div>';
+      window.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR = currentOutlineStatus();
+      return true;
+    }
+    var html = '';
+    var currentSection = 'Deck';
+    var wroteSection = false;
+    slides.forEach(function(slide){
+      if(slide.isSection){
+        currentSection = slide.title || ('Section ' + slide.number);
+        html += '<div class="stage35n-outline-section">' + esc(currentSection) + '</div>';
+        wroteSection = true;
+      } else if(!wroteSection){
+        html += '<div class="stage35n-outline-section">' + esc(currentSection) + '</div>';
+        wroteSection = true;
+      }
+      html += '<button type="button" class="stage35n-outline-item ' + (slide.active ? 'active' : '') + '" data-stage35n-outline-index="' + esc(slide.index) + '">'
+        + '<span class="stage35n-outline-num">' + esc(slide.number) + '</span>'
+        + '<span class="stage35n-outline-title">' + esc(slide.title) + '</span>'
+        + '</button>';
+    });
+    list.innerHTML = html;
+    window.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR = currentOutlineStatus();
+    return true;
+  }
+  function installOutlineButton(){
+    var dock = document.querySelector('.stage35c-quick-dock');
+    if(!dock) return false;
+    if(dock.querySelector('[data-stage35n-outline-button]')) return true;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn mini stage35n-outline-dock-button';
+    btn.textContent = 'Outline';
+    btn.dataset.stage35nOutlineButton = '1';
+    btn.addEventListener('click', function(event){
+      event.preventDefault();
+      renderOutline();
+      var panel = document.getElementById(OUTLINE_PANEL_ID);
+      if(panel && panel.scrollIntoView) panel.scrollIntoView({ block:'nearest', behavior:'smooth' });
+    });
+    var jump = dock.querySelector('[data-stage35l-jump-button]');
+    if(jump) dock.insertBefore(btn, jump.nextSibling);
+    else dock.appendChild(btn);
+    return true;
+  }
+  function currentOutlineStatus(){
+    var slides = collectSlides();
+    var sections = slides.filter(function(s){ return s.isSection; }).length;
+    return {
+      stage: STAGE,
+      outlinePanel: !!document.getElementById(OUTLINE_PANEL_ID),
+      outlineDockButton: !!document.querySelector('[data-stage35n-outline-button]'),
+      slideCount: slides.length,
+      sectionCount: sections,
+      activeSlideNumber: activeSlideNumber(),
+      behaviorChanged: false
+    };
+  }
+  function observeDeckList(){
+    var deckList = document.getElementById('deckList');
+    if(!deckList || deckList.dataset.stage35nOutlineObserved === '1') return false;
+    deckList.dataset.stage35nOutlineObserved = '1';
+    try {
+      var observer = new MutationObserver(function(){ renderOutline(); });
+      observer.observe(deckList, { childList:true, subtree:true, attributes:true, attributeFilter:['class','aria-selected'] });
+      window.__LUMINA_STAGE35N_OUTLINE_OBSERVER = observer;
+    } catch(_e) {}
+    return true;
+  }
+  function initExportDiagnostics(){
+    installExportButton();
+    ensureExportOverlay();
+    installExportHooks();
+    exportSupportProbe();
+    window.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS = currentExportStatus(false);
+  }
+  function initOutlineNavigator(){
+    installOutlineButton();
+    ensureOutlinePanel();
+    observeDeckList();
+    renderOutline();
+    window.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR = currentOutlineStatus();
+  }
+  function init(){
+    initExportDiagnostics();
+    initOutlineNavigator();
+  }
+  function scheduleInit(){
+    init();
+    exportRetryTimers.forEach(function(t){ clearTimeout(t); });
+    outlineRetryTimers.forEach(function(t){ clearTimeout(t); });
+    exportRetryTimers = [250, 900, 1800].map(function(ms){ return setTimeout(initExportDiagnostics, ms); });
+    outlineRetryTimers = [300, 1000, 2200].map(function(ms){ return setTimeout(initOutlineNavigator, ms); });
+  }
+  document.addEventListener('keydown', function(event){
+    if(event.key === 'Escape' && document.getElementById(EXPORT_OVERLAY_ID) && document.getElementById(EXPORT_OVERLAY_ID).classList.contains('active')){
+      event.preventDefault(); closeExportDiagnostics(); return;
+    }
+    var wantsExportHealth = (event.ctrlKey || event.metaKey) && event.shiftKey && String(event.key || '').toLowerCase() === 'e';
+    if(wantsExportHealth && !editableTarget(event.target)){
+      event.preventDefault(); openExportDiagnostics();
+    }
+  });
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleInit);
+  else scheduleInit();
+  window.LuminaStage35MExportDiagnostics = { stage: STAGE, init: initExportDiagnostics, open: openExportDiagnostics, close: closeExportDiagnostics, report: exportReport, probe: exportSupportProbe };
+  window.LuminaStage35NOutlineNavigator = { stage: STAGE, init: initOutlineNavigator, render: renderOutline, status: currentOutlineStatus };
+})();
+</script>
+
 <script>
 /* Stage 34J.2: restore always-visible slide action controls in the main slide editor.
    These proxy buttons call the existing command bridge / original deck buttons, so the
    guarded live ESM deck runtime remains authoritative. */
 (function(){
   'use strict';
-  var STAGE = 'stage35l-20260425-1-slide-actions-restore';
+  var STAGE = 'stage35n-20260425-1-slide-actions-restore';
   var actionToCommand = {
     add: 'addSlide',
     update: 'updateSlide',
@@ -2726,31 +3358,31 @@ window.MathJax = {
   else bindSlideActionRestore();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage34k.js?v=stage35l-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
+<script src="js/utils-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage34k.js?v=stage35n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
 <script type="module">
 /* Stage 34K: guarded live ESM runtime for Copilot core.
    The classic core exposed by legacy-app-stage24c.js remains captured as a fallback. */
 const W34K = window;
-const STAGE34K = W34K.LUMINA_STAGE || 'stage35l-20260425-1';
+const STAGE34K = W34K.LUMINA_STAGE || 'stage35n-20260425-1';
 const status34K = W34K.LuminaLiveRuntimeStatus = W34K.LuminaLiveRuntimeStatus || {};
 function shortCopilotError34K(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markCopilotLoaded34K(asset){ if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markLoaded === 'function') W34K.LuminaDiagnostics.markLoaded(asset); }
@@ -2841,7 +3473,7 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   var doc = document;
   var originalAdd = doc.addEventListener;
   var shadow = W.__LUMINA_STAGE34J_COMMANDS_SHADOW = {
-    stage: W.LUMINA_STAGE || 'stage35l-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage35n-20260425-1',
     suppressing: true,
     suppressedKeydown: 0,
     suppressedDomReady: 0,
@@ -2881,12 +3513,12 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   W.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH = restore;
 })();
 </script>
-<script src="js/commands-stage24c.js?v=stage35l-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage35n-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
 <script type="module">
 /* Stage 34J hotfix: guarded live ESM runtime for Commands.
    ESM import failure is non-blocking; activate the captured classic shadow instead of surfacing startup errors. */
 const W = window;
-const STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+const STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
 const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
 function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -2985,7 +3617,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -3063,7 +3695,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -3244,7 +3876,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -3417,7 +4049,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -3500,7 +4132,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
@@ -4610,7 +5242,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35l-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35n-20260425-1';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }
@@ -4627,7 +5259,7 @@ try{
     report.stageFromWindow = W.LUMINA_STAGE || null;
     report.indexStageSignature = W.LUMINA_STAGE_SIGNATURE || null;
     report.indexDatasetStage = document.documentElement ? document.documentElement.getAttribute('data-lumina-stage') : null;
-    report.diagnosticsDecorator = 'stage35l-slide-jump-plus-stage35k-help-overlay-baseline';
+    report.diagnosticsDecorator = 'stage35n-outline-navigator-plus-stage35m-export-diagnostics';
     report.esModuleDiagnostics = esm;
     report.esModuleSmokePassed = !!(esm && esm.ok === true);
     report.esModuleSmokeStatus = esmStatus(esm);
@@ -4651,21 +5283,21 @@ try{
     report.copilotDeckPromptStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.deckPromptStatus || null;
     report.copilotWebSearchEnabled = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchEnabled || false;
     report.copilotWebSearchStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchStatus || null;
-    report.visualPolishStage = 'stage35l-20260425-1';
-    report.visualContrastAuditStage = 'stage35l-20260425-1';
+    report.visualPolishStage = 'stage35n-20260425-1';
+    report.visualContrastAuditStage = 'stage35n-20260425-1';
     report.visualPolishSummary = {
       navigation: 'Five workflow tabs preserved from Stage 35A.',
-      hierarchy: 'Cards, subtabs, buttons, fields, preview, rail, Copilot panel, the help overlay, and the Stage 35L slide-jump overlay keep Stage 35B spacing/radius/shadow polish.',
-      colorBalance: 'Stage 35H keeps the Stage 35F classic palette and applies late high-specificity contrast; Stage 35J adds solid fallbacks; Stage 35K reuses those controls for help; Stage 35L extends them to searchable slide navigation.',
+      hierarchy: 'Cards, subtabs, buttons, fields, preview, rail, Copilot panel, the help overlay, slide jump, Stage 35M export diagnostics, and Stage 35N outline navigator keep Stage 35B spacing/radius/shadow polish.',
+      colorBalance: 'Stage 35H keeps the Stage 35F classic palette and applies late high-specificity contrast; Stage 35J adds solid fallbacks; Stage 35K reuses those controls for help; Stage 35L adds slide jump; Stage 35M/N extend the same readable controls to export diagnostics and deck outline navigation.',
       behaviorChanged: false
     };
-    report.colorBalanceStage = 'stage35l-20260425-1';
+    report.colorBalanceStage = 'stage35n-20260425-1';
     report.colorBalanceSummary = {
       palette: 'Classic blue/gray UI palette restored while keeping Stage 35B layout polish.',
       contrastFixes: ['workflow tabs', 'subtabs', 'quick dock', 'active deck/block/library cards', 'Copilot status', 'core preset cards', 'layout template cards'],
       behaviorChanged: false
     };
-    report.templateContrastStage = 'stage35l-20260425-1';
+    report.templateContrastStage = 'stage35n-20260425-1';
     report.templateContrastSummary = {
       scope: 'Core presets, layout templates, reusable block template buttons, and their subtabs now force readable classic text/background colors.',
       behaviorChanged: false,
@@ -4760,11 +5392,13 @@ try{
         auditSample('reusable block item', '.library-item', 4.5),
         auditSample('quick action dock button', '.stage35c-quick-dock button', 4.5),
         auditSample('help overlay button', '.stage35c-quick-dock [data-stage35k-help-button]', 4.5),
-        auditSample('slide jump button', '.stage35c-quick-dock [data-stage35l-jump-button]', 4.5)
+        auditSample('slide jump button', '.stage35c-quick-dock [data-stage35l-jump-button]', 4.5),
+        auditSample('export diagnostics button', '.stage35c-quick-dock [data-stage35m-export-button]', 4.5),
+        auditSample('outline navigator button', '.stage35c-quick-dock [data-stage35n-outline-button]', 4.5)
       ];
       var presentSamples = contrastSamples.filter(function(s){ return s.present; });
       var failures = presentSamples.filter(function(s){ return s.ok === false; });
-      report.visualContrastAuditStage = 'stage35l-20260425-1';
+      report.visualContrastAuditStage = 'stage35n-20260425-1';
       report.visualContrastSmokePassed = failures.length === 0 && presentSamples.length > 0;
       report.visualContrastAudit = {
         checkedAt: new Date().toISOString(),
@@ -4779,7 +5413,7 @@ try{
     } catch(e) {
       report.visualContrastAuditError = e && e.message ? e.message : String(e);
     }
-    report.efficiencyStage = 'stage35l-20260425-1';
+    report.efficiencyStage = 'stage35n-20260425-1';
     report.efficiencySummary = {
       quickDock: !!W.__LUMINA_STAGE35C_EFFICIENCY,
       quickDockButtonCount: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickButtonCount,
@@ -4788,7 +5422,7 @@ try{
       quickActionReturnHotfix: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickActionReturnHotfix,
       behaviorChanged: false
     };
-    report.featurePolishStage = 'stage35l-20260425-1';
+    report.featurePolishStage = 'stage35n-20260425-1';
     report.featurePolishSummary = {
       helpOverlay: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.helpOverlay),
       helpDockButton: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.helpDockButton),
@@ -4796,16 +5430,26 @@ try{
       slideJumpOverlay: !!(W.__LUMINA_STAGE35L_FEATURE_POLISH && W.__LUMINA_STAGE35L_FEATURE_POLISH.slideJumpOverlay),
       slideJumpButton: !!(W.__LUMINA_STAGE35L_FEATURE_POLISH && W.__LUMINA_STAGE35L_FEATURE_POLISH.slideJumpButton),
       keyboardSlideJumpShortcut: W.__LUMINA_STAGE35L_FEATURE_POLISH && W.__LUMINA_STAGE35L_FEATURE_POLISH.keyboardSlideJumpShortcut || 'Ctrl/⌘+K',
+      exportDiagnostics: !!(W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS && W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS.exportDiagnosticsOverlay),
+      exportDiagnosticsButton: !!(W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS && W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS.exportDiagnosticsButton),
+      exportBrowserDownloadSupport: W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS && W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS.browserDownloadSupport,
+      outlineNavigator: !!(W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR && W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR.outlinePanel),
+      outlineDockButton: !!(W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR && W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR.outlineDockButton),
+      outlineSlideCount: W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR && W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR.slideCount,
       commandRegistryBacked: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.commandCount),
       behaviorChanged: false
     };
     report.helpOverlayStatus = W.__LUMINA_STAGE35K_FEATURE_POLISH || null;
     report.slideJumpStatus = W.__LUMINA_STAGE35L_FEATURE_POLISH || null;
+    report.exportDiagnosticsStatus = W.__LUMINA_STAGE35M_EXPORT_DIAGNOSTICS || null;
+    report.deckOutlineStatus = W.__LUMINA_STAGE35N_OUTLINE_NAVIGATOR || null;
     report.copilotManualSmokeChecklist = [
       "Save Copilot settings/API key or endpoint.",
       "Use Draft current slide and confirm JSON appears without captured errors.",
       "Use Append generated slide and confirm deck count increases.",
-      "Generate a 2-slide deck and confirm preview/deck list update."
+      "Generate a 2-slide deck and confirm preview/deck list update.",
+      "Open Export health, run probe, and copy diagnostics if any download fails.",
+      "Confirm Deck outline updates after add/duplicate/delete and jumps to clicked slides."
     ];
     report.utilsRuntimeSource = W.__LUMINA_UTILS_RUNTIME_SOURCE || null;
     report.blockStyleRuntimeSource = W.__LUMINA_BLOCK_STYLE_RUNTIME_SOURCE || null;

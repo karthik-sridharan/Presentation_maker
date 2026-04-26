@@ -1,0 +1,15 @@
+{
+  "stage": "stage35n-20260425-1",
+  "patchType": "root patch",
+  "files": [
+    "index.html",
+    "RELEASE_NOTES_STAGE35N.md",
+    "DEPLOY_CHECK_STAGE35N.md",
+    "RELEASE_FILES_STAGE35N.json"
+  ],
+  "features": [
+    "stage35m-export-diagnostics",
+    "stage35n-deck-outline-navigator"
+  ],
+  "basedOn": "stage35l-20260425-1"
+}
