@@ -1,0 +1,10 @@
+{
+  "stage": "stage35q-20260425-1",
+  "files": [
+    "index.html",
+    "RELEASE_NOTES_STAGE35Q.md",
+    "DEPLOY_CHECK_STAGE35Q.md",
+    "RELEASE_FILES_STAGE35Q.json"
+  ],
+  "notes": "Root-level patch. Disable sticky left-panel subtabs so they scroll with content; preserve Stage 35P export-health removal."
+}
