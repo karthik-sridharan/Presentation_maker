@@ -1,0 +1,19 @@
+{
+  "stage": "stage35d-20260425-1",
+  "type": "root patch",
+  "purpose": "Stage 35C efficiency quick-action return-value hotfix",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "prompts/dev.txt",
+    "prompts/deck.txt",
+    "RELEASE_NOTES_STAGE35D.md",
+    "DEPLOY_CHECK_STAGE35D.md",
+    "RELEASE_FILES_STAGE35D.json"
+  ],
+  "notes": [
+    "Fixes Add slide / Duplicate slide quick-action false failure logging when underlying handlers return undefined.",
+    "Adds quickActionReturnHotfix diagnostics flag."
+  ]
+}
