@@ -1,5 +1,6 @@
 /* Stage 34J: browser-compatible ES module version of interactive figure tools.
-   Runtime note: guarded live ESM command runtime with classic Stage 24C shadow fallback. */
+   Runtime note: guarded live ESM command runtime with classic Stage 24C shadow fallback.
+   Stage 35X patch: guide snapping no longer forces 20px grid quantization during drag/resize. */
 'use strict';
 
 function createApi(deps){
@@ -591,7 +592,7 @@ function initFigureInteractions(root){
         let dy = (e.clientY - active.startY) / (active.scaleY || 1);
         let nextX = active.startTX + dx;
         let nextY = active.startTY + dy;
-        if(showGridToggle?.checked || snapToGuidesToggle?.checked){
+        if(showGridToggle?.checked){
           nextX = snapValue(nextX);
           nextY = snapValue(nextY);
         }
@@ -608,7 +609,7 @@ function initFigureInteractions(root){
           if(Math.abs(dx) >= Math.abs(dy)) h = Math.max(40, Math.round(w / active.aspect));
           else w = Math.max(60, Math.round(h * active.aspect));
         }
-        if(showGridToggle?.checked || snapToGuidesToggle?.checked){
+        if(showGridToggle?.checked){
           w = snapValue(w);
           h = snapValue(h);
         }
