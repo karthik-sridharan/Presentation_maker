@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>HTML Presentation Generator</title>
+
+
 <script>
 (function(){
   window.LUMINA_BOOT_ERRORS=[];
@@ -24,8 +26,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage35f-20260425-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35f-classic-color-balance-quick-action-hotfix-20260425-1';
+window.LUMINA_STAGE = 'stage35h-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35h-late-template-tab-contrast-classic-palette-20260425-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -76,18 +78,18 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
   "js/esm/copilot-stage34k.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35h-20260425-1';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage35f-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage35h-20260425-1',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
@@ -107,7 +109,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35f-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35h-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -578,6 +580,168 @@ window.MathJax = {
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script async src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<style id="stage35h-late-template-tab-contrast-css">
+  /* Stage 35H: late, high-specificity contrast repair.
+     Purpose: keep Stage 35B/35C polish, but restore classic readable blue/gray colors
+     for preset subtabs and template cards. This block is intentionally late in <head>. */
+
+  html body .left-pane .subtabs[data-subtab-group="presets"],
+  html body .left-pane .subtabs[data-subtab-group="tools"],
+  html body .left-pane .subtabs[data-subtab-group="slides"],
+  html body .left-pane .subtabs[data-subtab-group="files"],
+  html body .left-pane .subtabs[data-subtab-group="import"],
+  html body .left-pane .subtabs[data-subtab-group="help"],
+  html body .left-pane .subtabs[data-subtab-group="edit"] {
+    background: linear-gradient(180deg, #e7eef7 0%, #dbe5f1 100%) !important;
+    border-color: rgba(23,54,93,.25) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.78), 0 1px 0 rgba(23,54,93,.05) !important;
+  }
+
+  html body .left-pane .subtabs[data-subtab-group] > button.subtab,
+  html body .left-pane .subtabs[data-subtab-group] > .subtab {
+    background: transparent !important;
+    color: #17365d !important;
+    border-color: transparent !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  html body .left-pane .subtabs[data-subtab-group] > button.subtab:hover,
+  html body .left-pane .subtabs[data-subtab-group] > .subtab:hover {
+    background: #f4f8ff !important;
+    color: #0f2a4a !important;
+    border-color: rgba(23,54,93,.25) !important;
+  }
+
+  html body .left-pane .subtabs[data-subtab-group] > button.subtab.active,
+  html body .left-pane .subtabs[data-subtab-group] > .subtab.active {
+    background: linear-gradient(180deg, #1f4e79 0%, #17365d 100%) !important;
+    color: #ffffff !important;
+    border-color: rgba(15,42,74,.82) !important;
+    box-shadow: 0 9px 22px rgba(23,54,93,.22), inset 0 1px 0 rgba(255,255,255,.20) !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  html body .left-pane .template-list,
+  html body .left-pane .subpane .template-list,
+  html body .left-pane [data-subpane^="presets:"] .template-list,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list {
+    color: #10233b !important;
+  }
+
+  html body .left-pane .template-list > button,
+  html body .left-pane .template-list > button[data-preset],
+  html body .left-pane .template-list > button[data-block-template],
+  html body .left-pane [data-subpane^="presets:"] .template-list > button,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button[data-preset],
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button[data-block-template] {
+    background: linear-gradient(180deg, #eef4fb 0%, #e4edf7 100%) !important;
+    color: #10233b !important;
+    border-color: rgba(23,54,93,.24) !important;
+    box-shadow: 0 7px 18px rgba(23,54,93,.075), inset 0 1px 0 rgba(255,255,255,.78) !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  html body .left-pane .template-list > button:hover,
+  html body .left-pane .template-list > button[data-preset]:hover,
+  html body .left-pane .template-list > button[data-block-template]:hover,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button:hover,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button:hover {
+    background: linear-gradient(180deg, #f7fbff 0%, #dbe8f7 100%) !important;
+    color: #0f2a4a !important;
+    border-color: rgba(23,54,93,.40) !important;
+    box-shadow: 0 11px 25px rgba(23,54,93,.12), inset 0 1px 0 rgba(255,255,255,.88) !important;
+  }
+
+  html body .left-pane .template-list > button *,
+  html body .left-pane .template-list > button[data-preset] *,
+  html body .left-pane .template-list > button[data-block-template] *,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button *,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button * {
+    text-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  html body .left-pane .template-list > button small,
+  html body .left-pane .template-list > button[data-preset] small,
+  html body .left-pane .template-list > button[data-block-template] small,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button small,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button small {
+    color: #334155 !important;
+    opacity: 1 !important;
+  }
+
+  html body .left-pane .template-list > button b,
+  html body .left-pane .template-list > button strong,
+  html body .left-pane .template-list > button span,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button b,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button strong,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button span {
+    color: #10233b !important;
+    opacity: 1 !important;
+  }
+
+  html body .left-pane .template-list > button.active,
+  html body .left-pane .template-list > button[aria-selected="true"],
+  html body .left-pane .template-list > button[data-active="true"],
+  html body .left-pane [data-subpane^="presets:"] .template-list > button.active,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button.active {
+    background: linear-gradient(180deg, #1f4e79 0%, #17365d 100%) !important;
+    color: #ffffff !important;
+    border-color: rgba(15,42,74,.85) !important;
+    box-shadow: 0 10px 24px rgba(23,54,93,.24), inset 0 1px 0 rgba(255,255,255,.20) !important;
+  }
+
+  html body .left-pane .template-list > button.active *,
+  html body .left-pane .template-list > button[aria-selected="true"] *,
+  html body .left-pane .template-list > button[data-active="true"] *,
+  html body .left-pane [data-subpane^="presets:"] .template-list > button.active *,
+  html body .left-pane [data-subpane="tools:blocks"] .template-list > button.active * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  html body .style-preset-grid .style-card,
+  html body .style-preset-grid .style-card:not(.active) {
+    background: linear-gradient(180deg, #eef4fb 0%, #e4edf7 100%) !important;
+    color: #10233b !important;
+    border-color: rgba(23,54,93,.22) !important;
+    text-shadow: none !important;
+  }
+  html body .style-preset-grid .style-card b { color: #10233b !important; opacity: 1 !important; }
+  html body .style-preset-grid .style-card small { color: #334155 !important; opacity: 1 !important; }
+</style>
+<script id="stage35h-late-template-tab-contrast-script">
+(function(){
+  var css = document.getElementById('stage35h-late-template-tab-contrast-css');
+  function ensureLateContrast(){
+    try{
+      var existing = document.getElementById('stage35h-late-template-tab-contrast-css-runtime');
+      if(existing) existing.remove();
+      var clone = document.createElement('style');
+      clone.id = 'stage35h-late-template-tab-contrast-css-runtime';
+      clone.textContent = css ? css.textContent : '';
+      document.head.appendChild(clone);
+      document.documentElement.dataset.stage35hTemplateContrast = '1';
+    }catch(e){
+      window.LUMINA_BOOT_ERRORS = window.LUMINA_BOOT_ERRORS || [];
+      window.LUMINA_BOOT_ERRORS.push('Stage35H contrast injection failed: ' + (e && e.message ? e.message : e));
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', ensureLateContrast);
+  } else {
+    ensureLateContrast();
+  }
+  window.addEventListener('load', ensureLateContrast);
+  window.LuminaStage35HEnsureTemplateContrast = ensureLateContrast;
+})();
+</script>
+
 </head>
 <body data-beamer-style="${escapeHtml((payload.theme&&payload.theme.beamerStyle)||"classic")}">
 <div class="page">
@@ -616,7 +780,7 @@ window.MathJax = {
         <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
       </div>
       <div class="subpane active" data-subpane="edit:slide">
-      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35f-20260425-1">
+      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35h-20260425-1">
         <div class="section-head">
           <div>
             <div class="smallcaps">Quick slide actions</div>
@@ -1648,7 +1812,7 @@ window.MathJax = {
    Hotfix retained: quick slide actions count handler dispatch as success unless it explicitly returns false. */
 (function(){
   'use strict';
-  var STAGE = 'stage35f-20260425-1';
+  var STAGE = 'stage35h-20260425-1';
   var compactKey = 'luminaStage35cCompactWorkspace';
   function byId(id){ return document.getElementById(id); }
   function clickById(id){ var el = byId(id); if(el && typeof el.click === 'function'){ el.click(); return true; } return false; }
@@ -1779,7 +1943,7 @@ window.MathJax = {
    guarded live ESM deck runtime remains authoritative. */
 (function(){
   'use strict';
-  var STAGE = 'stage35f-20260425-1-slide-actions-restore';
+  var STAGE = 'stage35h-20260425-1-slide-actions-restore';
   var actionToCommand = {
     add: 'addSlide',
     update: 'updateSlide',
@@ -1859,31 +2023,31 @@ window.MathJax = {
   else bindSlideActionRestore();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage34k.js?v=stage35f-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
+<script src="js/utils-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage34k.js?v=stage35h-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
 <script type="module">
 /* Stage 34K: guarded live ESM runtime for Copilot core.
    The classic core exposed by legacy-app-stage24c.js remains captured as a fallback. */
 const W34K = window;
-const STAGE34K = W34K.LUMINA_STAGE || 'stage35f-20260425-1';
+const STAGE34K = W34K.LUMINA_STAGE || 'stage35h-20260425-1';
 const status34K = W34K.LuminaLiveRuntimeStatus = W34K.LuminaLiveRuntimeStatus || {};
 function shortCopilotError34K(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markCopilotLoaded34K(asset){ if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markLoaded === 'function') W34K.LuminaDiagnostics.markLoaded(asset); }
@@ -1974,7 +2138,7 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   var doc = document;
   var originalAdd = doc.addEventListener;
   var shadow = W.__LUMINA_STAGE34J_COMMANDS_SHADOW = {
-    stage: W.LUMINA_STAGE || 'stage35f-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage35h-20260425-1',
     suppressing: true,
     suppressedKeydown: 0,
     suppressedDomReady: 0,
@@ -2014,12 +2178,12 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   W.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH = restore;
 })();
 </script>
-<script src="js/commands-stage24c.js?v=stage35f-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage35h-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
 <script type="module">
 /* Stage 34J hotfix: guarded live ESM runtime for Commands.
    ESM import failure is non-blocking; activate the captured classic shadow instead of surfacing startup errors. */
 const W = window;
-const STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+const STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
 const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
 function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -2118,7 +2282,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -2196,7 +2360,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -2377,7 +2541,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -2550,7 +2714,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -2633,7 +2797,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
@@ -3743,7 +3907,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage35f-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35h-20260425-1';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }
@@ -3760,7 +3924,7 @@ try{
     report.stageFromWindow = W.LUMINA_STAGE || null;
     report.indexStageSignature = W.LUMINA_STAGE_SIGNATURE || null;
     report.indexDatasetStage = document.documentElement ? document.documentElement.getAttribute('data-lumina-stage') : null;
-    report.diagnosticsDecorator = 'stage35f-classic-color-balance-plus-stage35e-identity-sync-plus-stage35d-hotfix';
+    report.diagnosticsDecorator = 'stage35h-late-template-tab-contrast-plus-stage35f-color-balance-plus-stage35e-identity-sync';
     report.esModuleDiagnostics = esm;
     report.esModuleSmokePassed = !!(esm && esm.ok === true);
     report.esModuleSmokeStatus = esmStatus(esm);
@@ -3784,20 +3948,50 @@ try{
     report.copilotDeckPromptStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.deckPromptStatus || null;
     report.copilotWebSearchEnabled = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchEnabled || false;
     report.copilotWebSearchStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchStatus || null;
-    report.visualPolishStage = 'stage35f-20260425-1';
+    report.visualPolishStage = 'stage35h-20260425-1';
     report.visualPolishSummary = {
       navigation: 'Five workflow tabs preserved from Stage 35A.',
       hierarchy: 'Cards, subtabs, buttons, fields, preview, rail, and Copilot panel keep Stage 35B spacing/radius/shadow polish.',
-      colorBalance: 'Stage 35F restores a classic high-contrast blue/gray palette and fixes pale tab text on pale backgrounds.',
+      colorBalance: 'Stage 35H keeps the Stage 35F classic palette and applies late high-specificity contrast for core preset/layout template controls.',
       behaviorChanged: false
     };
-    report.colorBalanceStage = 'stage35f-20260425-1';
+    report.colorBalanceStage = 'stage35h-20260425-1';
     report.colorBalanceSummary = {
       palette: 'Classic blue/gray UI palette restored while keeping Stage 35B layout polish.',
-      contrastFixes: ['workflow tabs', 'subtabs', 'quick dock', 'active deck/block/library cards', 'Copilot status'],
+      contrastFixes: ['workflow tabs', 'subtabs', 'quick dock', 'active deck/block/library cards', 'Copilot status', 'core preset cards', 'layout template cards'],
       behaviorChanged: false
     };
-    report.efficiencyStage = 'stage35f-20260425-1';
+    report.templateContrastStage = 'stage35h-20260425-1';
+    report.templateContrastSummary = {
+      scope: 'Core presets, layout templates, reusable block template buttons, and their subtabs now force readable classic text/background colors.',
+      behaviorChanged: false,
+      lateOverride: true
+    };
+    try {
+      function sampleStyle(sel){
+        var el = document.querySelector(sel);
+        if(!el) return null;
+        var cs = getComputedStyle(el);
+        return {
+          selector: sel,
+          color: cs.color,
+          backgroundColor: cs.backgroundColor,
+          backgroundImage: cs.backgroundImage,
+          borderColor: cs.borderColor
+        };
+      }
+      report.templateContrastComputed = {
+        corePresetButton: sampleStyle('[data-subpane="presets:core"] .template-list button[data-preset]'),
+        layoutTemplateButton: sampleStyle('[data-subpane="presets:layouts"] .template-list button[data-preset]'),
+        presetsSubtab: sampleStyle('[data-subtab="presets:core"]'),
+        layoutSubtab: sampleStyle('[data-subtab="presets:layouts"]'),
+        runtimeOverridePresent: !!document.getElementById('stage35h-late-template-tab-contrast-css-runtime'),
+        htmlDatasetFlag: document.documentElement.dataset.stage35hTemplateContrast || ''
+      };
+    } catch(e) {
+      report.templateContrastComputedError = e && e.message ? e.message : String(e);
+    };
+    report.efficiencyStage = 'stage35h-20260425-1';
     report.efficiencySummary = {
       quickDock: !!W.__LUMINA_STAGE35C_EFFICIENCY,
       quickDockButtonCount: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickButtonCount,

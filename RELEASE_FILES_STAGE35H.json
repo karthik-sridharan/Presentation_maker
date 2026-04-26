@@ -1,0 +1,9 @@
+{
+  "stage": "stage35h-20260425-1",
+  "files": [
+    "index.html"
+  ],
+  "kind": "root patch",
+  "basedOn": "stage35g-20260425-1",
+  "summary": "Moves template/subtab contrast CSS to a late high-specificity override and adds runtime re-append plus computed diagnostics."
+}
