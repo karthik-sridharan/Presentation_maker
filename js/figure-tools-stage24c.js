@@ -2,7 +2,7 @@
    Interactive figure fitting, selection, dragging, resizing, alignment,
    snapping, crop, duplicate, reset, and guide helpers live here.
    This remains a classic browser script while the app migrates gradually.
-   Stage 35Y patch: drag/resize stays live-freeform; guide snapping is deferred until pointer-up.
+   Stage 35Z patch: contextual figure actions, robust single-click selection, and fully freeform drag/resize during pointer movement.
 */
 (function(){
   function createApi(deps){
@@ -545,6 +545,15 @@ function ensureInteractiveFigureBox(embed){
     }
     box.style.cursor = 'grab';
   }
+  box.style.touchAction = 'none';
+  box.style.webkitUserSelect = 'none';
+  box.style.userSelect = 'none';
+  box.querySelectorAll('img,svg,canvas,iframe,figure').forEach(el=>{
+    el.style.touchAction = 'none';
+    el.style.webkitUserSelect = 'none';
+    el.style.userSelect = 'none';
+    try{ el.setAttribute('draggable', 'false'); }catch(_e){}
+  });
   if(!box.querySelector('.figure-resize-handle')){
     const handle = document.createElement('div');
     handle.className = 'figure-resize-handle';
@@ -615,6 +624,7 @@ function initFigureInteractions(root){
     };
     box.setPointerCapture?.(e.pointerId);
     e.preventDefault();
+    e.stopPropagation();
     refreshFigureToolState();
   });
 
@@ -628,12 +638,10 @@ function initFigureInteractions(root){
         let dy = (e.clientY - active.startY) / (active.scaleY || 1);
         let nextX = active.startTX + dx;
         let nextY = active.startTY + dy;
-        if(showGridToggle?.checked){
-          nextX = snapValue(nextX);
-          nextY = snapValue(nextY);
-        }
+        // Stage 35Z: keep movement fully freeform during pointermove.
+        // Grid/guide snapping is intentionally deferred to explicit Snap actions or release-time guides.
         active.box.dataset.userMoved = '1';
-        active.box.style.transform = `translate(${Math.round(nextX)}px, ${Math.round(nextY)}px)`;
+        active.box.style.transform = `translate(${Number(nextX).toFixed(2)}px, ${Number(nextY).toFixed(2)}px)`;
       }else if(active.mode === 'resize'){
         let dx = (e.clientX - active.startX) / (active.scaleX || 1);
         let dy = (e.clientY - active.startY) / (active.scaleY || 1);
@@ -644,13 +652,10 @@ function initFigureInteractions(root){
           if(Math.abs(dx) >= Math.abs(dy)) h = Math.max(40, Math.round(w / active.aspect));
           else w = Math.max(60, Math.round(h * active.aspect));
         }
-        if(showGridToggle?.checked){
-          w = snapValue(w);
-          h = snapValue(h);
-        }
+        // Stage 35Z: do not quantize live resize against the grid.
         active.box.dataset.userSized = '1';
-        active.box.style.width = w + 'px';
-        active.box.style.height = h + 'px';
+        active.box.style.width = Number(w).toFixed(2) + 'px';
+        active.box.style.height = Number(h).toFixed(2) + 'px';
       }
     }, { passive:false });
     window.addEventListener('pointerup', ()=>{
