@@ -1,0 +1,11 @@
+{
+  "stage": "stage35x-20260426-1",
+  "files": [
+    "index.html",
+    "js/esm/figure-tools-stage34j.js",
+    "js/figure-tools-stage24c.js",
+    "RELEASE_NOTES_STAGE35X.md",
+    "DEPLOY_CHECK_STAGE35X.md",
+    "RELEASE_FILES_STAGE35X.json"
+  ]
+}
