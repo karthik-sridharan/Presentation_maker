@@ -593,7 +593,7 @@ function initFigureInteractions(root){
         let dy = (e.clientY - active.startY) / (active.scaleY || 1);
         let nextX = active.startTX + dx;
         let nextY = active.startTY + dy;
-        if(showGridToggle?.checked || snapToGuidesToggle?.checked){
+        if(showGridToggle?.checked){
           nextX = snapValue(nextX);
           nextY = snapValue(nextY);
         }
@@ -610,7 +610,7 @@ function initFigureInteractions(root){
           if(Math.abs(dx) >= Math.abs(dy)) h = Math.max(40, Math.round(w / active.aspect));
           else w = Math.max(60, Math.round(h * active.aspect));
         }
-        if(showGridToggle?.checked || snapToGuidesToggle?.checked){
+        if(showGridToggle?.checked){
           w = snapValue(w);
           h = snapValue(h);
         }
