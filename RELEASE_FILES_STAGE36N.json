@@ -1,0 +1,6 @@
+{
+  "stage": "stage36n-20260426-1",
+  "zip": "lumina-presenter-stage36n-deploy.zip",
+  "notes": "RELEASE_NOTES_STAGE36N.md",
+  "deployCheck": "DEPLOY_CHECK_STAGE36N.md"
+}
