@@ -1,4 +1,7 @@
-/* Stage 34J: browser-compatible ES module version of deck/snippet workflow helpers.
+/* Stage 35S: browser-compatible ES module version of deck/snippet workflow helpers.
+   Slide rail now renders thumbnail cards instead of text-only deck entries.
+
+   Original Stage 34J note:
    Runtime note: guarded live ESM command runtime with classic Stage 24C shadow fallback. */
 
 export function createApi(deps) {
@@ -28,6 +31,81 @@ export function createApi(deps) {
     var parsed = JSON.parse(raw);
     return normalizeSlide(parsed);
   }
+
+  function safeDeckThumbHex(value, fallback){
+    value = String(value || '').trim();
+    return /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(value) ? value : fallback;
+  }
+  function deckThumbBlockKind(block){
+    var raw = String(block && block.content || '').toLowerCase();
+    var mode = String(block && block.mode || 'panel').toLowerCase();
+    if(mode === 'diagram' || mode === 'custom' || mode === 'placeholder' || raw.indexOf('figurehtml') >= 0 || raw.indexOf('<img') >= 0 || raw.indexOf('<svg') >= 0) return 'figure';
+    if(mode.indexOf('pseudo') >= 0 || raw.indexOf('for ') >= 0 || raw.indexOf('return') >= 0) return 'code';
+    return 'text';
+  }
+  function deckThumbLines(block, fallback){
+    var raw = String(block && block.content || '').replace(/\\begin\{[^}]+\}|\\end\{[^}]+\}|\\item/g, '\n');
+    var lines = raw.split(/\n+/).map(function(s){ return s.trim(); }).filter(Boolean).length;
+    return Math.max(2, Math.min(5, lines || fallback || 3));
+  }
+  function deckThumbBlockMarkup(block, idx){
+    var kind = deckThumbBlockKind(block);
+    var lines = deckThumbLines(block, idx === 0 ? 4 : 3);
+    if(kind === 'figure') return '<span class="deck-thumb-figure"><span></span><span></span></span>';
+    if(kind === 'code') return '<span class="deck-thumb-code">' + (function(){ var a=[]; for(var i=0;i<Math.min(5,lines);i+=1){ a.push('<span style="--w:' + (82 - i * 8) + '%"></span>'); } return a.join(''); })() + '</span>';
+    return '<span class="deck-thumb-lines">' + (function(){ var a=[]; for(var i=0;i<lines;i+=1){ a.push('<span style="--w:' + (92 - (i % 3) * 14) + '%"></span>'); } return a.join(''); })() + '</span>';
+  }
+  function currentDeckThumbAccent(){
+    try{
+      var themeApi = globalThis.LuminaTheme;
+      var theme = themeApi && themeApi.currentThemeFromFields ? themeApi.currentThemeFromFields() : null;
+      return theme && theme.accentColor;
+    }catch(_e){ return ''; }
+  }
+  function buildDeckThumbnail(slide, idx){
+    var normalized = normalizeSlide(slide);
+    var type = normalized.slideType || 'single';
+    var bg = safeDeckThumbHex(normalized.bgColor, '#ffffff');
+    var fg = safeDeckThumbHex(normalized.fontColor, '#111111');
+    var accent = safeDeckThumbHex(currentDeckThumbAccent() || normalized.accentColor, '#2f6fed');
+    var left = normalized.leftBlocks || [];
+    var right = normalized.rightBlocks || [];
+    var title = escapeHtml(normalized.title || ('Slide ' + (idx + 1)));
+    var kicker = normalized.kicker ? '<span class="deck-thumb-kicker-line"></span>' : '';
+    var body = '';
+    if(type === 'title-center' || type === 'section-divider'){
+      body = '<span class="deck-thumb-center-title"><span></span><span></span></span>';
+    } else if(type === 'two-col'){
+      body = '<span class="deck-thumb-grid two"><span class="deck-thumb-col">' + (left.length ? left.slice(0,2).map(deckThumbBlockMarkup).join('') : deckThumbBlockMarkup({content:'Main'},0)) + '</span><span class="deck-thumb-col">' + (right.length ? right.slice(0,2).map(deckThumbBlockMarkup).join('') : deckThumbBlockMarkup({content:'Details'},1)) + '</span></span>';
+    } else if(type === 'full-width-figure-caption'){
+      body = '<span class="deck-thumb-full-figure">' + deckThumbBlockMarkup(left[0] || {mode:'placeholder', content:'Figure'}, 0) + '</span>';
+    } else if(type === 'image-left-text-right'){
+      body = '<span class="deck-thumb-grid two image-text"><span class="deck-thumb-col">' + deckThumbBlockMarkup(left[0] || {mode:'placeholder', content:'Image'}, 0) + '</span><span class="deck-thumb-col">' + (right.length ? right.slice(0,2).map(deckThumbBlockMarkup).join('') : deckThumbBlockMarkup({content:'Text'},1)) + '</span></span>';
+    } else {
+      body = '<span class="deck-thumb-grid one"><span class="deck-thumb-col">' + (left.length ? left.slice(0,3).map(deckThumbBlockMarkup).join('') : deckThumbBlockMarkup({content:'Main content'},0)) + '</span></span>';
+    }
+    return '<span class="deck-thumb" aria-hidden="true" style="--thumb-bg:' + bg + ';--thumb-fg:' + fg + ';--thumb-accent:' + accent + '"><span class="deck-thumb-stage deck-thumb-type-' + escapeHtml(type) + '">' + kicker + '<span class="deck-thumb-title-line">' + title + '</span>' + body + '</span></span>';
+  }
+  function renderDeckRailItem(slide, idx, activeIndex){
+    var normalized = normalizeSlide(slide);
+    var title = slide.title || ('Untitled slide ' + (idx + 1));
+    var type = slide.slideType || 'single';
+    var meta = (idx + 1) + '. ' + type + ' · ' + normalized.leftBlocks.length + ' left' + (type === 'two-col' ? ' · ' + normalized.rightBlocks.length + ' right' : '');
+    return '<button class="deck-item deck-thumb-item ' + (idx === activeIndex ? 'active' : '') + '" data-index="' + idx + '" aria-label="Slide ' + (idx + 1) + ': ' + escapeHtml(title) + '">' + buildDeckThumbnail(slide, idx) + '<span class="deck-thumb-caption"><span class="deck-thumb-number">Slide ' + (idx + 1) + '</span><span class="deck-thumb-title">' + escapeHtml(title) + '</span><span class="meta deck-thumb-meta">' + escapeHtml(meta) + '</span></span></button>';
+  }
+  function updateThumbnailRailStatus(slides, activeIndex){
+    try{
+      if(deckList) deckList.classList.toggle('stage35s-thumbnail-rail', !!(slides && slides.length));
+      globalThis.__LUMINA_STAGE35S_THUMBNAIL_RAIL = Object.freeze({
+        stage:'stage35s-20260425-1', thumbnailRail:true, deckItemMode:'thumbnail', slideCount:slides ? slides.length : 0,
+        activeSlideNumber:activeIndex >= 0 ? activeIndex + 1 : null,
+        renderedThumbCount:deckList ? deckList.querySelectorAll('.deck-thumb').length : 0,
+        textOnlyDeckItems:deckList ? deckList.querySelectorAll('.deck-item:not(.deck-thumb-item)').length : 0,
+        behaviorChanged:false
+      });
+    }catch(_e){}
+  }
+
   function loadSnippetIntoEditor() {
     var slide = parseSnippetSlide();
     applySlideToForm(slide);
@@ -78,17 +156,11 @@ export function createApi(deps) {
       `;
       var emptyAddBtn = deckList.querySelector('[data-empty-add-slide]');
       if (emptyAddBtn) emptyAddBtn.addEventListener('click', addSlide);
+      updateThumbnailRailStatus(slides, activeIndex);
       return;
     }
-    deckList.innerHTML = slides.map(function (slide, idx) {
-      var normalized = normalizeSlide(slide);
-      return `
-        <button class="deck-item ${idx === activeIndex ? 'active' : ''}" data-index="${idx}">
-          ${escapeHtml(slide.title || ('Untitled slide ' + (idx + 1)))}
-          <span class="meta">${idx + 1}. ${escapeHtml(slide.slideType || 'single')} · ${normalized.leftBlocks.length} left block(s)${slide.slideType === 'two-col' ? ' · ' + normalized.rightBlocks.length + ' right block(s)' : ''}</span>
-        </button>
-      `;
-    }).join('');
+    deckList.innerHTML = slides.map(function (slide, idx) { return renderDeckRailItem(slide, idx, activeIndex); }).join('');
+    updateThumbnailRailStatus(slides, activeIndex);
     deckList.querySelectorAll('.deck-item').forEach(function (btn) {
       btn.addEventListener('click', function () {
         saveCurrentBlockToDraft();
