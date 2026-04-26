@@ -1,0 +1,8 @@
+{
+  "stage": "stage36k-20260426-1",
+  "basedOn": "stage36j-20260426-1",
+  "changes": [
+    "Show export-controls dropdown checkbox labels as real visible text",
+    "Preserve generated HTML presentation toolbar and navigation behavior"
+  ]
+}
