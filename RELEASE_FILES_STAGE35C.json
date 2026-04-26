@@ -1,0 +1,16 @@
+{
+  "stage": "stage35c-20260425-1",
+  "base": "stage35b-20260425-1",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "prompts/dev.txt",
+    "prompts/deck.txt",
+    "RELEASE_NOTES_STAGE35C.md",
+    "DEPLOY_CHECK_STAGE35C.md",
+    "RELEASE_FILES_STAGE35C.json"
+  ],
+  "behaviorChanged": false,
+  "notes": "Adds non-invasive UI efficiency helpers on top of Stage 35B."
+}
