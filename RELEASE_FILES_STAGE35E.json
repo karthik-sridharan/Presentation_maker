@@ -1,0 +1,19 @@
+{
+  "stage": "stage35e-20260425-1",
+  "type": "root patch",
+  "purpose": "Identity-sync refresh for Stage 35D quick-action hotfix",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "prompts/dev.txt",
+    "prompts/deck.txt",
+    "RELEASE_NOTES_STAGE35E.md",
+    "DEPLOY_CHECK_STAGE35E.md",
+    "RELEASE_FILES_STAGE35E.json"
+  ],
+  "notes": [
+    "Use when ?v=stage35d loads functional code but diagnostics still identify as stage35c.",
+    "Forces visible stage/signature/dataset diagnostics to stage35e."
+  ]
+}
