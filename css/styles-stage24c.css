@@ -136,11 +136,11 @@
   .export-controls-menu summary::-webkit-details-marker{display:none}
   .export-controls-menu summary::after{content:'▾';font-size:.85rem;opacity:.7;flex:0 0 auto}
   .export-controls-menu[open] summary::after{content:'▴'}
-  .export-controls-options{display:grid;gap:.45rem;margin-top:.45rem;padding:.65rem .75rem;border:1px solid rgba(37,99,235,.18);border-radius:12px;background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.08);max-width:100%;min-width:0;overflow:hidden}
-  .export-controls-options label{display:flex;gap:.5rem;align-items:flex-start;line-height:1.35;white-space:normal;overflow-wrap:anywhere;font-weight:650;color:#334155;min-width:0}
-  .export-controls-options input[type="checkbox"]{flex:0 0 auto;margin-top:.15rem}
-  .export-control-option-text{display:inline-block!important;position:static!important;left:auto!important;width:auto!important;height:auto!important;min-width:0;flex:1 1 auto;color:#334155!important;opacity:1!important;visibility:visible!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere;font-weight:650;line-height:1.35}
-  .export-controls-options label[data-label] .export-control-option-text{display:inline-block!important;position:static!important;left:auto!important;width:auto!important;height:auto!important;overflow:visible!important;white-space:normal!important;color:#334155!important;opacity:1!important;visibility:visible!important}
+  .export-controls-options{display:grid;gap:.45rem;margin-top:.45rem;padding:.65rem .75rem;border:1px solid rgba(37,99,235,.18);border-radius:12px;background:#fff;box-shadow:0 10px 24px rgba(15,23,42,.08);max-width:100%;min-width:0;overflow:hidden;color:#0f172a!important}
+  .export-control-row{display:flex!important;gap:.5rem!important;align-items:flex-start!important;line-height:1.35!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:100%!important;background:#fff!important;color:#0f172a!important}
+  .export-controls-options input[type="checkbox"]{flex:0 0 auto!important;margin-top:.15rem!important;opacity:1!important;visibility:visible!important;position:static!important}
+  .export-control-label{display:inline-block!important;position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;min-width:0!important;max-width:100%!important;flex:1 1 auto!important;color:#0f172a!important;background:transparent!important;opacity:1!important;visibility:visible!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere!important;text-indent:0!important;clip:auto!important;clip-path:none!important;font:700 13px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+  .export-control-option-text{display:inline-block!important;position:static!important;left:auto!important;width:auto!important;height:auto!important;min-width:0!important;flex:1 1 auto!important;color:#0f172a!important;opacity:1!important;visibility:visible!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere!important;font-weight:700!important;line-height:1.35!important}
   .export-controls-options label[data-label]::after{content:none!important;display:none!important}
 
   .copy-toast{
