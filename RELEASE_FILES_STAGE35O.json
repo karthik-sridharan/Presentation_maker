@@ -1,0 +1,11 @@
+{
+  "stage": "stage35o-20260425-1",
+  "files": [
+    "index.html",
+    "RELEASE_NOTES_STAGE35O.md",
+    "DEPLOY_CHECK_STAGE35O.md",
+    "RELEASE_FILES_STAGE35O.json"
+  ],
+  "base": "stage35n-20260425-1",
+  "notes": "Right panel fit polish: compact preview viewport and inspector plus diagnostics."
+}
