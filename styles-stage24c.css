@@ -123,8 +123,26 @@
   .tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem}
   .tool-grid .btn{width:100%}
   .tool-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .inline-checks{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start}
-  .inline-checks label{display:flex;gap:.45rem;align-items:flex-start;white-space:normal;line-height:1.35;max-width:100%}
+  .inline-checks{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;min-width:0;max-width:100%}
+  .inline-checks label{display:flex;gap:.45rem;align-items:flex-start;white-space:normal;line-height:1.35;max-width:100%;min-width:0;flex:1 1 100%;overflow-wrap:anywhere}
+  .inline-checks input[type="checkbox"]{flex:0 0 auto;margin-top:.15rem}
+
+  .export-controls-field{display:grid;gap:.4rem;min-width:0;max-width:100%}
+  .export-controls-field > label{font-weight:800;color:#1e293b}
+  .export-controls-menu{position:relative;max-width:100%;min-width:0}
+  .export-controls-menu summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.65rem;width:100%;min-width:0;max-width:100%;border:1px solid rgba(37,99,235,.22);border-radius:12px;background:#fff;color:#1e293b;padding:.62rem .75rem;font-weight:750;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.05);overflow:hidden}
+  .export-controls-summary-title{flex:0 0 auto;white-space:nowrap;color:#1e293b!important}
+  .export-controls-summary-value{flex:1 1 auto;min-width:0;max-width:100%;text-align:right;color:#64748b!important;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .export-controls-menu summary::-webkit-details-marker{display:none}
+  .export-controls-menu summary::after{content:'▾';font-size:.85rem;opacity:.7;flex:0 0 auto;color:#334155!important}
+  .export-controls-menu[open] summary::after{content:'▴'}
+  .export-controls-options{display:grid!important;gap:4px!important;margin-top:6px!important;padding:8px!important;border:1px solid rgba(37,99,235,.18)!important;border-radius:12px!important;background:#fff!important;color:#0f172a!important;box-shadow:0 10px 24px rgba(15,23,42,.08)!important;max-width:100%!important;min-width:0!important;overflow:visible!important}
+  .export-control-row{display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important;max-width:100%!important;padding:6px 8px!important;border-radius:9px!important;background:#fff!important;color:#0f172a!important;overflow:visible!important;line-height:1.35!important;white-space:normal!important}
+  .export-control-row:hover{background:#f8fafc!important}
+  .export-controls-options input[type="checkbox"]{display:block!important;position:static!important;opacity:1!important;visibility:visible!important;width:18px!important;height:18px!important;min-width:18px!important;margin:0!important;clip:auto!important;clip-path:none!important;appearance:auto!important;-webkit-appearance:checkbox!important}
+  .export-control-text-button{display:block!important;width:100%!important;min-width:0!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#0f172a!important;opacity:1!important;visibility:visible!important;text-align:left!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;text-indent:0!important;clip:auto!important;clip-path:none!important;font:800 14px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;appearance:none!important;-webkit-appearance:none!important;cursor:pointer!important;box-shadow:none!important}
+  .export-control-label,.export-control-option-text,.export-control-visible-text{display:inline!important;position:static!important;color:#0f172a!important;opacity:1!important;visibility:visible!important;clip:auto!important;clip-path:none!important;text-indent:0!important}
+  .export-controls-options label[data-label]::after{content:none!important;display:none!important}
 
   .copy-toast{
     position:fixed;right:1rem;bottom:1rem;background:rgba(15,22,48,.96);border:1px solid rgba(255,255,255,.16);
@@ -365,7 +383,7 @@
   .subpane{display:none}
   .subpane.active{display:grid;gap:1rem}
 
-  /* Stage 33A hotfix: keep the slide rail visible.
+  /* Stage 34A hotfix: keep the slide rail visible.
      The rail lives below the active editor pane inside .editor-shell.
      Without explicit grid rows, long editor panes push the rail below the
      clipped panel because .editor-shell has overflow:hidden. */
@@ -385,6 +403,44 @@
   .slide-rail-content{display:grid;gap:.7rem;max-height:min(280px,26svh);overflow:auto;padding-right:.15rem}
   .slide-rail-shell.collapsed .slide-rail-content{display:none}
   .slide-rail-shell .panel{margin:0}
+  .slide-rail-shell.collapsed{gap:.35rem;padding-top:.55rem}
+  .slide-rail-shell.collapsed .slide-rail-header .help{display:none}
+  .slide-rail-shell.collapsed .slide-rail-content{display:none!important}
+
+  /* Stage 34A rail hardfix: collapsed means only the Show rail button remains. */
+  .slide-rail-shell.collapsed{
+    min-height:0!important;
+    gap:0!important;
+    padding-top:.45rem!important;
+    padding-bottom:0!important;
+  }
+  .slide-rail-shell.collapsed .slide-rail-header{
+    width:100%;
+    justify-content:flex-end!important;
+  }
+  .slide-rail-shell.collapsed .slide-rail-header > div{
+    display:none!important;
+  }
+  .slide-rail-shell.collapsed #slideRailMount,
+  .slide-rail-shell.collapsed .slide-rail-content{
+    display:none!important;
+    max-height:0!important;
+    overflow:hidden!important;
+    padding:0!important;
+    margin:0!important;
+  }
+
+  .deck-empty{
+    border:1px dashed rgba(255,255,255,.18);
+    background:rgba(255,255,255,.035);
+    border-radius:14px;
+    padding:.85rem;
+    color:var(--muted);
+    display:grid;
+    gap:.6rem;
+  }
+  .deck-empty strong{color:var(--text)}
+  .deck-empty .btn{justify-self:start}
   .panel.preview-wrap{display:grid;gap:.95rem}
   .panel.preview-wrap>.panel{margin:0}
   .preview-header h2{font-size:1.15rem}
