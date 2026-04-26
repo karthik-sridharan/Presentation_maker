@@ -1,0 +1,12 @@
+{
+  "stage": "stage35y-20260426-1",
+  "description": "Figure drag/resize responsiveness hotfix on top of Stage 35X.",
+  "files": [
+    "index.html",
+    "js/figure-tools-stage24c.js",
+    "js/esm/figure-tools-stage34j.js",
+    "RELEASE_NOTES_STAGE35Y.md",
+    "DEPLOY_CHECK_STAGE35Y.md",
+    "RELEASE_FILES_STAGE35Y.json"
+  ]
+}
