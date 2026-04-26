@@ -2,6 +2,7 @@
    Interactive figure fitting, selection, dragging, resizing, alignment,
    snapping, crop, duplicate, reset, and guide helpers live here.
    This remains a classic browser script while the app migrates gradually.
+   Stage 35Y patch: drag/resize stays live-freeform; guide snapping is deferred until pointer-up.
 */
 (function(){
   function createApi(deps){
@@ -464,6 +465,7 @@ function resetSelectedFigure(){
   buildPreview();
 }
 function applyGuideSnapping(box){
+  if(!box) return false;
   const t = parseTranslate(box.style.transform);
   let x = t.x, y = t.y;
   const m = getSlideMetricsForBox(box);
@@ -471,14 +473,42 @@ function applyGuideSnapping(box){
   const w = rect.width / m.scaleX, h = rect.height / m.scaleY;
   const currentLeft = (rect.left - m.slideRect.left) / m.scaleX;
   const currentTop = (rect.top - m.slideRect.top) / m.scaleY;
-  const currentCenterX = currentLeft + w/2;
-  const currentCenterY = currentTop + h/2;
   const guideTol = 10;
   const targetsX = [m.contentLeft, m.contentLeft + m.contentWidth/2 - w/2, m.contentRight - w];
   const targetsY = [m.contentTop, m.contentTop + m.contentHeight/2 - h/2, m.contentBottom - h];
-  targetsX.forEach(tx=>{ if(Math.abs(currentLeft - tx) < guideTol) x += tx - currentLeft; });
-  targetsY.forEach(ty=>{ if(Math.abs(currentTop - ty) < guideTol) y += ty - currentTop; });
-  box.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  let snapped = false;
+  targetsX.forEach(tx=>{ if(Math.abs(currentLeft - tx) < guideTol){ x += tx - currentLeft; snapped = true; } });
+  targetsY.forEach(ty=>{ if(Math.abs(currentTop - ty) < guideTol){ y += ty - currentTop; snapped = true; } });
+  if(snapped) box.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  return snapped;
+}
+function prepareFigureBoxForFastResize(box, embed){
+  if(!box) return {};
+  if(embed){
+    embed.style.maxWidth = 'none';
+    embed.style.maxHeight = 'none';
+    embed.style.width = 'fit-content';
+  }
+  box.style.maxWidth = 'none';
+  box.style.maxHeight = 'none';
+  const direct = box.querySelector(':scope > img, :scope > svg, :scope > canvas, :scope > iframe, :scope > figure');
+  let inner = null;
+  if(direct){
+    direct.style.maxWidth = 'none';
+    direct.style.maxHeight = 'none';
+    direct.style.width = '100%';
+    direct.style.height = '100%';
+    if(direct.tagName === 'FIGURE'){
+      inner = direct.querySelector('img,svg,canvas,iframe');
+      if(inner){
+        inner.style.maxWidth = 'none';
+        inner.style.maxHeight = 'none';
+        inner.style.width = '100%';
+        inner.style.height = '100%';
+      }
+    }
+  }
+  return { direct, inner };
 }
 
 function getInteractionScale(el){
@@ -547,6 +577,7 @@ function initFigureInteractions(root){
       const padX = (parseFloat(slideStyles.paddingLeft || '0') + parseFloat(slideStyles.paddingRight || '0')) || 0;
       const padY = (parseFloat(slideStyles.paddingTop || '0') + parseFloat(slideStyles.paddingBottom || '0')) || 0;
       const scale = getInteractionScale(slideEl);
+      const resizeMedia = prepareFigureBoxForFastResize(box, embed);
       active = {
         mode: 'resize',
         box, embed,
@@ -557,7 +588,10 @@ function initFigureInteractions(root){
         maxW: Math.max(120, (slideEl.clientWidth || slideEl.offsetWidth || slideRect.width) - padX - 24),
         maxH: Math.max(80, (slideEl.clientHeight || slideEl.offsetHeight || slideRect.height) - padY - 24),
         scaleX: scale.x, scaleY: scale.y,
-        aspect: (box.offsetWidth || rect.width) / Math.max(1, (box.offsetHeight || rect.height))
+        aspect: (box.offsetWidth || rect.width) / Math.max(1, (box.offsetHeight || rect.height)),
+        direct: resizeMedia.direct,
+        inner: resizeMedia.inner,
+        guideSnapOnRelease: !!snapToGuidesToggle?.checked
       };
       handle.setPointerCapture?.(e.pointerId);
       e.preventDefault();
@@ -576,7 +610,8 @@ function initFigureInteractions(root){
       pointerId:e.pointerId,
       startX:e.clientX, startY:e.clientY,
       startTX:t.x, startTY:t.y,
-      scaleX:scale.x, scaleY:scale.y
+      scaleX:scale.x, scaleY:scale.y,
+      guideSnapOnRelease: !!snapToGuidesToggle?.checked
     };
     box.setPointerCapture?.(e.pointerId);
     e.preventDefault();
@@ -599,7 +634,6 @@ function initFigureInteractions(root){
         }
         active.box.dataset.userMoved = '1';
         active.box.style.transform = `translate(${Math.round(nextX)}px, ${Math.round(nextY)}px)`;
-        if(snapToGuidesToggle?.checked) applyGuideSnapping(active.box);
       }else if(active.mode === 'resize'){
         let dx = (e.clientX - active.startX) / (active.scaleX || 1);
         let dy = (e.clientY - active.startY) / (active.scaleY || 1);
@@ -615,34 +649,16 @@ function initFigureInteractions(root){
           h = snapValue(h);
         }
         active.box.dataset.userSized = '1';
-        active.embed.style.maxWidth = 'none';
-        active.embed.style.maxHeight = 'none';
-        active.box.style.maxWidth = 'none';
-        active.box.style.maxHeight = 'none';
         active.box.style.width = w + 'px';
         active.box.style.height = h + 'px';
-        const direct = active.box.querySelector(':scope > img, :scope > svg, :scope > canvas, :scope > iframe, :scope > figure');
-        active.embed.style.width = 'fit-content';
-        if(direct){
-          direct.style.maxWidth = 'none';
-          direct.style.maxHeight = 'none';
-          direct.style.width = '100%';
-          direct.style.height = '100%';
-          if(direct.tagName === 'FIGURE'){
-            const inner = direct.querySelector('img,svg,canvas,iframe');
-            if(inner){
-              inner.style.maxWidth = 'none';
-              inner.style.maxHeight = 'none';
-              inner.style.width = '100%';
-              inner.style.height = '100%';
-            }
-          }
-        }
       }
     }, { passive:false });
     window.addEventListener('pointerup', ()=>{
       if(!active) return;
-      if(active.box) active.box.style.cursor = 'grab';
+      if(active.box){
+        active.box.style.cursor = 'grab';
+        if(active.guideSnapOnRelease) applyGuideSnapping(active.box);
+      }
       saveFigureEmbedToDraft(active.embed);
       syncPreviewFiguresToDraft(false);
       persistAutosaveNow('Autosaved after figure edit.');
