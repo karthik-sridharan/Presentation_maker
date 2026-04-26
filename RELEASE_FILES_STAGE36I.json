@@ -1,0 +1,16 @@
+{
+  "stage": "stage36i-20260426-1",
+  "root": "lumina-presenter-stage36i-deploy",
+  "basedOn": "stage36h-20260426-1",
+  "files": [
+    "index.html",
+    "css/styles-stage24c.css",
+    "js/export-stage24c.js",
+    "js/esm/export-stage34j.js",
+    "js/theme-stage24c.js",
+    "js/esm/theme-stage34j.js",
+    "js/legacy-app-stage24c.js",
+    "prompts/deck.txt",
+    "prompts/dev.txt"
+  ]
+}
