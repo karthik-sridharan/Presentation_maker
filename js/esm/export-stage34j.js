@@ -112,7 +112,7 @@ body{color:var(--deck-text);overflow:hidden}
 .laser-pointer[data-pointer-color="pointer"]::after{content:"";position:absolute;left:2px;top:3px;width:18px;height:26px;background:#111;clip-path:polygon(0 0,0 22px,6px 16px,10px 25px,13px 24px,9px 15px,18px 15px)}
 
 .deck-slide.laser-active{cursor:none}
-.deck-toolbar{position:fixed;left:1rem;top:1rem;display:flex;gap:.65rem;z-index:30}
+.deck-toolbar{position:fixed;left:1rem;top:1rem;display:flex;gap:.65rem;z-index:40;align-items:center;flex-wrap:nowrap}.nav-fullscreen-btn{min-width:max-content}
 .deck-toolbar,.slide-actions,.draw-session-toolbar{transition:opacity .24s ease,transform .24s ease}
 body.controls-hidden .deck-toolbar,body.controls-hidden .slide-actions,body.controls-hidden .draw-session-toolbar{opacity:0;pointer-events:none;transform:translateY(-8px)}
 .deck-toolbar button,.slide-map button,.nav-btn{border:1px solid rgba(255,255,255,.14);background:rgba(10,16,32,.82);color:#eef3ff;border-radius:14px;padding:.78rem .95rem;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 18px 45px rgba(0,0,0,.25)}
@@ -128,7 +128,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"><\/script>
 </head>
 <body>
-<div class="deck-toolbar"><button class="nav-btn" id="prevBtn" title="Previous slide" aria-label="Previous slide">◀</button><button class="nav-btn" id="nextBtn" title="Next slide" aria-label="Next slide">▶</button><button class="nav-btn" id="fullscreenBtn" title="Full screen (⌘F)" aria-label="Full screen">⛶</button></div>
+<div class="deck-toolbar"><button class="nav-btn" id="prevBtn" title="Previous slide" aria-label="Previous slide">◀</button><button class="nav-btn" id="nextBtn" title="Next slide" aria-label="Next slide">▶</button><button class="nav-btn nav-fullscreen-btn" id="fullscreenBtn" title="Full screen (⌘F)" aria-label="Full screen">Full screen</button></div>
 <div class="slide-actions" id="deckActions" hidden></div>
 <div class="slide-map" id="slideMap"><button id="closeMapBtn" style="float:right;">Close</button><h3 id="deckTitle"></h3><div class="slide-map-list" id="slideMapList"></div></div>
 <div class="draw-session-toolbar" id="drawSessionToolbar" hidden>
