@@ -1,0 +1,15 @@
+{
+  "stage": "stage35f-20260425-1",
+  "signature": "index-inline-stage35f-classic-color-balance-quick-action-hotfix-20260425-1",
+  "files": [
+    "index.html",
+    "RELEASE_NOTES_STAGE35F.md",
+    "DEPLOY_CHECK_STAGE35F.md",
+    "RELEASE_FILES_STAGE35F.json"
+  ],
+  "base": "stage35e-20260425-1",
+  "behaviorChanged": false,
+  "jsChanged": false,
+  "colorBalanceOnly": true,
+  "notes": "Root patch for classic blue/gray color balance while preserving Stage 35B visual layout and Stage 35C/D/E behavior."
+}
