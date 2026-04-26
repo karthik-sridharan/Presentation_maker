@@ -58,17 +58,61 @@ function createApi(deps){
       setThemeFieldValue('sidebarWidth', String(t.sidebarWidth));
       setThemeFieldValue('titleCaps', String(t.titleCaps));
     }
+    const DEFAULT_EXPORT_CONTROLS = Object.freeze({
+      slides: true,
+      draw: false,
+      exportAnnotated: false,
+      pointerMenu: true,
+      generatePdf: true
+    });
+    function normalizeExportControls(options){
+      const src = (options && options.exportControls) || {};
+      const legacyDraw = !!(options && options.enableLiveDraw);
+      return {
+        slides: src.slides !== false,
+        draw: legacyDraw || !!src.draw,
+        exportAnnotated: legacyDraw || !!src.exportAnnotated,
+        pointerMenu: src.pointerMenu !== false,
+        generatePdf: src.generatePdf !== false
+      };
+    }
+    function getExportControlElement(doc, key){
+      if(!doc) return null;
+      const idMap = {
+        slides: 'exportControlSlides',
+        draw: 'exportControlDraw',
+        exportAnnotated: 'exportControlExportAnnotated',
+        pointerMenu: 'exportControlPointerMenu',
+        generatePdf: 'exportControlGeneratePdf'
+      };
+      if(doc.getElementById && idMap[key]){
+        const byId = doc.getElementById(idMap[key]);
+        if(byId) return byId;
+      }
+      if(doc.querySelector) return doc.querySelector('[data-export-control="' + key + '"]');
+      return null;
+    }
     function currentPresentationOptions(){
       const doc = getDocument();
-      const liveDrawEl = doc && doc.getElementById ? doc.getElementById('enableLiveDrawExport') : null;
+      const controls = Object.assign({}, DEFAULT_EXPORT_CONTROLS);
+      Object.keys(controls).forEach(function(key){
+        const el = getExportControlElement(doc, key);
+        if(el) controls[key] = !!el.checked;
+      });
       return {
-        enableLiveDraw: !!(liveDrawEl && liveDrawEl.checked)
+        enableLiveDraw: !!(controls.draw || controls.exportAnnotated),
+        exportControls: controls
       };
     }
     function applyPresentationOptions(options){
       const doc = getDocument();
+      const controls = normalizeExportControls(options || {});
+      Object.keys(controls).forEach(function(key){
+        const el = getExportControlElement(doc, key);
+        if(el) el.checked = !!controls[key];
+      });
       const liveDrawEl = doc && doc.getElementById ? doc.getElementById('enableLiveDrawExport') : null;
-      if(liveDrawEl) liveDrawEl.checked = !!(options && options.enableLiveDraw);
+      if(liveDrawEl) liveDrawEl.checked = !!(controls.draw || controls.exportAnnotated);
     }
     function currentStyleClass(){
       const t = currentThemeFromFields();

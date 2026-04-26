@@ -166,7 +166,9 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <div class="deck" id="deck"></div>
 <script>
 const deckPayload=JSON.parse(document.getElementById('deck-source').textContent);
-const liveDrawEnabled=!!(deckPayload.presentationOptions&&deckPayload.presentationOptions.enableLiveDraw);
+function normalizeExportControls(options){const src=(options&&options.exportControls)||{};const legacy=!!(options&&options.enableLiveDraw);return {slides:src.slides!==false,draw:legacy||!!src.draw,exportAnnotated:legacy||!!src.exportAnnotated,pointerMenu:src.pointerMenu!==false,generatePdf:src.generatePdf!==false};}
+const exportControls=normalizeExportControls(deckPayload.presentationOptions||{});
+const liveDrawEnabled=!!(exportControls.draw||exportControls.exportAnnotated);
 const annotationStorageKey='liveDrawInk:' + encodeURIComponent((deckPayload.deckTitle||'deck') + '|' + (Array.isArray(deckPayload.slides)?deckPayload.slides.length:0));
 let liveDrawAnnotations=loadLiveDrawAnnotations();
 function loadLiveDrawAnnotations(){
@@ -195,7 +197,7 @@ function renderBlock(block,placeholderText){const resolvedMode=block.mode||'pane
 function renderBlocks(blocks,placeholder){const list=blocks&&blocks.length?blocks:[{mode:'placeholder',content:placeholder||'Add a block'}];return '<div class="col-stack">'+list.map(block=>renderBlock(block,placeholder)).join('')+'</div>';}
 function buildSlideInner(slide){const heading=slide.headingLevel||'h2';const titleHtml='<div class="preview-title" data-preview-role="title"'+animationDataAttrs(slide.titleAnimation)+' style="'+titleWrapperStyle(slide.titleStyle,heading)+'"><'+heading+'>'+escapeHtml(slide.title||'Untitled slide').replace(/\\n/g,'<br>')+'</'+heading+'></div>';const kickerHtml=slide.kicker?'<div class="kicker">'+escapeHtml(slide.kicker)+'</div>':'';const ledeHtml=slide.lede?'<div class="lede">'+escapeHtml(slide.lede)+'</div>':'';const s=normalizeSlide(slide);if(s.slideType==='title-center')return '<div class="title-center">'+titleHtml+kickerHtml+'</div>';if(s.slideType==='section-divider')return '<div class="section-divider-wrap"><div><div class="divider-kicker">'+escapeHtml(s.kicker||'Section')+'</div>'+titleHtml+'<div class="divider-line"></div><div class="divider-lede">'+escapeHtml(s.lede||'')+'</div></div></div>';if(['two-col','title-two-callouts','title-figure-explanation','comparison','image-left-text-right'].includes(s.slideType)){const layoutClass={ 'two-col':'layout-two-col','title-two-callouts':'layout-two-callouts','title-figure-explanation':'layout-figure-explanation','comparison':'layout-comparison','image-left-text-right':'layout-image-left-text-right'}[s.slideType]||'layout-two-col';const leftHead=s.slideType==='comparison'?'<div class="comparison-head">'+escapeHtml((s.leftBlocks[0]&&s.leftBlocks[0].title)||'Left')+'</div>':'';const rightHead=s.slideType==='comparison'?'<div class="comparison-head">'+escapeHtml((s.rightBlocks[0]&&s.rightBlocks[0].title)||'Right')+'</div>':'';return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body '+layoutClass+'"><div class="col">'+leftHead+renderBlocks(s.leftBlocks,'Left column')+'</div><div class="col">'+rightHead+renderBlocks(s.rightBlocks,'Right column')+'</div></div>';}if(s.slideType==='theorem-proof'){const theorem=s.leftBlocks[0]||{mode:'panel',content:'\\paragraph{Theorem} State the result here.'};const proof=s.leftBlocks[1]||{mode:'panel',content:'\\paragraph{Proof sketch} Add the argument here.'};return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col theorem-proof-wrap"><div class="named-box"><div class="named-box-head">'+escapeHtml(theorem.title||'Theorem')+'</div><div class="named-box-body">'+renderBlock({...theorem,title:''},'Theorem')+'</div></div><div class="named-box"><div class="named-box-head">'+escapeHtml(proof.title||'Proof')+'</div><div class="named-box-body">'+renderBlock({...proof,title:''},'Proof')+'</div></div></div></div>';}if(s.slideType==='algorithm-layout'){const algo=s.leftBlocks[0]||{mode:'pseudocode',content:'Algorithm goes here'};const notes=s.leftBlocks.slice(1);return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col algorithm-wrap">'+renderBlock(algo,'Algorithm')+(notes.length?renderBlocks(notes,'Notes'):'')+'</div></div>';}if(s.slideType==='full-width-figure-caption'){const fig=s.leftBlocks[0]||{mode:'placeholder',content:'Add a figure block'};const captionBlocks=s.leftBlocks.slice(1);return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col full-figure-wrap">'+renderBlock(fig,'Figure')+(captionBlocks.length?'<div class="figure-caption">'+renderBlocks(captionBlocks,'Caption')+'</div>':'')+'</div></div>';}return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col">'+renderBlocks(s.leftBlocks,'Main content')+'</div></div>';}
 const deck=document.getElementById('deck');const slideMap=document.getElementById('slideMap');const slideMapList=document.getElementById('slideMapList');const laserPointer=document.getElementById('laserPointer');document.getElementById('deckTitle').textContent=deckPayload.deckTitle||'Slides';
-deck.innerHTML=deckPayload.slides.map((slide,idx)=>{const cls=slide.slideType==='title-center'?'deck-slide title-center':(slide.slideType==='two-col'?'deck-slide two-col':'deck-slide single');const styleCls=' style-'+String((deckPayload.theme&&deckPayload.theme.beamerStyle)||'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();const laserControl='<label class="laser-control">Pointer <select class="laser-select" aria-label="Laser pointer color"><option value="red" selected>Red</option><option value="blue">Blue</option><option value="green">Green</option><option value="pointer">Pointer</option><option value="none">None</option></select></label>';const actionHtml='<div class="slide-actions"><button class="slides-button" type="button">Slides</button>'+(liveDrawEnabled?'<button class="draw-button" type="button">Draw</button><button class="export-annotated-button" type="button">Export annotated slides</button>':'')+'<button class="pdf-button" type="button">Generate PDF</button>'+laserControl+'</div>';return '<section class="'+cls+styleCls+'" data-index="'+idx+'" style="'+buildSlideStyle(slide)+'">'+actionHtml+'<div class="slide-number">'+(idx+1)+' / '+deckPayload.slides.length+'</div>'+buildSlideInner(slide).trim()+'<div class="slide-annotation-layer" data-annotation-layer="'+idx+'"><svg class="slide-draw-surface" data-draw-surface="'+idx+'" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-label="Slide annotation layer"></svg></div></section>';}).join('\\n');
+deck.innerHTML=deckPayload.slides.map((slide,idx)=>{const cls=slide.slideType==='title-center'?'deck-slide title-center':(slide.slideType==='two-col'?'deck-slide two-col':'deck-slide single');const styleCls=' style-'+String((deckPayload.theme&&deckPayload.theme.beamerStyle)||'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();const laserControl='<label class="laser-control">Pointer <select class="laser-select" aria-label="Laser pointer color"><option value="red" selected>Red</option><option value="blue">Blue</option><option value="green">Green</option><option value="pointer">Pointer</option><option value="none">None</option></select></label>';const actions=[];if(exportControls.slides)actions.push('<button class="slides-button" type="button">Slides</button>');if(exportControls.draw)actions.push('<button class="draw-button" type="button">Draw</button>');if(exportControls.exportAnnotated)actions.push('<button class="export-annotated-button" type="button">Export annotated slides</button>');if(exportControls.generatePdf)actions.push('<button class="pdf-button" type="button">Generate PDF</button>');if(exportControls.pointerMenu)actions.push(laserControl);const actionHtml=actions.length?'<div class="slide-actions">'+actions.join('')+'</div>':'';return '<section class="'+cls+styleCls+'" data-index="'+idx+'" style="'+buildSlideStyle(slide)+'">'+actionHtml+'<div class="slide-number">'+(idx+1)+' / '+deckPayload.slides.length+'</div>'+buildSlideInner(slide).trim()+'<div class="slide-annotation-layer" data-annotation-layer="'+idx+'"><svg class="slide-draw-surface" data-draw-surface="'+idx+'" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-label="Slide annotation layer"></svg></div></section>';}).join('\\n');
 slideMapList.innerHTML=deckPayload.slides.map((slide,idx)=>'<button type="button" class="slide-map-item" data-go="'+idx+'"><span>'+(idx+1)+'.</span><span>'+escapeHtml(slide.title||('Slide '+(idx+1)))+'</span></button>').join('\\n');
 let active=0;
 let drawingMode=false;
@@ -203,10 +205,10 @@ let drawingSlideIndex=-1;
 let drawingState={tool:'pen',drawing:false,start:null,el:null};
 const slideEls=Array.from(document.querySelectorAll('.deck-slide'));
 const laserSelects=Array.from(document.querySelectorAll('.laser-select'));
-let laserPointerMode='red';
+let laserPointerMode=exportControls.pointerMenu?'red':'none';
 function setLaserPointerMode(mode){if(mode==='black') mode='pointer';mode=['red','blue','green','pointer','none'].includes(mode)?mode:'red';laserPointerMode=mode;if(laserPointer){laserPointer.dataset.pointerColor=mode;if(mode==='none') hideLaserPointer();}laserSelects.forEach(sel=>{if(sel.value!==mode) sel.value=mode;});}
 laserSelects.forEach(sel=>sel.addEventListener('change',()=>setLaserPointerMode(sel.value)));
-setLaserPointerMode('red');
+setLaserPointerMode(exportControls.pointerMenu?'red':'none');
 const drawSessionToolbar=document.getElementById('drawSessionToolbar');
 const drawTool=document.getElementById('drawTool');
 const drawColor=document.getElementById('drawColor');
@@ -403,7 +405,8 @@ async function generatePdfFromSlides(slidesPerPage){
 async function downloadAnnotatedSlides(){
   const payload=JSON.parse(document.getElementById('deck-source').textContent);
   payload.presentationOptions=payload.presentationOptions||{};
-  payload.presentationOptions.enableLiveDraw=liveDrawEnabled;
+  payload.presentationOptions.exportControls=Object.assign({}, exportControls, { exportAnnotated:true });
+  payload.presentationOptions.enableLiveDraw=!!(payload.presentationOptions.exportControls.draw||payload.presentationOptions.exportControls.exportAnnotated);
   payload.presentationOptions.seedAnnotations=JSON.parse(JSON.stringify(liveDrawAnnotations||{}));
 
   const escapedJson=JSON.stringify(payload).replace(/<\\/script>/gi,'<\\/script>');
@@ -439,8 +442,10 @@ document.getElementById('prevBtn').addEventListener('click',()=>go(active-1));
 document.getElementById('nextBtn').addEventListener('click',()=>advanceOrGoNext());
 document.getElementById('closeMapBtn').addEventListener('click',()=>slideMap.classList.remove('open'));
 document.querySelectorAll('.slides-button').forEach(btn=>btn.addEventListener('click',()=>slideMap.classList.add('open')));
-if(liveDrawEnabled){
+if(exportControls.draw){
   document.querySelectorAll('.draw-button').forEach((btn,idx)=>btn.addEventListener('click',()=>{ if(drawingMode && drawingSlideIndex===idx) exitDrawingMode(); else { active=idx; enterDrawingMode(idx); } }));
+}
+if(exportControls.exportAnnotated){
   document.querySelectorAll('.export-annotated-button').forEach(btn=>btn.addEventListener('click',downloadAnnotatedSlides));
 }
 document.querySelectorAll('.pdf-button').forEach(btn=>btn.addEventListener('click',openPdfModal));
@@ -1009,7 +1014,7 @@ async function exportPdfReadyHtml(){
 async function downloadStandalone(){
 
   const slide = currentDraftSlide();
-  const payload = { deckTitle: slide.title || 'Standalone slide', slides:[slide] };
+  const payload = { deckTitle: slide.title || 'Standalone slide', theme: currentThemeFromFields(), presentationOptions: currentPresentationOptions(), slides:[slide] };
   await saveTextFileAs(((slide.title || 'slide').replace(/[^\w\-]+/g,'_') || 'slide') + '.html', buildStandaloneViewer(payload), 'text/html;charset=utf-8');
   showToast('Saved current slide.');
 }
