@@ -1,0 +1,17 @@
+{
+  "stage": "stage35k-20260425-1",
+  "files": [
+    "index.html",
+    "RELEASE_NOTES_STAGE35K.md",
+    "DEPLOY_CHECK_STAGE35K.md",
+    "RELEASE_FILES_STAGE35K.json"
+  ],
+  "source": "Stage 35J",
+  "behaviorChanged": false,
+  "deckDataBehaviorChanged": false,
+  "layoutChanged": false,
+  "visualChanged": true,
+  "featurePolishAdded": true,
+  "helpOverlayAdded": true,
+  "contrastAuditRetained": true
+}
