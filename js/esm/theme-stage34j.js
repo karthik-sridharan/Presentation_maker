@@ -92,6 +92,23 @@ function createApi(deps){
       if(doc.querySelector) return doc.querySelector('[data-export-control="' + key + '"]');
       return null;
     }
+    function updateExportControlsSummary(doc){
+      doc = doc || getDocument();
+      const root = (typeof window !== 'undefined') ? window : ROOT;
+      if(root && typeof root.LuminaUpdateExportControlsSummary === 'function'){
+        try{ root.LuminaUpdateExportControlsSummary(); return; }catch(err){}
+      }
+      const summary = doc && doc.getElementById ? doc.getElementById('exportControlsSummaryValue') : null;
+      if(!summary) return;
+      const labels = {slides:'Slides',draw:'Draw',exportAnnotated:'Export annotated',pointerMenu:'Pointer menu',generatePdf:'Generate PDF'};
+      const selected = [];
+      Object.keys(labels).forEach(function(key){
+        const el = getExportControlElement(doc, key);
+        if(el && el.checked) selected.push(labels[key]);
+      });
+      summary.textContent = selected.length ? selected.join(', ') : 'No optional controls';
+      summary.title = summary.textContent;
+    }
     function currentPresentationOptions(){
       const doc = getDocument();
       const controls = Object.assign({}, DEFAULT_EXPORT_CONTROLS);
@@ -99,6 +116,7 @@ function createApi(deps){
         const el = getExportControlElement(doc, key);
         if(el) controls[key] = !!el.checked;
       });
+      updateExportControlsSummary(doc);
       return {
         enableLiveDraw: !!(controls.draw || controls.exportAnnotated),
         exportControls: controls
@@ -113,6 +131,7 @@ function createApi(deps){
       });
       const liveDrawEl = doc && doc.getElementById ? doc.getElementById('enableLiveDrawExport') : null;
       if(liveDrawEl) liveDrawEl.checked = !!(controls.draw || controls.exportAnnotated);
+      updateExportControlsSummary(doc);
     }
     function currentStyleClass(){
       const t = currentThemeFromFields();
