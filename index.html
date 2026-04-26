@@ -24,8 +24,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage34n-20260425-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage34n-copilot-dev-prompt-reference-websearch-figures-20260425-1';
+window.LUMINA_STAGE = 'stage35a-20260425-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage35a-workflow-navigation-cleanup-20260425-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -76,18 +76,18 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
   "js/esm/copilot-stage34k.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage35a-20260425-1';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage34n-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage35a-20260425-1',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
@@ -96,7 +96,8 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
       'Stage 34K keeps the Stage 24C legacy app shell classic but promotes the Copilot core to guarded live ESM, in addition to the previously promoted core, renderer, export, UI shell, commands, diagram editor, figure insert, block library, deck, editor selection, file I/O, block editor, and figure tools.',
       'Commands are booted from js/esm/commands-stage34j.js with a suppressed classic shadow/fallback.',
       'Export and UI shell helpers are also promoted to guarded live ESM after capturing classic Stage 24C shadows.',
-      'ES module parity still runs through inline optional leaf dynamic imports with fetch/MIME probes, including Copilot.'
+      'ES module parity still runs through inline optional leaf dynamic imports with fetch/MIME probes, including Copilot.',
+      'Stage 35A reorganizes the visible editor navigation into workflow tabs: Build, Design, Assets, Copilot, and Present while preserving legacy pane IDs and command bindings.'
     ]),
     loadOrder: required
   });
@@ -104,7 +105,43 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage34n-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage35a-20260425-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+
+<style id="stage35a-workflow-nav-css">
+  .left-tabs.mode-bar.stage35a-workflow-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .45rem;
+    align-items: stretch;
+  }
+  .left-tab.workflow-primary {
+    min-height: 3.15rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: .14rem;
+    line-height: 1.1;
+  }
+  .left-tab.workflow-primary .tab-title { font-weight: 780; letter-spacing: -.01em; }
+  .left-tab.workflow-primary .tab-desc { font-size: .68rem; opacity: .72; font-weight: 600; white-space: nowrap; }
+  .left-tab.legacy-left-tab { display: none !important; }
+  .workflow-jump-card {
+    padding: .75rem .85rem;
+    margin-bottom: .85rem;
+    border: 1px solid rgba(148, 163, 184, .22);
+    border-radius: 18px;
+    background: rgba(148, 163, 184, .07);
+  }
+  .workflow-jump-card .workflow-jump-title { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .workflow-jump-card .workflow-jump-actions { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .58rem; }
+  .workflow-jump-card .workflow-jump-actions .btn.mini { white-space: nowrap; }
+  @media (max-width: 900px) {
+    .left-tabs.mode-bar.stage35a-workflow-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .left-tab.workflow-primary .tab-desc { white-space: normal; }
+  }
+</style>
+
 
 <script>
 
@@ -127,26 +164,34 @@ window.MathJax = {
     </div>
 
 
-    <div class="left-tabs mode-bar" id="leftTabs">
-      <button class="left-tab" type="button" data-left-tab="files">Files</button>
-      <button class="left-tab active" type="button" data-left-tab="edit">Slides</button>
-      <button class="left-tab" type="button" data-left-tab="presets">Insert</button>
-      <button class="left-tab" type="button" data-left-tab="styles">Design</button>
-      <button class="left-tab" type="button" data-left-tab="animate">Animate</button>
-      <button class="left-tab" type="button" data-left-tab="tools">Present</button>
-      <button class="left-tab" type="button" data-left-tab="slides">Organize</button>
-      <button class="left-tab" type="button" data-left-tab="copilot">Copilot</button>
-      <button class="left-tab" type="button" data-left-tab="help">Help</button>
+    <div class="left-tabs mode-bar stage35a-workflow-tabs" id="leftTabs" aria-label="Editor workflows">
+      <button class="left-tab workflow-primary active" type="button" data-left-tab="edit" data-left-tab-group="build" data-workflow-primary="1"><span class="tab-title">Build</span><span class="tab-desc">Slides + blocks</span></button>
+      <button class="left-tab workflow-primary" type="button" data-left-tab="styles" data-left-tab-group="design" data-workflow-primary="1"><span class="tab-title">Design</span><span class="tab-desc">Theme + motion</span></button>
+      <button class="left-tab workflow-primary" type="button" data-left-tab="presets" data-left-tab-group="assets" data-workflow-primary="1"><span class="tab-title">Assets</span><span class="tab-desc">Import + insert</span></button>
+      <button class="left-tab workflow-primary" type="button" data-left-tab="copilot" data-left-tab-group="copilot" data-workflow-primary="1"><span class="tab-title">Copilot</span><span class="tab-desc">Generate</span></button>
+      <button class="left-tab workflow-primary" type="button" data-left-tab="files" data-left-tab-group="present" data-workflow-primary="1"><span class="tab-title">Present</span><span class="tab-desc">Save + export</span></button>
+      <button class="left-tab legacy-left-tab" type="button" data-left-tab="slides" data-left-tab-group="build" aria-hidden="true" tabindex="-1">Organize</button>
+      <button class="left-tab legacy-left-tab" type="button" data-left-tab="animate" data-left-tab-group="design" aria-hidden="true" tabindex="-1">Animate</button>
+      <button class="left-tab legacy-left-tab" type="button" data-left-tab="tools" data-left-tab-group="assets" aria-hidden="true" tabindex="-1">Asset tools</button>
+      <button class="left-tab legacy-left-tab" type="button" data-left-tab="help" data-left-tab-group="present" aria-hidden="true" tabindex="-1">Help</button>
     </div>
 
     <div class="left-pane active" data-left-pane="edit">
 
+      <div class="workflow-jump-card" data-stage35a-card="build">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Build workflow</div><div class="muted">Edit slide structure, blocks, and deck order from one place.</div></div></div>
+        <div class="workflow-jump-actions">
+          <button class="btn mini primary" type="button" data-left-tab-proxy="edit">Slide editor</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="slides">Organizer / JSON</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="copilot">Ask Copilot</button>
+        </div>
+      </div>
       <div class="subtabs" data-subtab-group="edit">
         <button class="subtab active" type="button" data-subtab="edit:slide">Slide</button>
         <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
       </div>
       <div class="subpane active" data-subpane="edit:slide">
-      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage34n-20260425-1">
+      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage35a-20260425-1">
         <div class="section-head">
           <div>
             <div class="smallcaps">Quick slide actions</div>
@@ -302,6 +347,15 @@ window.MathJax = {
 
     <div class="left-pane" data-left-pane="presets">
 
+      <div class="workflow-jump-card" data-stage35a-card="assets">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Assets workflow</div><div class="muted">Start from layouts, import source files, or manage reusable/figure assets.</div></div></div>
+        <div class="workflow-jump-actions">
+          <button class="btn mini primary" type="button" data-left-tab-proxy="presets">Slide presets</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="files" data-proxy-subtab="files:import" data-proxy-group="assets">Import files</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="tools" data-proxy-subtab="tools:blocks">Block library</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="tools" data-proxy-subtab="tools:figures">Figure tools</button>
+        </div>
+      </div>
       <div class="panel" style="padding:.95rem">
         <div class="smallcaps">Slide presets</div>
         <div class="subtabs" data-subtab-group="presets">
@@ -336,6 +390,10 @@ window.MathJax = {
 
     <div class="left-pane" data-left-pane="slides">
 
+      <div class="workflow-jump-card" data-stage35a-card="organize">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Organizer tools</div><div class="muted">Deck actions, current-slide JSON, and theme application stay under Build.</div></div></div>
+        <div class="workflow-jump-actions"><button class="btn mini" type="button" data-left-tab-proxy="edit">Back to slide editor</button></div>
+      </div>
       <div class="subtabs" data-subtab-group="slides">
         <button class="subtab active" type="button" data-subtab="slides:deck">Actions</button>
         <button class="subtab" type="button" data-subtab="slides:snippet">JSON</button>
@@ -445,6 +503,14 @@ window.MathJax = {
 
 
     <div class="left-pane" data-left-pane="styles">
+      <div class="workflow-jump-card" data-stage35a-card="design">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Design workflow</div><div class="muted">Choose a deck theme, tune slide chrome, then add motion only when needed.</div></div></div>
+        <div class="workflow-jump-actions">
+          <button class="btn mini primary" type="button" data-left-tab-proxy="styles">Theme builder</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="animate">Animation tools</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="slides" data-proxy-subtab="slides:theme">Apply theme</button>
+        </div>
+      </div>
       <div class="panel" style="padding:.95rem">
         <div class="smallcaps">Master presentation styles</div>
         <div class="help" style="margin-top:.45rem">Beamer-inspired master styles for the whole deck.</div>
@@ -506,6 +572,10 @@ window.MathJax = {
     </div>
 
     <div class="left-pane" data-left-pane="animate">
+      <div class="workflow-jump-card" data-stage35a-card="motion">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Motion tools</div><div class="muted">Animation controls are now grouped under the Design workflow.</div></div></div>
+        <div class="workflow-jump-actions"><button class="btn mini" type="button" data-left-tab-proxy="styles">Back to theme builder</button></div>
+      </div>
       <div class="panel" style="padding:.95rem">
         <div class="smallcaps">Animation tools</div>
         <div class="help" style="margin-top:.45rem">Select a title, text block, or figure in the preview, then apply build-in / build-out settings. For text blocks, you can also reveal items one at a time on click in the exported presentation.</div>
@@ -552,6 +622,13 @@ window.MathJax = {
 
     <div class="left-pane" data-left-pane="tools">
 
+      <div class="workflow-jump-card" data-stage35a-card="asset-tools">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Asset tools</div><div class="muted">Reusable blocks and figure controls are part of the Assets workflow.</div></div></div>
+        <div class="workflow-jump-actions">
+          <button class="btn mini" type="button" data-left-tab-proxy="presets">Back to presets</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="files" data-proxy-subtab="files:import">Import files</button>
+        </div>
+      </div>
       <div class="subtabs" data-subtab-group="tools">
         <button class="subtab active" type="button" data-subtab="tools:blocks">Block library</button>
         <button class="subtab" type="button" data-subtab="tools:figures">Figure tools</button>
@@ -618,6 +695,14 @@ window.MathJax = {
 
     <div class="left-pane" data-left-pane="files">
 
+      <div class="workflow-jump-card" data-stage35a-card="present">
+        <div class="workflow-jump-title"><div><div class="smallcaps">Present workflow</div><div class="muted">Save, load, export, and open quick reference help from the final-output area.</div></div></div>
+        <div class="workflow-jump-actions">
+          <button class="btn mini primary" type="button" data-left-tab-proxy="files" data-proxy-subtab="files:save">Save / export</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="files" data-proxy-subtab="files:import">Import</button>
+          <button class="btn mini" type="button" data-left-tab-proxy="help">Syntax help</button>
+        </div>
+      </div>
       <div class="subtabs" data-subtab-group="files">
         <button class="subtab active" type="button" data-subtab="files:save">Save / load</button>
         <button class="subtab" type="button" data-subtab="files:import">Import</button>
@@ -1072,8 +1157,22 @@ window.MathJax = {
         btn.dataset.basicLuminaTabBound='1';
         btn.addEventListener('click', function(){
           var tab=btn.dataset.leftTab;
-          document.querySelectorAll('[data-left-tab]').forEach(function(el){el.classList.toggle('active', el===btn);});
+          var group=btn.dataset.proxyGroup || btn.dataset.leftTabGroup || tab;
+          document.querySelectorAll('[data-left-tab]').forEach(function(el){
+            if(el.dataset.workflowPrimary === '1'){
+              el.classList.toggle('active', (el.dataset.leftTabGroup || el.dataset.leftTab) === group);
+            }else{
+              el.classList.toggle('active', el === btn);
+            }
+          });
           document.querySelectorAll('[data-left-pane]').forEach(function(el){el.classList.toggle('active', el.dataset.leftPane===tab);});
+          var subtab = btn.dataset.proxySubtab || '';
+          if(subtab){
+            setTimeout(function(){
+              var subBtn = document.querySelector('[data-subtab="'+subtab.replace(/"/g,'\"')+'"]');
+              if(subBtn && typeof subBtn.click === 'function') subBtn.click();
+            }, 0);
+          }
         });
       });
       document.querySelectorAll('[data-subtab]').forEach(function(btn){
@@ -1124,7 +1223,7 @@ window.MathJax = {
    guarded live ESM deck runtime remains authoritative. */
 (function(){
   'use strict';
-  var STAGE = 'stage34n-20260425-1-slide-actions-restore';
+  var STAGE = 'stage35a-20260425-1-slide-actions-restore';
   var actionToCommand = {
     add: 'addSlide',
     update: 'updateSlide',
@@ -1178,7 +1277,13 @@ window.MathJax = {
       btn.addEventListener('click', function(event){
         event.preventDefault();
         var target = document.querySelector('[data-left-tab="'+(btn.dataset.leftTabProxy || '')+'"]');
-        if(target && typeof target.click === 'function') target.click();
+        if(target && typeof target.click === 'function'){
+          if(btn.dataset.proxySubtab) target.dataset.proxySubtab = btn.dataset.proxySubtab;
+          if(btn.dataset.proxyGroup) target.dataset.proxyGroup = btn.dataset.proxyGroup;
+          target.click();
+          if(btn.dataset.proxySubtab) delete target.dataset.proxySubtab;
+          if(btn.dataset.proxyGroup) delete target.dataset.proxyGroup;
+        }
       });
     });
     window.__LUMINA_SLIDE_ACTIONS_RESTORE = {
@@ -1186,6 +1291,8 @@ window.MathJax = {
       bound: true,
       proxyButtonCount: document.querySelectorAll('[data-slide-action-proxy]').length,
       organizerProxyCount: document.querySelectorAll('[data-left-tab-proxy="slides"]').length,
+        workflowTabCount: document.querySelectorAll('[data-workflow-primary="1"]').length,
+        workflowTabs: Array.from(document.querySelectorAll('[data-workflow-primary="1"]')).map(function(btn){ return (btn.textContent || '').trim().replace(/\\s+/g, ' '); }),
       newlyBound: bound
     };
     return true;
@@ -1195,31 +1302,31 @@ window.MathJax = {
   else bindSlideActionRestore();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage34k.js?v=stage34n-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
+<script src="js/utils-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage34k.js?v=stage35a-20260425-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
 <script type="module">
 /* Stage 34K: guarded live ESM runtime for Copilot core.
    The classic core exposed by legacy-app-stage24c.js remains captured as a fallback. */
 const W34K = window;
-const STAGE34K = W34K.LUMINA_STAGE || 'stage34n-20260425-1';
+const STAGE34K = W34K.LUMINA_STAGE || 'stage35a-20260425-1';
 const status34K = W34K.LuminaLiveRuntimeStatus = W34K.LuminaLiveRuntimeStatus || {};
 function shortCopilotError34K(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markCopilotLoaded34K(asset){ if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markLoaded === 'function') W34K.LuminaDiagnostics.markLoaded(asset); }
@@ -1310,7 +1417,7 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   var doc = document;
   var originalAdd = doc.addEventListener;
   var shadow = W.__LUMINA_STAGE34J_COMMANDS_SHADOW = {
-    stage: W.LUMINA_STAGE || 'stage34n-20260425-1',
+    stage: W.LUMINA_STAGE || 'stage35a-20260425-1',
     suppressing: true,
     suppressedKeydown: 0,
     suppressedDomReady: 0,
@@ -1350,12 +1457,12 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   W.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH = restore;
 })();
 </script>
-<script src="js/commands-stage24c.js?v=stage34n-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage35a-20260425-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
 <script type="module">
 /* Stage 34J hotfix: guarded live ESM runtime for Commands.
    ESM import failure is non-blocking; activate the captured classic shadow instead of surfacing startup errors. */
 const W = window;
-const STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+const STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
 const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
 function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1454,7 +1561,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1532,7 +1639,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1713,7 +1820,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1886,7 +1993,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -1969,7 +2076,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
@@ -3079,7 +3186,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage34n-20260425-1';
+  var STAGE = W.LUMINA_STAGE || 'stage35a-20260425-1';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }

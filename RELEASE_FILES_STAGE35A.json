@@ -1,0 +1,14 @@
+{
+  "stage": "stage35a-20260425-1",
+  "changedFiles": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "prompts/dev.txt",
+    "prompts/deck.txt",
+    "RELEASE_NOTES_STAGE35A.md",
+    "DEPLOY_CHECK_STAGE35A.md",
+    "RELEASE_FILES_STAGE35A.json"
+  ],
+  "notes": "Stage 35A workflow navigation cleanup. Includes the Stage 34N Copilot prompt/reference files so this patch can be applied on top of Stage 34M/34N without losing prompt behavior."
+}
