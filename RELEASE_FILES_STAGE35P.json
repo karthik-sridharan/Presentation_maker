@@ -1,0 +1,10 @@
+{
+  "stage": "stage35p-20260425-1",
+  "files": [
+    "index.html",
+    "RELEASE_NOTES_STAGE35P.md",
+    "DEPLOY_CHECK_STAGE35P.md",
+    "RELEASE_FILES_STAGE35P.json"
+  ],
+  "notes": "Root-level patch that removes the visible Export health quick-dock button while preserving Stage 35O right-panel fit polish."
+}
