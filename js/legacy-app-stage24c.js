@@ -506,7 +506,7 @@ function updateHistoryButtons(){
     btn.setAttribute('aria-disabled', canRedo ? 'false' : 'true');
   });
   window.__LUMINA_STAGE36E_HISTORY = Object.freeze({
-    stage: window.LUMINA_STAGE || 'stage36g-20260426-1',
+    stage: window.LUMINA_STAGE || 'stage36h-20260426-1',
     undoDepth: undoStack.length,
     redoDepth: redoStack.length,
     limit: HISTORY_LIMIT,
