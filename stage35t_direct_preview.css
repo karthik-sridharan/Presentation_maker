@@ -1,0 +1,22 @@
+<style id="stage35t-direct-preview-edit-css">
+  /* Stage 35T: guarded direct editing affordances inside the live preview. */
+  #preview [data-stage35t-direct-editable="1"] {
+    cursor: text;
+    border-radius: .35rem;
+    outline: 1px dashed transparent;
+    outline-offset: 3px;
+    transition: outline-color .12s ease, background-color .12s ease, box-shadow .12s ease;
+  }
+  #preview [data-stage35t-direct-editable="1"]:hover {
+    outline-color: rgba(47,111,237,.38);
+    background: rgba(47,111,237,.045);
+  }
+  #preview [data-stage35t-direct-editable="1"]:focus {
+    outline: 2px solid rgba(47,111,237,.78);
+    background: rgba(255,255,255,.18);
+    box-shadow: 0 0 0 4px rgba(47,111,237,.12);
+  }
+  .preview-wrap.stage35t-direct-preview-edit-ready .preview-header .badge::after {
+    content: ' · click text to edit';
+  }
+</style>
