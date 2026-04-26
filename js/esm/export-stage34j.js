@@ -70,7 +70,7 @@ body{color:var(--deck-text);overflow:hidden}
 .slide.style-cambridgeus,.deck-slide.style-cambridgeus{padding-top:4.7rem;padding-bottom:5rem}.slide.style-cambridgeus::before,.deck-slide.style-cambridgeus::before{content:'';position:absolute;left:0;top:0;right:0;height:56px;background:linear-gradient(90deg,var(--accent,#c53030) 0 18px,var(--chrome-fill,#0f4c81) 18px 100%)}.slide.style-cambridgeus::after,.deck-slide.style-cambridgeus::after{content:'';position:absolute;left:0;right:0;bottom:0;height:18px;background:var(--chrome-fill,#0f4c81)}.slide.style-cambridgeus h1,.slide.style-cambridgeus h2,.deck-slide.style-cambridgeus h1,.deck-slide.style-cambridgeus h2{color:var(--chrome-fill,#0f4c81)}
 .slide.style-pittsburgh,.deck-slide.style-pittsburgh{padding-top:4.2rem}.slide.style-pittsburgh::before,.deck-slide.style-pittsburgh::before{content:'';position:absolute;left:0;top:0;right:0;height:16px;background:var(--chrome-fill,#2f6fed)}.slide.style-pittsburgh h1,.slide.style-pittsburgh h2,.deck-slide.style-pittsburgh h1,.deck-slide.style-pittsburgh h2{color:var(--chrome-fill,#2f6fed)}
 .anim-frag{transition:opacity .35s ease,transform .35s ease,visibility .35s ease}.anim-hidden{opacity:0 !important;visibility:hidden !important;transform:translateY(8px)}
-.slide-actions{position:absolute;top:1.2rem;right:1.2rem;display:flex;gap:.55rem;z-index:10;flex-wrap:nowrap;justify-content:flex-end;align-items:center;max-width:calc(100% - 2.4rem);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none}
+.slide-actions{position:absolute;top:1.2rem;left:1.2rem;right:1.2rem;display:flex;gap:.55rem;z-index:10;flex-wrap:nowrap;justify-content:flex-start;align-items:center;width:calc(100% - 2.4rem);max-width:calc(100% - 2.4rem);overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;padding-bottom:.08rem}
 .slide-actions::-webkit-scrollbar{display:none}
 .slide-actions > *{flex:0 0 auto}
 .slides-button,.draw-button,.export-annotated-button,.pdf-button{border:1px solid rgba(17,17,17,.18);background:rgba(255,255,255,.88);color:#111;border-radius:999px;padding:.55rem .95rem;font:inherit;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);white-space:nowrap}
@@ -546,11 +546,43 @@ async function saveTextFileAs(defaultName, text, mime='text/plain;charset=utf-8'
   await saveBlobWithDialog(defaultName, blob);
 }
 
+function normalizeEditorExportControls(options){
+  const src=(options&&options.exportControls)||{};
+  const legacy=!!(options&&options.enableLiveDraw);
+  return {
+    slides:src.slides!==false,
+    draw:legacy||!!src.draw,
+    exportAnnotated:legacy||!!src.exportAnnotated,
+    pointerMenu:src.pointerMenu!==false,
+    generatePdf:src.generatePdf!==false
+  };
+}
+function readExportControlsFromDom(){
+  const doc=(typeof document!=='undefined')?document:null;
+  if(!doc) return null;
+  const ids={slides:'exportControlSlides',draw:'exportControlDraw',exportAnnotated:'exportControlExportAnnotated',pointerMenu:'exportControlPointerMenu',generatePdf:'exportControlGeneratePdf'};
+  const controls={slides:true,draw:false,exportAnnotated:false,pointerMenu:true,generatePdf:true};
+  let found=false;
+  Object.keys(ids).forEach(key=>{
+    let el=null;
+    if(doc.getElementById) el=doc.getElementById(ids[key]);
+    if(!el && doc.querySelector) el=doc.querySelector('[data-export-control="'+key+'"]');
+    if(el){ found=true; controls[key]=!!el.checked; }
+  });
+  return found?controls:null;
+}
+function currentPresentationOptionsForExport(){
+  let base={};
+  try{ base=currentPresentationOptions()||{}; }catch(err){ base={}; }
+  const controls=readExportControlsFromDom()||normalizeEditorExportControls(base);
+  return Object.assign({},base,{enableLiveDraw:!!(controls.draw||controls.exportAnnotated),exportControls:controls});
+}
+
 function currentPayload(){
   return {
     deckTitle: fields.deckTitle.value || 'My HTML Presentation',
     theme: currentThemeFromFields(),
-    presentationOptions: currentPresentationOptions(),
+    presentationOptions: currentPresentationOptionsForExport(),
     slides: (getSlides().length ? getSlides() : [currentDraftSlide()])
   };
 }
@@ -1014,7 +1046,7 @@ async function exportPdfReadyHtml(){
 async function downloadStandalone(){
 
   const slide = currentDraftSlide();
-  const payload = { deckTitle: slide.title || 'Standalone slide', theme: currentThemeFromFields(), presentationOptions: currentPresentationOptions(), slides:[slide] };
+  const payload = { deckTitle: slide.title || 'Standalone slide', theme: currentThemeFromFields(), presentationOptions: currentPresentationOptionsForExport(), slides:[slide] };
   await saveTextFileAs(((slide.title || 'slide').replace(/[^\w\-]+/g,'_') || 'slide') + '.html', buildStandaloneViewer(payload), 'text/html;charset=utf-8');
   showToast('Saved current slide.');
 }
