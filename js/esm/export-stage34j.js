@@ -228,11 +228,23 @@ const pdfCancelBtn=document.getElementById('pdfCancelBtn');
 const pdfGenerateBtn=document.getElementById('pdfGenerateBtn');
 const pdfStatus=document.getElementById('pdfStatus');
 let controlsFadeTimer=0;
+let lastControlsPointerX=null,lastControlsPointerY=null;
 function controlsShouldStayVisible(){return !!(drawingMode||(slideMap&&slideMap.classList.contains('open'))||(pdfModal&&!pdfModal.hidden));}
 function showPresentationControls(){document.body.classList.remove('controls-hidden');}
 function hidePresentationControls(){if(!controlsShouldStayVisible()) document.body.classList.add('controls-hidden');}
-function schedulePresentationControlsFade(){showPresentationControls();window.clearTimeout(controlsFadeTimer);controlsFadeTimer=window.setTimeout(hidePresentationControls,2000);}
+function armPresentationControlsFade(){window.clearTimeout(controlsFadeTimer);controlsFadeTimer=window.setTimeout(hidePresentationControls,2000);}
+function schedulePresentationControlsFade(){showPresentationControls();armPresentationControlsFade();}
+function releasePresentationControls(){if(document.body.classList.contains('controls-hidden')) return; armPresentationControlsFade();}
 function holdPresentationControlsVisible(){showPresentationControls();window.clearTimeout(controlsFadeTimer);}
+function notePointerControlsActivity(evt){
+  if(evt&&typeof evt.clientX==='number'&&typeof evt.clientY==='number'){
+    const x=Math.round(evt.clientX), y=Math.round(evt.clientY);
+    if(lastControlsPointerX!==null&&Math.abs(x-lastControlsPointerX)<1&&Math.abs(y-lastControlsPointerY)<1) return false;
+    lastControlsPointerX=x; lastControlsPointerY=y;
+  }
+  schedulePresentationControlsFade();
+  return true;
+}
 function togglePresentationFullscreen(){const doc=document;const root=doc.documentElement;const current=doc.fullscreenElement||doc.webkitFullscreenElement||doc.mozFullScreenElement||doc.msFullscreenElement;try{if(current){const exit=doc.exitFullscreen||doc.webkitExitFullscreen||doc.mozCancelFullScreen||doc.msExitFullscreen;if(exit) exit.call(doc);return;}const request=root.requestFullscreen||root.webkitRequestFullscreen||root.mozRequestFullScreen||root.msRequestFullscreen;if(request) request.call(root);}catch(err){console.error(err);}}
 function isFullscreenShortcut(evt){return !!(evt&&evt.metaKey&&!evt.ctrlKey&&!evt.altKey&&!evt.shiftKey&&String(evt.key||'').toLowerCase()==='f');}
 function fitFiguresInSlide(slideEl){if(!slideEl)return;const figures=Array.from(slideEl.querySelectorAll('.figure-embed'));if(!figures.length)return;const isManual=embed=>{const box=embed&&embed.querySelector('.figure-box');return !!(box&&(box.dataset.userMoved==='1'||box.dataset.userSized==='1'));};figures.forEach(embed=>{if(isManual(embed))return;embed.style.maxHeight='';embed.style.maxWidth='';embed.style.height='';embed.style.width='';const media=embed.querySelector('img,svg,canvas,iframe');if(media){media.style.maxHeight='';media.style.maxWidth='';media.style.height='';media.style.width='';}});const maxHeight=slideEl.clientHeight||window.innerHeight||900;let guard=0;while(slideEl.scrollHeight>maxHeight+2&&guard<16){const overflow=slideEl.scrollHeight-maxHeight;const candidates=figures.map(embed=>{if(isManual(embed))return null;const media=embed.querySelector('img,svg,canvas,iframe');const rect=(media||embed).getBoundingClientRect();return {embed,media,h:rect.height||0};}).filter(x=>x&&x.h>40).sort((a,b)=>b.h-a.h);if(!candidates.length)break;const c=candidates[0];const current=parseFloat((c.media&&c.media.style.maxHeight)||c.h);const reduce=Math.min(Math.max(overflow+8,24),current*0.35);const next=Math.max(70,current-reduce);c.embed.style.maxHeight=(next+12)+'px';if(c.media)c.media.style.maxHeight=next+'px';guard+=1;}}
@@ -510,15 +522,15 @@ deck.addEventListener('pointerdown',evt=>{
   if(evt.target.closest('.slide-actions') || evt.target.closest('.deck-toolbar') || evt.target.closest('.pdf-modal')) return;
   maybeAdvanceFromSlidePointer(evt, slideEls[active]);
 });
-window.addEventListener('pointermove',evt=>{ schedulePresentationControlsFade(); if(drawingMode && drawingState.drawing){ updateShape(evt); return; } updateLaserPointer(evt); });
+window.addEventListener('pointermove',evt=>{ notePointerControlsActivity(evt); if(drawingMode && drawingState.drawing){ updateShape(evt); return; } updateLaserPointer(evt); });
 window.addEventListener('pointerup',()=>endShape());
 window.addEventListener('pointercancel',()=>endShape());
-window.addEventListener('mousemove', evt=>{ schedulePresentationControlsFade(); updateLaserPointer(evt); });
+window.addEventListener('mousemove', evt=>{ notePointerControlsActivity(evt); updateLaserPointer(evt); });
 window.addEventListener('mouseleave', hideLaserPointer);
 window.addEventListener('blur', ()=>{ endShape(); hideLaserPointer(); });
 slideMap.addEventListener('mouseenter', hideLaserPointer);
 document.querySelectorAll('.deck-slide').forEach(slide=>slide.addEventListener('mouseleave', ()=>{ if(!drawingMode) hideLaserPointer(); }));
-window.addEventListener('keydown',e=>{schedulePresentationControlsFade();if(isFullscreenShortcut(e)){e.preventDefault();togglePresentationFullscreen();return;}if(e.key==='Escape' && drawingMode){ e.preventDefault(); exitDrawingMode(); return; }if(e.key==='Escape' && pdfModal && !pdfModal.hidden){ e.preventDefault(); closePdfModal(); return; }if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();advanceOrGoNext();}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(active-1);}if(e.key==='Escape'){ slideMap.classList.remove('open');schedulePresentationControlsFade();}});['.deck-toolbar','.slide-actions','.draw-session-toolbar'].forEach(sel=>{const el=document.querySelector(sel);if(!el)return;el.addEventListener('mouseenter',holdPresentationControlsVisible);el.addEventListener('mouseleave',schedulePresentationControlsFade);el.addEventListener('focusin',holdPresentationControlsVisible);el.addEventListener('focusout',schedulePresentationControlsFade);});render();schedulePresentationControlsFade();
+window.addEventListener('keydown',e=>{schedulePresentationControlsFade();if(isFullscreenShortcut(e)){e.preventDefault();togglePresentationFullscreen();return;}if(e.key==='Escape' && drawingMode){ e.preventDefault(); exitDrawingMode(); return; }if(e.key==='Escape' && pdfModal && !pdfModal.hidden){ e.preventDefault(); closePdfModal(); return; }if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();advanceOrGoNext();}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(active-1);}if(e.key==='Escape'){ slideMap.classList.remove('open');releasePresentationControls();}});['.deck-toolbar','.slide-actions','.draw-session-toolbar'].forEach(sel=>{const el=document.querySelector(sel);if(!el)return;el.addEventListener('mouseenter',holdPresentationControlsVisible);el.addEventListener('mouseleave',releasePresentationControls);el.addEventListener('focusin',holdPresentationControlsVisible);el.addEventListener('focusout',releasePresentationControls);});render();schedulePresentationControlsFade();
 <\/script>
 </body>
 </html>`;
