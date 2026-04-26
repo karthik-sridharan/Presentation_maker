@@ -1,0 +1,12 @@
+{
+  "stage": "stage35v-20260426-1",
+  "files": [
+    "index.html",
+    "js/deck-stage24c.js",
+    "js/esm/deck-stage34j.js",
+    "RELEASE_NOTES_STAGE35V.md",
+    "DEPLOY_CHECK_STAGE35V.md",
+    "RELEASE_FILES_STAGE35V.json"
+  ],
+  "basedOn": "stage35u-20260425-1"
+}
