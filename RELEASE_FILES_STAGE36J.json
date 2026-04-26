@@ -1,0 +1,9 @@
+{
+  "stage": "stage36j-20260426-1",
+  "type": "deploy-ready-static-package",
+  "base": "stage36i-20260426-1",
+  "fixes": [
+    "generated HTML opening regression",
+    "export controls dropdown label visibility"
+  ]
+}
