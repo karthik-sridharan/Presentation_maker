@@ -1,0 +1,16 @@
+{
+  "stage": "stage35b-20260425-1",
+  "type": "root patch",
+  "files": [
+    "index.html",
+    "js/copilot-stage34k.js",
+    "js/esm/copilot-stage34k.js",
+    "prompts/dev.txt",
+    "prompts/deck.txt",
+    "RELEASE_NOTES_STAGE35B.md",
+    "DEPLOY_CHECK_STAGE35B.md",
+    "RELEASE_FILES_STAGE35B.json"
+  ],
+  "behaviorChanged": false,
+  "visualPolish": true
+}
