@@ -1,0 +1,6 @@
+{
+  "stage": "stage38o-20260427-1",
+  "change": "Center action dock cleanup: remove Update/Outline, rebind Copilot/Duplicate, larger fixed quick buttons.",
+  "expectedStatusKey": "stage38OCenterActionsStatus",
+  "expectedPass": true
+}
