@@ -1,0 +1,27 @@
+{
+  "stage": "stage38d-20260427-1",
+  "basePackage": "lumina-presenter-stage38c-clean-deploy-v2.zip",
+  "indexStageSignature": "index-inline-stage38d-visual-add-slide-theme-galleries-20260427-1",
+  "implemented": [
+    "Thumbnail-based visual add-slide gallery in the Deck/Actions pane.",
+    "Load/Add behavior layered over existing data-preset handlers.",
+    "Top-toolbar Add routed to the visual add-slide gallery, with legacy Add as new slide still available in the deck action panel.",
+    "Thumbnail-based theme picker in the Design workflow, layered over existing data-style-preset handlers.",
+    "Stage 38D diagnostics: window.__LUMINA_STAGE38D_STATUS, window.__LUMINA_STAGE38D_TESTS, window.LuminaStage38D, and stage38DVisualGalleryStatus in copied reports."
+  ],
+  "staticChecks": {
+    "nodeSyntaxCheck": "passed: node --check /mnt/data/stage38d-visual-galleries-script.js",
+    "stageMarker": true,
+    "signaturePresent": true,
+    "layoutGalleryScriptPresent": true,
+    "themeGalleryScriptPresent": true,
+    "layoutCountExpected": 14,
+    "themeCountExpected": 8,
+    "diagnosticsHookPresent": true
+  },
+  "browserSmoke": {
+    "attempted": true,
+    "result": "not completed in container",
+    "note": "Direct headless Chromium --dump-dom did not return DOM output within the container timeout. Static syntax and marker checks passed; browser validation should be done on deployed GitHub Pages with the diagnostic report."
+  }
+}
