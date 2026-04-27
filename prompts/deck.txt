@@ -2,4 +2,4 @@ Fallback deck prompt for Lumina Copilot
 
 This file is used only if prompts/dev.txt is missing or blank.
 
-For full-deck generation, create a coherent lecture-style presentation with specific slide titles, editable content blocks, and speaker notes. When the user provides reference material or URLs, follow that material closely. When figures are requested, include concrete Figure/Diagram placeholder blocks.
+For full-deck generation, create a coherent presentation with specific slide titles, editable content blocks, and speaker notes. When the user provides reference material or URLs, follow that material closely. When the user asks for demos or animations, use custom HTML blocks. When the user asks for images or figures, use image blocks with concrete prompts so the app can generate the image and insert it into the slide.
