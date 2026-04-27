@@ -1,3 +1,32 @@
-# Lumina Presenter Stage 36P Deploy
+# Lumina Presenter — Stage 36Q Clean Deploy
 
-Deploy this folder as a static site. Stage 36P fixes generated-presentation control fading so controls only reappear after real activity, and rebuilds the export controls picker with button-backed visible checkbox text.
+This folder is a deploy-ready static bundle. Upload the contents of this folder to static hosting such as GitHub Pages, Netlify, Vercel static output, S3, or any plain web server.
+
+Start at:
+
+- `index.html`
+
+Runtime folders:
+
+- `css/` — active stylesheet used by `index.html`
+- `js/` — active classic and guarded ESM runtime assets used by `index.html`
+- `prompts/` — Copilot developer/deck prompts loaded at runtime
+
+This clean bundle intentionally excludes old migration snapshots, previous-stage release notes, diagnostics pages, build scripts, and rollback artifacts.
+
+## Stage 36Q additions
+
+- Copilot schema can now request `custom` blocks for HTML demos/animations.
+- Copilot schema can now request `image` blocks with `assetPrompt`, `assetAlt`, and `assetSize` fields.
+- Copilot materializes up to 6 generated image blocks per request using the configured OpenAI-compatible image generation endpoint.
+- Copilot attaches text style context and attempts to attach a screenshot of the current slide preview as visual style context.
+- Generated image failures fall back to an explicit placeholder block instead of breaking deck generation.
+
+## Deployment
+
+Deploy the folder contents as-is. Keep relative paths intact.
+
+For cache-busting, load:
+
+`index.html?v=stage36q-20260427-1&clearLuminaStorage=1`
+
