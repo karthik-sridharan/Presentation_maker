@@ -1,0 +1,19 @@
+{
+  "stage": "stage38c-20260427-1",
+  "root": "lumina-presenter-stage38c-clean-deploy",
+  "entry": "index.html",
+  "notes": [
+    "Toolbar polish pass with inspector chip",
+    "Inspector reset",
+    "Selection-aware inspector: Slide / Text / Figure / Demo / Deck",
+    "Diagnostics patched for Stage 38C"
+  ],
+  "required": [
+    "index.html",
+    "css/styles-stage24c.css",
+    "js/",
+    "js/esm/",
+    "prompts/dev.txt",
+    "prompts/deck.txt"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "stage": "stage38c-20260427-1",
+  "root": "lumina-presenter-stage38c-clean-deploy",
+  "index_bytes": 484897,
+  "checks": {
+    "stage_string": true,
+    "signature": true,
+    "no_stage38b_build_string": true,
+    "toolbar_script": true,
+    "toolbar_polish_script": true,
+    "inspector_css": true,
+    "modes_declared": true,
+    "cards_created": true,
+    "diagnostics_hooks": true,
+    "existing_text_controls_preserved": true,
+    "figure_bridge_used": true,
+    "docs": true,
+    "old_docs_removed": true,
+    "script_tag_balance": true,
+    "style_tag_balance": true,
+    "asset_refs_exist": true
+  },
+  "missing_refs": [],
+  "parser_tag_counts": {
+    "script_start": 60,
+    "script_end": 60,
+    "style_start": 20,
+    "style_end": 20
+  },
+  "chromium_smoke": {
+    "attempted": true,
+    "pass": false,
+    "note": "Headless Chromium in this container timed out before DOM dump; static asset, parser, and Stage 38C syntax checks were completed instead."
+  },
+  "pass": true
+}
