@@ -35,17 +35,17 @@
     if(!data.first || now-data.first>8000){ data={count:0,first:now}; }
     data.count=(Number(data.count)||0)+1;
     sessionStorage.setItem(key, JSON.stringify(data));
-    window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage38k-20260427-1',loadCount:data.count,windowMs:now-data.first,guarded:data.count>=4};
+    window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage38k-20260427-2',loadCount:data.count,windowMs:now-data.first,guarded:data.count>=4};
     if(data.count>=4){
       window.__LUMINA_DISABLE_STAGE38G_LIVE_DECK_SYNC=true;
       try{ localStorage.removeItem('lumina-stage38g-live-deck-sync'); }catch(_e){}
     }
-  }catch(e){ window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage38k-20260427-1',error:String(e&&e.message||e)}; }
+  }catch(e){ window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage38k-20260427-2',error:String(e&&e.message||e)}; }
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage38k-20260427-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage38k-compact-toolbar-preview-lift-20260427-1';
+window.LUMINA_STAGE = 'stage38k-20260427-2';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage38k-compact-toolbar-preview-lift-fixed-20260427-2';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -96,18 +96,18 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
   "js/esm/copilot-stage34k.js"
 ];
 </script>
-<script src="js/diagnostics-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
-<script src="js/module-manifest-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
+<script src="js/diagnostics-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagnostics-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/diagnostics-stage24c.js')"></script>
+<script src="js/module-manifest-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/module-manifest-stage24c.js')" onerror="window.luminaBootError&&window.luminaBootError('Failed to load js/module-manifest-stage24c.js')"></script>
 <script>
 (function(){
   'use strict';
   var W = window;
-  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  if (W.LuminaDiagnostics) W.LuminaDiagnostics.stage = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var base = W.LuminaModuleManifest || {};
   var required = (W.LUMINA_EXPECTED_ASSETS || []).slice();
   var optional = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   W.LuminaModuleManifest = Object.freeze({
-    stage: W.LUMINA_STAGE || 'stage38k-20260427-1',
+    stage: W.LUMINA_STAGE || 'stage38k-20260427-2',
     assets: required,
     optionalAssets: optional,
     globals: base.globals || [],
@@ -124,8 +124,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
       'Stage 35Q disables sticky left-panel subtabs so Build/Assets subtabs scroll naturally with their content instead of floating above the scrolled pane.',
       'Stage 35S changes the slide rail from text-only entries to compact thumbnail cards while preserving data-index and deck click behavior.',
       'Stage 35T adds guarded direct preview editing for visible title, kicker, lede, and text-like content blocks; edits commit back into the existing form and JSON workflow on blur or Ctrl/⌘+Enter. Stage 35U adds double-click figure editing for diagram SVG figures. Stage 35V hotfix adds robust double-tap/click handling and a visible Edit figure button so iPad/Safari users can reopen diagram figures reliably. Stage 35W fixes the save-back path so edited diagrams replace the original SVG instead of being overwritten by the old preview figure. Stage 35X normalizes reopened SVG diagrams to editor-canvas scale, preserves existing figure box geometry when saving back, and removes unintended guide-snap quantization from drag/resize interactions. Stage 35Z keeps figure dragging/resizing freeform during pointer movement, defers guide snapping until release, and leaves Snap to guides off by default for smoother Safari/iPad movement. Stage 36A fixes export checkbox text wrapping and adds generated HTML laser pointer color/none controls. Stage 36B makes generated HTML touch navigation require a double tap or the Next button while preserving desktop click-to-advance. Stage 36C changes the Black laser-pointer option to Pointer and renders it as a classic black cursor arrow. Stage 36D keeps Generate PDF on the top generated-HTML toolbar line by placing it before the pointer dropdown and preventing the slide action toolbar from wrapping vertically. Stage 36E adds editor undo/redo buttons and Ctrl/⌘ keyboard shortcuts for deck, slide, block, theme, import, and figure-edit changes. Stage 36F replaces the generated-HTML Draw checkbox with a dropdown-style controls picker so exported presentations can include Slides, Draw, Export annotated slides, Pointer menu, and Generate PDF independently while keeping Previous/Next always present. Stage 36G hardens export-time control capture so checked Draw and Export annotated slides reliably appear in generated HTML and adjusts generated-toolbar overflow so selected controls are not clipped. Stage 36H right-aligns optional generated-HTML controls away from the Previous/Next toolbar and adds a compact selected-controls summary to the export dropdown. Stage 36J moves optional generated-HTML controls into a fixed top-right toolbar that reserves space for Previous/Next and restores explicit option labels inside the export-controls dropdown. Stage 36K fixes the export controls dropdown labels by rendering checkbox label text directly instead of relying on pseudo-element fallback text. Stage 36M rebuilds the export controls picker rows so checkbox labels are plain visible label elements next to the inputs, with a runtime fallback for Safari/iPad rendering. Stage 36P restores Cmd/⌘+F as the generated-presentation fullscreen shortcut, adds a plainly labeled Full screen button beside Previous/Next, and rebuilds the export controls dropdown labels as literal visible text spans.',
-      'Stage 38E adds Keynote-like slide structure polish: rail/outline drag reorder, section affordances, and thumbnail-adjacent slide actions.',
-      'Stage 38J declutters the rail by hiding the lower outline panel and tightening thumbnail spacing. Stage 38K compacts the top toolbar so the preview moves up and more canvas is visible.'
+      'Stage 38E adds Keynote-like slide structure polish: rail/outline drag reorder, section affordances, and thumbnail-adjacent slide actions.'
     ]),
     loadOrder: required
   });
@@ -133,7 +132,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 </script>
 
 
-<link rel="stylesheet" href="css/styles-stage24c.css?v=stage38k-20260427-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/styles-stage24c.css?v=stage38k-20260427-2" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -1849,7 +1848,7 @@ window.MathJax = {
 <script id="stage38j-rail-declutter-diagnostics-script">
 (function(){
   'use strict';
-  var W = window, D = document, STAGE = 'stage38k-20260427-1';
+  var W = window, D = document, STAGE = 'stage38k-20260427-2';
   function qs(sel,root){ return (root||D).querySelector(sel); }
   function qsa(sel,root){ return Array.prototype.slice.call((root||D).querySelectorAll(sel)); }
   function px(value){ var n = parseFloat(value || '0'); return isFinite(n) ? n : 0; }
@@ -1961,7 +1960,7 @@ window.MathJax = {
         <button class="subtab" type="button" data-subtab="edit:blocks">Content</button>
       </div>
       <div class="subpane active" data-subpane="edit:slide">
-      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage38k-20260427-1">
+      <div class="panel" style="padding:.8rem .95rem;margin-bottom:.85rem" data-slide-actions-restore="stage38k-20260427-2">
         <div class="section-head">
           <div>
             <div class="smallcaps">Quick slide actions</div>
@@ -2935,7 +2934,7 @@ https://example.com/lecture-notes.html"></textarea>
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var STATUS = {
     stage: STAGE,
     directPreviewEdit: true,
@@ -3165,7 +3164,7 @@ https://example.com/lecture-notes.html"></textarea>
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var STATUS = {
     stage: STAGE,
     editableFigures: true,
@@ -3528,198 +3527,6 @@ https://example.com/lecture-notes.html"></textarea>
 
 
 
-
-
-<style id="stage38k-compact-toolbar-preview-lift-css">
-  /* Stage 38K: compact the persistent top toolbar and reclaim vertical canvas space. Visual-only; no slide rendering or command behavior changes. */
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .page.stage38a-page{
-    row-gap:.32rem!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-top-toolbar{
-    padding:.22rem .34rem!important;
-    border-radius:16px!important;
-    gap:.38rem!important;
-    min-height:0!important;
-    box-shadow:0 7px 18px rgba(15,42,74,.09), inset 0 1px 0 rgba(255,255,255,.75)!important;
-    backdrop-filter:blur(10px);
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-brand{
-    gap:.32rem!important;
-    font-size:.78rem!important;
-    line-height:1!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-brand-mark{
-    width:1.28rem!important;
-    height:1.28rem!important;
-    border-radius:8px!important;
-    font-size:.72rem!important;
-    box-shadow:0 4px 10px rgba(23,54,93,.16)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-brand small{
-    font-size:.5rem!important;
-    line-height:1!important;
-    margin-top:0!important;
-    letter-spacing:.035em!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-group{
-    gap:.2rem!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-divider{
-    margin:0 .04rem!important;
-    background:rgba(15,42,74,.11)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn{
-    min-height:1.52rem!important;
-    padding:.2rem .34rem!important;
-    border-radius:9px!important;
-    gap:.18rem!important;
-    font-size:.61rem!important;
-    line-height:1!important;
-    box-shadow:0 1px 4px rgba(15,42,74,.045)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn:hover{
-    transform:none!important;
-    box-shadow:0 4px 10px rgba(15,42,74,.09)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn[data-primary="1"]{
-    box-shadow:0 5px 14px rgba(23,54,93,.18)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn span[aria-hidden="true"]{
-    font-size:.72rem!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-pill{
-    padding:.08rem!important;
-    gap:.08rem!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-pill button{
-    padding:.22rem .36rem!important;
-    font-size:.58rem!important;
-    line-height:1!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-pill button.active{
-    box-shadow:0 3px 9px rgba(23,54,93,.14)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-rail-col,
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-canvas-center,
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-inspector-col{
-    padding-top:0!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-canvas-center .preview-wrap{
-    padding:.46rem!important;
-  }
-  html body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-canvas-center .preview-frame,
-  html body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar.stage35o-right-tight .stage38a-canvas-center .preview-frame{
-    width:min(100%,calc((100svh - 7.55rem) * 16 / 9))!important;
-  }
-  @media (max-width:1180px){
-    body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-top-toolbar{gap:.24rem!important;}
-    body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-group,
-    body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-group.stage38c-toolbar-right{gap:.16rem!important;}
-  }
-</style>
-
-<script id="stage38k-compact-toolbar-preview-lift-script">
-(function(){
-  'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
-  function byId(id){ return D.getElementById(id); }
-  function qs(sel,root){ return (root||D).querySelector(sel); }
-  function rect(el){ if(!el || !el.getBoundingClientRect) return null; var r=el.getBoundingClientRect(); return {width:Math.round(r.width*100)/100,height:Math.round(r.height*100)/100,top:Math.round(r.top*100)/100,bottom:Math.round(r.bottom*100)/100}; }
-  function px(value){ var n=parseFloat(String(value||'0')); return Number.isFinite(n)?n:0; }
-  function status(){
-    var bar=byId('stage38cTopToolbar');
-    var btn=qs('#stage38cTopToolbar .stage38c-tool-btn');
-    var page=qs('.page.stage38a-page')||qs('.page');
-    var wrap=qs('.stage38a-canvas-center .preview-wrap');
-    var viewport=qs('.stage38a-canvas-center .preview-viewport')||qs('.preview-viewport');
-    var frame=qs('.stage38a-canvas-center .preview-frame')||qs('.preview-frame');
-    var csBar=bar?getComputedStyle(bar):null;
-    var csPage=page?getComputedStyle(page):null;
-    var csWrap=wrap?getComputedStyle(wrap):null;
-    var st={
-      stage:STAGE,
-      compactToolbar:true,
-      visualOnly:true,
-      noCommandHooks:true,
-      toolbarPresent:!!bar,
-      toolbarHeightPx:bar?rect(bar).height:0,
-      buttonHeightPx:btn?rect(btn).height:0,
-      toolbarPaddingY:csBar?Math.round((px(csBar.paddingTop)+px(csBar.paddingBottom))*100)/100:0,
-      pageRowGapPx:csPage?Math.round(px(csPage.rowGap||csPage.gridRowGap)*100)/100:0,
-      previewWrapPaddingY:csWrap?Math.round((px(csWrap.paddingTop)+px(csWrap.paddingBottom))*100)/100:0,
-      previewWrap:rect(wrap),
-      previewViewport:rect(viewport),
-      previewFrame:rect(frame),
-      previewMovedUp:true,
-      canvasFitPreserved:!!(W.__LUMINA_STAGE38F_CANVAS_FIT && W.__LUMINA_STAGE38F_CANVAS_FIT.pass),
-      safeDeckSyncPreserved:!!(W.__LUMINA_STAGE38I_SAFE_DECK_SYNC && W.__LUMINA_STAGE38I_SAFE_DECK_SYNC.safeCommandDeckSync),
-      tests:{
-        toolbarPresent:!!bar,
-        toolbarCompact:bar?rect(bar).height<=42:false,
-        buttonsCompact:btn?rect(btn).height<=30:false,
-        rowGapCompact:csPage?px(csPage.rowGap||csPage.gridRowGap)<=8:false,
-        previewWrapCompact:csWrap?(px(csWrap.paddingTop)+px(csWrap.paddingBottom))<=18:false,
-        canvasFitPresent:!!W.__LUMINA_STAGE38F_CANVAS_FIT,
-        safeDeckSyncPresent:!!W.__LUMINA_STAGE38I_SAFE_DECK_SYNC,
-        pass:false
-      }
-    };
-    st.tests.pass=!!(st.tests.toolbarPresent&&st.tests.toolbarCompact&&st.tests.buttonsCompact&&st.tests.rowGapCompact&&st.tests.previewWrapCompact);
-    st.pass=st.tests.pass;
-    W.__LUMINA_STAGE38K_COMPACT_TOOLBAR=Object.freeze(st);
-    return W.__LUMINA_STAGE38K_COMPACT_TOOLBAR;
-  }
-  function patchDiagnostics(){
-    var LD=W.LuminaDiagnostics;
-    if(!LD||LD.__stage38kCompactToolbarPatched) return false;
-    var prev=(typeof LD.collectReport==='function'?LD.collectReport.bind(LD):(typeof LD.getReport==='function'?LD.getReport.bind(LD):null));
-    if(!prev) return false;
-    function wrap(){
-      var report={};
-      try{ report=prev()||{}; }catch(e){ report={stage:STAGE,stage38kPreviousReportError:String(e&&(e.stack||e.message)||e)}; }
-      var st=status();
-      report.stage=STAGE;
-      report.diagnosticScriptStage=STAGE;
-      report.stageFromWindow=W.LUMINA_STAGE||STAGE;
-      report.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||'index-inline-stage38k-compact-toolbar-preview-lift-20260427-1';
-      report.indexDatasetStage=D.documentElement&&D.documentElement.dataset?(D.documentElement.dataset.luminaStage||D.documentElement.dataset.stage||STAGE):STAGE;
-      report.stage38KCompactToolbarStatus=st;
-      report.stage38KCompactToolbarDiagnostics={
-        toolbarHeightPx:st.toolbarHeightPx,
-        buttonHeightPx:st.buttonHeightPx,
-        toolbarPaddingY:st.toolbarPaddingY,
-        pageRowGapPx:st.pageRowGapPx,
-        previewWrapPaddingY:st.previewWrapPaddingY,
-        previewWrapTop:st.previewWrap&&st.previewWrap.top,
-        previewFrameTop:st.previewFrame&&st.previewFrame.top,
-        previewFrameWidth:st.previewFrame&&st.previewFrame.width,
-        visualOnly:true,
-        noCommandHooks:true
-      };
-      if(report.stage38KeynoteToolbarStatus){
-        report.stage38KeynoteToolbarStatus=Object.assign({},report.stage38KeynoteToolbarStatus,{stage:STAGE,compactToolbar:true,toolbarHeightPx:st.toolbarHeightPx,buttonHeightPx:st.buttonHeightPx});
-      }
-      if(report.stage38FCanvasFitStatus){
-        report.stage38FCanvasFitStatus=Object.assign({},report.stage38FCanvasFitStatus,{stage:STAGE,compactToolbarPreserved:true});
-      }
-      return report;
-    }
-    LD.collectReport=wrap;
-    LD.getReport=wrap;
-    LD.__stage38kCompactToolbarPatched=true;
-    return true;
-  }
-  function init(){
-    if(D.body) D.body.classList.add('stage38k-compact-toolbar');
-    patchDiagnostics();
-    status();
-    [120,480,1200,2200].forEach(function(ms){ setTimeout(function(){ patchDiagnostics(); status(); },ms); });
-    W.LuminaStage38KCompactToolbar={stage:STAGE,status:status,refresh:status};
-  }
-  if(D.readyState==='loading') D.addEventListener('DOMContentLoaded',init,{once:true}); else init();
-})();
-</script>
-
 </body></html>`;
     popup.document.open(); popup.document.write(editorHtml); popup.document.close();
   }
@@ -3796,7 +3603,7 @@ https://example.com/lecture-notes.html"></textarea>
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var STATUS = {
     stage: STAGE,
     hotfix: true,
@@ -3967,7 +3774,7 @@ https://example.com/lecture-notes.html"></textarea>
 <script id="stage35z-figure-selection-actions-script">
 (function(){
   'use strict';
-  var W=window, STAGE=W.LUMINA_STAGE||'stage38k-20260427-1';
+  var W=window, STAGE=W.LUMINA_STAGE||'stage38k-20260427-2';
   var STATUS={stage:STAGE,contextualFigureActions:true,robustFigureBoxSelection:true,freeformTouchDragAssist:true,bound:false,wrappedCount:0,selected:false,selectedHasSvg:false,lastAction:'',lastSelectAt:'',lastError:'',behaviorChanged:false};
   var selectedBox=null, palette=null;
   function publish(){ W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS=Object.assign({},STATUS); return W.__LUMINA_STAGE35Z_FIGURE_SELECTION_ACTIONS; }
@@ -4002,7 +3809,7 @@ https://example.com/lecture-notes.html"></textarea>
   'use strict';
   var W = window;
   var status = {
-    stage: W.LUMINA_STAGE || 'stage38k-20260427-1',
+    stage: W.LUMINA_STAGE || 'stage38k-20260427-2',
     editorCanvasNormalization: true,
     saveBackPreservesFigureBoxGeometry: true,
     dragGridQuantizationOnlyWhenGridShown: false,
@@ -4020,7 +3827,7 @@ https://example.com/lecture-notes.html"></textarea>
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var tight = false;
   var lastStatus = null;
   function rectOf(sel){
@@ -4351,7 +4158,7 @@ https://example.com/lecture-notes.html"></textarea>
    Hotfix retained: quick slide actions count handler dispatch as success unless it explicitly returns false. */
 (function(){
   'use strict';
-  var STAGE = 'stage38k-20260427-1';
+  var STAGE = 'stage38k-20260427-2';
   var compactKey = 'luminaStage35cCompactWorkspace';
   function byId(id){ return document.getElementById(id); }
   function clickById(id){ var el = byId(id); if(el && typeof el.click === 'function'){ el.click(); return true; } return false; }
@@ -4480,7 +4287,7 @@ https://example.com/lecture-notes.html"></textarea>
 /* Stage 35K: discoverability polish — keyboard/workflow help overlay. */
 (function(){
   'use strict';
-  var STAGE = 'stage38k-20260427-1';
+  var STAGE = 'stage38k-20260427-2';
   var HELP_ID = 'stage35k-help-overlay';
   var retryTimers = [];
 
@@ -4660,7 +4467,7 @@ https://example.com/lecture-notes.html"></textarea>
 /* Stage 35L: feature polish — searchable jump-to-slide overlay backed by the existing deck rail. */
 (function(){
   'use strict';
-  var STAGE = 'stage38k-20260427-1';
+  var STAGE = 'stage38k-20260427-2';
   var OVERLAY_ID = 'stage35l-slide-jump-overlay';
   var retryTimers = [];
 
@@ -4853,7 +4660,7 @@ https://example.com/lecture-notes.html"></textarea>
 /* Stage 35M/N: export diagnostics overlay plus persistent deck outline navigator. */
 (function(){
   'use strict';
-  var STAGE = 'stage38k-20260427-1';
+  var STAGE = 'stage38k-20260427-2';
   var EXPORT_OVERLAY_ID = 'stage35m-export-diagnostics-overlay';
   var OUTLINE_PANEL_ID = 'stage35n-deck-outline-panel';
   var exportRetryTimers = [];
@@ -5380,31 +5187,31 @@ https://example.com/lecture-notes.html"></textarea>
   else bindSlideActionRestore();
 })();
 </script>
-<script src="js/utils-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
-<script src="js/block-library-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
-<script src="js/theme-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
-<script src="js/presets-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
-<script src="js/parser-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
-<script src="js/block-style-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
-<script src="js/import-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
-<script src="js/state-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
-<script src="js/export-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
-<script src="js/renderer-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
-<script src="js/deck-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
-<script src="js/file-io-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
-<script src="js/ui-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
-<script src="js/figure-insert-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
-<script src="js/diagram-editor-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
-<script src="js/figure-tools-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
-<script src="js/editor-selection-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
-<script src="js/block-editor-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
-<script src="js/legacy-app-stage24c.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
-<script src="js/copilot-stage34k.js?v=stage38k-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
+<script src="js/utils-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/utils-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/utils-stage24c.js')"></script>
+<script src="js/block-library-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-library-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-library-stage24c.js')"></script>
+<script src="js/theme-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
+<script src="js/presets-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
+<script src="js/parser-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
+<script src="js/block-style-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
+<script src="js/import-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/import-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/import-stage24c.js')"></script>
+<script src="js/state-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/state-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/state-stage24c.js')"></script>
+<script src="js/export-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/export-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/export-stage24c.js')"></script>
+<script src="js/renderer-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/renderer-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/renderer-stage24c.js')"></script>
+<script src="js/deck-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/deck-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/deck-stage24c.js')"></script>
+<script src="js/file-io-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/file-io-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/file-io-stage24c.js')"></script>
+<script src="js/ui-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/ui-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/ui-stage24c.js')"></script>
+<script src="js/figure-insert-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-insert-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-insert-stage24c.js')"></script>
+<script src="js/diagram-editor-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/diagram-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/diagram-editor-stage24c.js')"></script>
+<script src="js/figure-tools-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/figure-tools-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/figure-tools-stage24c.js')"></script>
+<script src="js/editor-selection-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/editor-selection-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/editor-selection-stage24c.js')"></script>
+<script src="js/block-editor-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-editor-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-editor-stage24c.js')"></script>
+<script src="js/legacy-app-stage24c.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/legacy-app-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/legacy-app-stage24c.js')"></script>
+<script src="js/copilot-stage34k.js?v=stage38k-20260427-2" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-stage34k.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-stage34k.js')"></script>
 <script type="module">
 /* Stage 34K: guarded live ESM runtime for Copilot core.
    The classic core exposed by legacy-app-stage24c.js remains captured as a fallback. */
 const W34K = window;
-const STAGE34K = W34K.LUMINA_STAGE || 'stage38k-20260427-1';
+const STAGE34K = W34K.LUMINA_STAGE || 'stage38k-20260427-2';
 const status34K = W34K.LuminaLiveRuntimeStatus = W34K.LuminaLiveRuntimeStatus || {};
 function shortCopilotError34K(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markCopilotLoaded34K(asset){ if(W34K.LuminaDiagnostics && typeof W34K.LuminaDiagnostics.markLoaded === 'function') W34K.LuminaDiagnostics.markLoaded(asset); }
@@ -5498,7 +5305,7 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   var doc = document;
   var originalAdd = doc.addEventListener;
   var shadow = W.__LUMINA_STAGE34J_COMMANDS_SHADOW = {
-    stage: W.LUMINA_STAGE || 'stage38k-20260427-1',
+    stage: W.LUMINA_STAGE || 'stage38k-20260427-2',
     suppressing: true,
     suppressedKeydown: 0,
     suppressedDomReady: 0,
@@ -5538,12 +5345,12 @@ W34K.__LUMINA_STAGE34K_COPILOT_PROMISE = (async function(){
   W.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH = restore;
 })();
 </script>
-<script src="js/commands-stage24c.js?v=stage38k-20260427-1" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
+<script src="js/commands-stage24c.js?v=stage38k-20260427-2" onload="window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS&&window.__LUMINA_STAGE34J_CAPTURE_CLASSIC_COMMANDS();window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/commands-stage24c.js')" onerror="window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH&&window.__LUMINA_STAGE34J_RESTORE_COMMAND_PATCH();window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/commands-stage24c.js')"></script>
 <script type="module">
 /* Stage 34J hotfix: guarded live ESM runtime for Commands.
    ESM import failure is non-blocking; activate the captured classic shadow instead of surfacing startup errors. */
 const W = window;
-const STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+const STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
 const status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
 function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
 function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -5642,7 +5449,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -5720,7 +5527,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -5901,7 +5708,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -6074,7 +5881,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var status = W.LuminaLiveRuntimeStatus = W.LuminaLiveRuntimeStatus || {};
   function shortError(error){ return String(error && (error.stack || error.message) || error || 'unknown'); }
   function markLoaded(asset){ if(W.LuminaDiagnostics && typeof W.LuminaDiagnostics.markLoaded === 'function') W.LuminaDiagnostics.markLoaded(asset); }
@@ -6157,7 +5964,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   var D = W.LuminaDiagnostics;
   var ASSETS = (W.LUMINA_OPTIONAL_ES_MODULE_ASSETS || []).slice();
   var MODULE_KEYS = {
@@ -7282,7 +7089,7 @@ try{
 (function () {
   'use strict';
   var W = window;
-  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-1';
+  var STAGE = W.LUMINA_STAGE || 'stage38k-20260427-2';
   function cloneArray(value) {
     return Array.isArray(value) ? value.slice() : [];
   }
@@ -7323,21 +7130,21 @@ try{
     report.copilotDeckPromptStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.deckPromptStatus || null;
     report.copilotWebSearchEnabled = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchEnabled || false;
     report.copilotWebSearchStatus = W.LuminaCopilotRuntimeStatus && W.LuminaCopilotRuntimeStatus.webSearchStatus || null;
-    report.visualPolishStage = 'stage38k-20260427-1';
-    report.visualContrastAuditStage = 'stage38k-20260427-1';
+    report.visualPolishStage = 'stage38k-20260427-2';
+    report.visualContrastAuditStage = 'stage38k-20260427-2';
     report.visualPolishSummary = {
       navigation: 'Five workflow tabs preserved from Stage 35A.',
       hierarchy: 'Cards, subtabs, buttons, fields, preview, rail, Copilot panel, the help overlay, slide jump, Stage 35M export diagnostics, Stage 35N outline navigator, and Stage 35O right-panel fitting, Stage 35R final fit diagnostics, Stage 35S thumbnail rail, and Stage 35T direct preview editing, and Stage 35U editable preview figures keep Stage 35B spacing/radius/shadow polish.',
       colorBalance: 'Stage 35H keeps the Stage 35F classic palette and applies late high-specificity contrast; Stage 35J adds solid fallbacks; Stage 35K reuses those controls for help; Stage 35L adds slide jump; Stage 35M/N add export diagnostics and outline navigation; Stage 35O compresses the preview/inspector column without changing slide rendering; Stage 35R adds a final tight-mode trim and post-fit remeasurement; Stage 35S turns the slide rail into thumbnail cards; Stage 35T adds direct text editing in preview with commit-to-form sync; Stage 35U lets SVG figures reopen in a diagram editor on double-click and save back into the same figure slot; Stage 35Z adds contextual figure actions and robust click-to-select figure boxes.',
       behaviorChanged: false
     };
-    report.colorBalanceStage = 'stage38k-20260427-1';
+    report.colorBalanceStage = 'stage38k-20260427-2';
     report.colorBalanceSummary = {
       palette: 'Classic blue/gray UI palette restored while keeping Stage 35B layout polish.',
       contrastFixes: ['workflow tabs', 'subtabs', 'quick dock', 'active deck/block/library cards', 'Copilot status', 'core preset cards', 'layout template cards'],
       behaviorChanged: false
     };
-    report.templateContrastStage = 'stage38k-20260427-1';
+    report.templateContrastStage = 'stage38k-20260427-2';
     report.templateContrastSummary = {
       scope: 'Core presets, layout templates, reusable block template buttons, and their subtabs now force readable classic text/background colors.',
       behaviorChanged: false,
@@ -7440,7 +7247,7 @@ try{
       ];
       var presentSamples = contrastSamples.filter(function(s){ return s.present; });
       var failures = presentSamples.filter(function(s){ return s.ok === false; });
-      report.visualContrastAuditStage = 'stage38k-20260427-1';
+      report.visualContrastAuditStage = 'stage38k-20260427-2';
       report.visualContrastSmokePassed = failures.length === 0 && presentSamples.length > 0;
       report.visualContrastAudit = {
         checkedAt: new Date().toISOString(),
@@ -7455,7 +7262,7 @@ try{
     } catch(e) {
       report.visualContrastAuditError = e && e.message ? e.message : String(e);
     }
-    report.efficiencyStage = 'stage38k-20260427-1';
+    report.efficiencyStage = 'stage38k-20260427-2';
     report.efficiencySummary = {
       quickDock: !!W.__LUMINA_STAGE35C_EFFICIENCY,
       quickDockButtonCount: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickButtonCount,
@@ -7464,7 +7271,7 @@ try{
       quickActionReturnHotfix: W.__LUMINA_STAGE35C_EFFICIENCY && W.__LUMINA_STAGE35C_EFFICIENCY.quickActionReturnHotfix,
       behaviorChanged: false
     };
-    report.featurePolishStage = 'stage38k-20260427-1';
+    report.featurePolishStage = 'stage38k-20260427-2';
     report.featurePolishSummary = {
       helpOverlay: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.helpOverlay),
       helpDockButton: !!(W.__LUMINA_STAGE35K_FEATURE_POLISH && W.__LUMINA_STAGE35K_FEATURE_POLISH.helpDockButton),
@@ -7637,7 +7444,7 @@ try{
 (function(){
   'use strict';
   var W = window;
-  var STAGE = 'stage38k-20260427-1';
+  var STAGE = 'stage38k-20260427-2';
   var STATUS = { stage:STAGE, uiReset:true, modes:['create','edit','present','advanced'], mode:'create', tests:{}, lastSwitchedAt:'', diagnosticsPatched:false };
   function qs(sel, root){ return (root || document).querySelector(sel); }
   function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -7883,7 +7690,7 @@ setTimeout(function(){
 <script id="stage38a-canvas-first-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   function byId(id){return D.getElementById(id)}
   function qs(sel,root){return (root||D).querySelector(sel)}
   function qsa(sel,root){return Array.prototype.slice.call((root||D).querySelectorAll(sel))}
@@ -8038,7 +7845,7 @@ setTimeout(function(){
 <script id="stage38c-keynote-toolbar-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   function byId(id){return D.getElementById(id)}
   function qs(sel,root){return (root||D).querySelector(sel)}
   function qsa(sel,root){return Array.prototype.slice.call((root||D).querySelectorAll(sel))}
@@ -8352,7 +8159,7 @@ setTimeout(function(){
 <script id="stage38c-toolbar-polish-inspector-reset-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   var STATUS={stage:STAGE,toolbarPolish:true,inspectorReset:true,selectionAwareInspector:true,modes:['Slide','Text','Figure','Demo','Deck'],mode:'Slide',lastReason:'init',lastUpdatedAt:'',tests:{},pass:false};
   var lastIntent={kind:'Slide',at:0,reason:'init'};
   function byId(id){return D.getElementById(id)}
@@ -8684,7 +8491,7 @@ setTimeout(function(){
 <script id="stage38d-visual-add-slide-theme-galleries-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   var LAYOUTS=[['title','Centered title','Big title slide','title'],['concept','Concept','Title plus one text column','single'],['twocol','Two-column','Side-by-side lecture content','two-col'],['appendix','Summary','Recap / appendix bullets','single'],['pseudocode','Pseudocode','Single-column code block','code'],['pseudocodeLatex','Pseudocode + LaTeX','Algorithm with rendered math','code'],['callouts','Two callouts','Two emphasized cards','callouts'],['figureExplain','Figure + explanation','Visual left, explanation right','figure'],['theoremProof','Theorem / proof','Stacked theorem and proof','proof'],['algorithmLayout','Algorithm + notes','Pseudocode with supporting notes','code'],['sectionDivider','Section divider','Large transition slide','section'],['comparison','Comparison','Contrasted columns','two-col'],['imageText','Image + text','Image left, narrative right','figure'],['fullFigureCaption','Full figure','Large figure with caption','figure']];
   var THEMES=[['classic','Classic','Minimal white canvas','#ffffff','#111111','#17365d','#2f6fed','classic'],['berkeley','Berkeley','Sidebar navigation feel','#ffffff','#111111','#17365d','#d4a017','berkeley'],['madrid','Madrid','Top and bottom bars','#ffffff','#111111','#1f4e79','#2f6fed','madrid'],['annarbor','AnnArbor','Warm academic chrome','#fffaf0','#2f2410','#c99a06','#7a4f01','annarbor'],['cambridgeus','CambridgeUS','Formal title bar','#ffffff','#10233b','#0f4c81','#c53030','cambridgeus'],['pittsburgh','Pittsburgh','Minimal accent rule','#ffffff','#111111','#2f6fed','#2f6fed','pittsburgh'],['notebook','Notebook','Ruled-paper lecture notes','#fffdf3','#1f2937','#2f6fed','#2f6fed','notebook'],['chalkboard','Chalkboard','Dark chalkboard style','#050807','#f8fafc','#f8fafc','#d1d5db','chalkboard']];
   var STATUS={stage:STAGE,visualGalleries:true,layoutGallery:false,themeGallery:false,layoutCount:LAYOUTS.length,themeCount:THEMES.length,layoutThumbs:0,themeThumbs:0,topbarAddOpensGallery:false,lastLayout:'',lastTheme:'',lastAction:'init',lastUpdatedAt:'',tests:{},pass:false};
@@ -8728,7 +8535,7 @@ setTimeout(function(){
 <script id="stage38e-slide-structure-outline-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   var STATUS={stage:STAGE,slideStructure:true,railEnhanced:false,outlineEnhanced:false,dragReorderRail:true,dragReorderOutline:true,railActionControls:false,sectionAffordances:false,deckOutlineParity:false,activeSync:false,lastAction:'init',lastFrom:null,lastTo:null,lastSectionAddedAt:'',lastUpdatedAt:'',tests:{},pass:false};
   var dragState={from:null,source:''};
   var decorating=false, mutating=false, observer=null, outlineObserver=null;
@@ -8793,7 +8600,7 @@ setTimeout(function(){
 <script id="stage38f-canvas-fit-regression-cleanup-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   var THRESHOLD=24;
   var STATUS={stage:STAGE,canvasFitRegressionCleanup:true,stageStretchFixed:false,rightPanelFitPresent:false,previewDeadSpaceThreshold:THRESHOLD,previewDeadSpaceApprox:null,previewViewportHeight:null,previewStageHeight:null,previewFrameHeight:null,previewFrameWidth:null,structureControlsPreserved:false,outlineControlsPreserved:false,lastUpdatedAt:'',tests:{},pass:false};
   function qs(sel,root){return (root||D).querySelector(sel)}
@@ -8851,7 +8658,7 @@ setTimeout(function(){
    Preserves Stage 38F canvas-fit cleanup and all Stage 38E structure controls. */
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   function qsa(sel){ return Array.prototype.slice.call(D.querySelectorAll(sel)); }
   function status(){
     var rail=qsa('#deckList [data-index]').filter(function(el){ return !el.matches('[data-stage38e-rail-actions], .stage38e-rail-actions'); });
@@ -8889,7 +8696,7 @@ setTimeout(function(){
       report.stage=STAGE;
       report.diagnosticScriptStage=STAGE;
       report.stageFromWindow=W.LUMINA_STAGE||STAGE;
-      report.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||'index-inline-stage38k-compact-toolbar-preview-lift-20260427-1';
+      report.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||'index-inline-stage38k-compact-toolbar-preview-lift-fixed-20260427-2';
       report.indexDatasetStage=D.documentElement&&D.documentElement.dataset?(D.documentElement.dataset.stage||STAGE):STAGE;
       report.stage38HRecoveryStatus=status();
       report.stage38HRecoveryDiagnostics={
@@ -8930,7 +8737,7 @@ setTimeout(function(){
    Rules: no MutationObserver, no location/history reload hooks, no diagnostic-time DOM rewrite. */
 (function(){
   'use strict';
-  var W = window, D = document, STAGE = 'stage38k-20260427-1';
+  var W = window, D = document, STAGE = 'stage38k-20260427-2';
   var OUTLINE_ID = 'stage35n-deck-outline-panel';
   var JUMP_ID = 'stage35l-slide-jump-overlay';
   var syncTimer = null;
@@ -9253,7 +9060,7 @@ setTimeout(function(){
       report.stage = STAGE;
       report.diagnosticScriptStage = STAGE;
       report.stageFromWindow = W.LUMINA_STAGE || STAGE;
-      report.indexStageSignature = W.LUMINA_STAGE_SIGNATURE || 'index-inline-stage38k-compact-toolbar-preview-lift-20260427-1';
+      report.indexStageSignature = W.LUMINA_STAGE_SIGNATURE || 'index-inline-stage38k-compact-toolbar-preview-lift-fixed-20260427-2';
       report.indexDatasetStage = D.documentElement && D.documentElement.dataset ? (D.documentElement.dataset.stage || STAGE) : STAGE;
       report.slideRailThumbnailStatus = railStatus(snapshot);
       report.deckOutlineStatus = outlineStatus(snapshot);
@@ -9312,80 +9119,47 @@ setTimeout(function(){
   if(D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
-
-
 <style id="stage38k-compact-toolbar-preview-lift-css">
-  /* Stage 38K: compact the persistent top toolbar and reclaim vertical canvas space. Visual-only; no slide rendering or command behavior changes. */
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .page.stage38a-page{
-    row-gap:.32rem!important;
-  }
   body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-top-toolbar{
-    padding:.22rem .34rem!important;
-    border-radius:16px!important;
-    gap:.38rem!important;
     min-height:0!important;
-    box-shadow:0 7px 18px rgba(15,42,74,.09), inset 0 1px 0 rgba(255,255,255,.75)!important;
-    backdrop-filter:blur(10px);
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-brand{
+    padding:.20rem .45rem!important;
     gap:.32rem!important;
-    font-size:.78rem!important;
-    line-height:1!important;
+    border-radius:0 0 14px 14px!important;
+    box-shadow:0 4px 14px rgba(15,23,42,.12)!important;
+    align-items:center!important;
   }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-brand-mark{
-    width:1.28rem!important;
-    height:1.28rem!important;
-    border-radius:8px!important;
-    font-size:.72rem!important;
-    box-shadow:0 4px 10px rgba(23,54,93,.16)!important;
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-group,
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-group.stage38c-toolbar-right{
+    gap:.20rem!important;
+    padding:0!important;
+    align-items:center!important;
   }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-brand small{
-    font-size:.5rem!important;
-    line-height:1!important;
-    margin-top:0!important;
-    letter-spacing:.035em!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-group{
-    gap:.2rem!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-toolbar-divider{
-    margin:0 .04rem!important;
-    background:rgba(15,42,74,.11)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn{
-    min-height:1.52rem!important;
-    padding:.2rem .34rem!important;
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn,
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-btn{
+    min-height:24px!important;
+    height:24px!important;
+    padding:.14rem .42rem!important;
     border-radius:9px!important;
-    gap:.18rem!important;
-    font-size:.61rem!important;
+    font-size:.70rem!important;
     line-height:1!important;
-    box-shadow:0 1px 4px rgba(15,42,74,.045)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn:hover{
-    transform:none!important;
-    box-shadow:0 4px 10px rgba(15,42,74,.09)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn[data-primary="1"]{
-    box-shadow:0 5px 14px rgba(23,54,93,.18)!important;
-  }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-tool-btn span[aria-hidden="true"]{
-    font-size:.72rem!important;
+    letter-spacing:0!important;
   }
   body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-pill{
-    padding:.08rem!important;
-    gap:.08rem!important;
+    padding:.10rem!important;
+    gap:.10rem!important;
+    border-radius:11px!important;
   }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-pill button{
-    padding:.22rem .36rem!important;
-    font-size:.58rem!important;
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-selection-chip{
+    min-height:23px!important;
+    padding:.12rem .40rem!important;
+    border-radius:9px!important;
+    font-size:.68rem!important;
     line-height:1!important;
   }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38c-mode-pill button.active{
-    box-shadow:0 3px 9px rgba(23,54,93,.14)!important;
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .page.stage38a-page{
+    row-gap:.36rem!important;
   }
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-rail-col,
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-canvas-center,
-  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-inspector-col{
+  body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-canvas-center{
     padding-top:0!important;
   }
   body.stage38a-canvas-first.stage38c-keynote-toolbar.stage38k-compact-toolbar .stage38a-canvas-center .preview-wrap{
@@ -9405,7 +9179,7 @@ setTimeout(function(){
 <script id="stage38k-compact-toolbar-preview-lift-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage38k-20260427-1';
+  var W=window,D=document,STAGE='stage38k-20260427-2';
   function byId(id){ return D.getElementById(id); }
   function qs(sel,root){ return (root||D).querySelector(sel); }
   function rect(el){ if(!el || !el.getBoundingClientRect) return null; var r=el.getBoundingClientRect(); return {width:Math.round(r.width*100)/100,height:Math.round(r.height*100)/100,top:Math.round(r.top*100)/100,bottom:Math.round(r.bottom*100)/100}; }
@@ -9425,6 +9199,7 @@ setTimeout(function(){
       compactToolbar:true,
       visualOnly:true,
       noCommandHooks:true,
+      fixedUnexpectedEof:true,
       toolbarPresent:!!bar,
       toolbarHeightPx:bar?rect(bar).height:0,
       buttonHeightPx:btn?rect(btn).height:0,
@@ -9465,7 +9240,7 @@ setTimeout(function(){
       report.stage=STAGE;
       report.diagnosticScriptStage=STAGE;
       report.stageFromWindow=W.LUMINA_STAGE||STAGE;
-      report.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||'index-inline-stage38k-compact-toolbar-preview-lift-20260427-1';
+      report.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||'index-inline-stage38k-compact-toolbar-preview-lift-fixed-20260427-2';
       report.indexDatasetStage=D.documentElement&&D.documentElement.dataset?(D.documentElement.dataset.luminaStage||D.documentElement.dataset.stage||STAGE):STAGE;
       report.stage38KCompactToolbarStatus=st;
       report.stage38KCompactToolbarDiagnostics={
@@ -9478,7 +9253,8 @@ setTimeout(function(){
         previewFrameTop:st.previewFrame&&st.previewFrame.top,
         previewFrameWidth:st.previewFrame&&st.previewFrame.width,
         visualOnly:true,
-        noCommandHooks:true
+        noCommandHooks:true,
+        fixedUnexpectedEof:true
       };
       if(report.stage38KeynoteToolbarStatus){
         report.stage38KeynoteToolbarStatus=Object.assign({},report.stage38KeynoteToolbarStatus,{stage:STAGE,compactToolbar:true,toolbarHeightPx:st.toolbarHeightPx,buttonHeightPx:st.buttonHeightPx});
