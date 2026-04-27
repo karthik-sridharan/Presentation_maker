@@ -60,25 +60,25 @@
     function setFontFamilySelectValue(select, value){
       if(!select) return;
       const nextValue = value || 'inherit';
-      // Diagnostic parity tests pass a tiny mock object like { value:'' } rather than
-      // a real <select>. In that case, never try to create/append <option> nodes.
-      const canReadOptions = !!(select.options && typeof select.options.length !== 'undefined');
-      const canAppendOption = typeof select.appendChild === 'function';
-      if(canReadOptions && canAppendOption){
-        const options = Array.from(select.options || []);
-        const hasOption = options.some(option => option && option.value === nextValue);
-        if(!hasOption){
-          const doc = select.ownerDocument || (typeof document !== 'undefined' ? document : null);
-          if(doc && typeof doc.createElement === 'function'){
-            const option = doc.createElement('option');
-            option.value = nextValue;
-            option.textContent = nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue;
-            if(option.dataset) option.dataset.generatedFontOption = '1';
-            select.appendChild(option);
-          } else if(select.options && typeof select.options.add === 'function' && typeof Option !== 'undefined'){
-            select.options.add(new Option(nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue, nextValue));
+      // Diagnostic parity tests pass plain mock objects, not DOM selects.
+      // Only touch option lists for a real browser <select>; otherwise just set .value.
+      try{
+        const isRealSelect = (typeof HTMLSelectElement !== 'undefined') && (select instanceof HTMLSelectElement);
+        if(isRealSelect){
+          let hasOption = false;
+          for(let i = 0; i < select.options.length; i += 1){
+            if(select.options[i] && select.options[i].value === nextValue){
+              hasOption = true;
+              break;
+            }
+          }
+          if(!hasOption && typeof Option !== 'undefined' && typeof select.add === 'function'){
+            const label = nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue;
+            select.add(new Option(label, nextValue));
           }
         }
+      }catch(_){
+        // Mock controls and unusual browser objects should never break diagnostics.
       }
       try{ select.value = nextValue; }
       catch(_){ /* Ignore unusual read-only mocks. */ }
