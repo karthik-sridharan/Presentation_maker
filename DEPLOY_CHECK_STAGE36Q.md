@@ -14,3 +14,7 @@ Notes:
 
 - The browser-based app still needs an API key or backend proxy for Copilot and image generation.
 - Public deployments should use a backend proxy rather than storing OpenAI keys in the browser.
+
+
+## Stage 36T note
+Copilot deck/slide generation now uses an in-flight lock and disables generation buttons while running, preventing duplicate full-deck appends from a single click or double-bound handler.

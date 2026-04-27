@@ -30,3 +30,7 @@ For cache-busting, load:
 
 `index.html?v=stage36q-20260427-1&clearLuminaStorage=1`
 
+
+
+## Stage 36T note
+Copilot deck/slide generation now uses an in-flight lock and disables generation buttons while running, preventing duplicate full-deck appends from a single click or double-bound handler.

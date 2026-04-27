@@ -32,3 +32,7 @@ Likely next improvements:
 
 ## Stage 36S note
 Generated standalone presentation navigation was hardened after a report that Next/Previous and the slide map did not change slides. Look in `js/export-stage24c.js` and `js/esm/export-stage34j.js` around `setVisibleSlideState`, `render`, `go`, and the slide-map event delegation.
+
+
+## Stage 36T note
+Copilot deck/slide generation now uses an in-flight lock and disables generation buttons while running, preventing duplicate full-deck appends from a single click or double-bound handler.
