@@ -477,3 +477,20 @@
     .slide h2{font-size:1.9rem}
   }
 
+
+/* Stage 36AB: explicit px font size for selected preview items. */
+.preview-block[style*="--block-font-size"], .preview-title[style*="--block-font-size"]{font-size:var(--block-font-size) !important;}
+.preview-block[style*="--block-font-size"] .rich,
+.preview-block[style*="--block-font-size"] .rich *,
+.preview-block[style*="--block-font-size"] .display-math,
+.preview-block[style*="--block-font-size"] .pseudo-block,
+.preview-block[style*="--block-font-size"] .pseudo-latex-block,
+.preview-block[style*="--block-font-size"] .bullet-card,
+.preview-block[style*="--block-font-size"] .bullet-card *,
+.preview-block[style*="--block-font-size"] .placeholder{font-size:var(--block-font-size) !important;}
+.preview-title[style*="--block-font-size"] > h1,
+.preview-title[style*="--block-font-size"] > h2,
+.preview-title[style*="--block-font-size"] > h3,
+.preview-title[style*="--block-font-size"] > h4,
+.preview-title[style*="--block-font-size"] > h5,
+.preview-title[style*="--block-font-size"] > h6{font-size:var(--block-font-size) !important;}
