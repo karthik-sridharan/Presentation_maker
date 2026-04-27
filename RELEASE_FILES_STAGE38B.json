@@ -1,0 +1,18 @@
+{
+  "stage": "stage38b-20260427-1",
+  "root": "lumina-presenter-stage38b-clean-deploy",
+  "entry": "index.html",
+  "notes": [
+    "Keynote-style top toolbar",
+    "Stage 38A canvas-first shell retained",
+    "Diagnostics patched for Stage 38B"
+  ],
+  "required": [
+    "index.html",
+    "css/styles-stage24c.css",
+    "js/",
+    "js/esm/",
+    "prompts/dev.txt",
+    "prompts/deck.txt"
+  ]
+}
