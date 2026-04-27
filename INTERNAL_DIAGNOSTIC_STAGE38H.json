@@ -1,0 +1,8 @@
+{
+  "stage": "stage38h-20260427-1",
+  "base": "stage38f-20260427-1",
+  "purpose": "Emergency rollback of Stage 38G active deck sync refresh-loop regression",
+  "stage38gActiveSyncRemoved": true,
+  "stage38fCanvasFitPreserved": true,
+  "runtimeBrowserSmoke": "not run in container"
+}
