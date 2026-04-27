@@ -168,6 +168,14 @@
         extra += 'padding-top:4.2rem;';
         extra += 'background-image:linear-gradient(180deg,' + theme.chromeColor + ' 0 16px, transparent 16px 100%);';
         extra += 'background-repeat:no-repeat;';
+      } else if(styleId === 'notebook'){
+        extra += 'font-family:"Comic Sans MS","Comic Sans","Comic Neue",cursive;';
+        extra += 'background-image:repeating-linear-gradient(180deg, transparent 0 42px, rgba(55,125,210,.32) 42px 44px, transparent 44px 64px);';
+        extra += 'background-repeat:repeat;';
+      } else if(styleId === 'chalkboard'){
+        extra += 'font-family:"Chalkboard SE","Comic Sans MS","Marker Felt",cursive;';
+        extra += 'background-image:radial-gradient(circle at 20% 15%, rgba(255,255,255,.055), transparent 25%),radial-gradient(circle at 80% 75%, rgba(255,255,255,.04), transparent 30%),linear-gradient(135deg, rgba(255,255,255,.025), transparent 45%, rgba(255,255,255,.018));';
+        extra += 'text-shadow:0 0 1px rgba(255,255,255,.36);';
       }
       return 'background-color:' + bg + ';color:' + font + ';--text:' + font + ';--muted:' + muted + ';--line:' + line + ';--accent:' + theme.accentColor + ';--radius:' + theme.panelRadius + 'px;--title-scale:' + theme.titleScale + ';--chrome-fill:' + theme.chromeColor + ';--chrome-text:' + theme.chromeTextColor + ';--sidebar-width:' + theme.sidebarWidth + 'px;--title-transform:' + titleTransform + ';--title-letter-spacing:' + titleLetterSpacing + ';' + extra;
     }
@@ -179,7 +187,9 @@
         madrid: {name:'Madrid', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:20, titleScale:1, beamerStyle:'madrid', chromeColor:'#1f4e79', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
         annarbor: {name:'AnnArbor', bgColor:'#fffaf0', fontColor:'#2f2410', accentColor:'#7a4f01', panelRadius:18, titleScale:1, beamerStyle:'annarbor', chromeColor:'#c99a06', chromeTextColor:'#111111', sidebarWidth:118, titleCaps:'0'},
         cambridgeus: {name:'CambridgeUS', bgColor:'#ffffff', fontColor:'#10233b', accentColor:'#c53030', panelRadius:16, titleScale:1, beamerStyle:'cambridgeus', chromeColor:'#0f4c81', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'1'},
-        pittsburgh: {name:'Pittsburgh', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:22, titleScale:1.02, beamerStyle:'pittsburgh', chromeColor:'#2f6fed', chromeTextColor:'#ffffff', sidebarWidth:96, titleCaps:'0'}
+        pittsburgh: {name:'Pittsburgh', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:22, titleScale:1.02, beamerStyle:'pittsburgh', chromeColor:'#2f6fed', chromeTextColor:'#ffffff', sidebarWidth:96, titleCaps:'0'},
+        notebook: {name:'Notebook', bgColor:'#fffdf3', fontColor:'#1f2937', accentColor:'#2f6fed', panelRadius:14, titleScale:1.02, beamerStyle:'notebook', chromeColor:'#2f6fed', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
+        chalkboard: {name:'Chalkboard', bgColor:'#050807', fontColor:'#f8fafc', accentColor:'#d1d5db', panelRadius:18, titleScale:1.03, beamerStyle:'chalkboard', chromeColor:'#f8fafc', chromeTextColor:'#050807', sidebarWidth:118, titleCaps:'0'}
       };
       return normalizeTheme(presets[id] || presets.classic);
     }
@@ -204,7 +214,7 @@
       showToast('Updated master style.');
     }
     function randomizeStyleBuilder(){
-      const styles = ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh'];
+      const styles = ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard'];
       setThemeFieldValue('beamerStyle', styles[Math.floor(Math.random() * styles.length)]);
       setThemeFieldValue('chromeColor', randomHexColor());
       setThemeFieldValue('accentColor', randomHexColor());

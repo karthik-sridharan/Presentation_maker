@@ -932,7 +932,11 @@ function copilotSystemPrompt(){
     'Set inheritTheme to true unless the user explicitly asks for custom colors.',
     'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
     'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
-    'Do not invent citations, URLs, or image files. Use placeholder blocks when a figure is needed.'
+    'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
+    'Do not invent citations or external image-file URLs. When a figure is needed, prefer mode image with a concrete assetPrompt; the app will generate the image.',
+    'For image blocks, set mode to image, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize.',
+    'When several small related visuals are needed on one slide, ask for one composite image/mosaic in a single image block instead of many separate image blocks.',
+    'For demos, animations, simulations, calculators, or arbitrary HTML, use mode custom and put complete self-contained HTML/CSS/JS in content.'
   ].join('\n');
 }
 function compactDeckForCopilot(){
@@ -1009,6 +1013,7 @@ async function buildCopilotUserPrompt(kind){
   parts.push(
     'User request: ' + prompt,
     'Target slide count: ' + (kind === 'deck' ? count : 1),
+    'Do not exceed the target slide count. Do not append a second alternative deck after the first deck.',
     'Tone/style: ' + tone,
     collectCopilotStyleContext(),
     'Current deck context JSON:',
@@ -1206,15 +1211,11 @@ async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
     });
   });
   if(!pending.length) return deck;
-  const limit = Math.min(pending.length, 6);
-  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:limit });
+  const totalImages = pending.length;
+  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:totalImages });
   for(let i=0; i<pending.length; i+=1){
     const item = pending[i];
-    if(i >= limit){
-      item.slide[item.column][item.blockIndex] = materializeCopilotImageFallback(item.block, 'Skipped because more than 6 images were requested in one generation.');
-      continue;
-    }
-    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + limit + '…');
+    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + totalImages + '…');
     try{
       const src = await generateCopilotImageAsset(item.block, endpoint, apiKey, item.slide);
       item.slide[item.column][item.blockIndex] = materializeCopilotImageBlock(item.block, src);
@@ -1279,10 +1280,15 @@ function normalizeCopilotDeck(deck, kind='deck'){
   const rawSlides = Array.isArray(deck?.slides) ? deck.slides : [];
   if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
   const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
+  const requestedCount = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+  const deckSlides = normalizedSlides.slice(0, requestedCount);
+  if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
+    updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
+  }
   return {
     deckTitle: String(deck?.deckTitle || fields.deckTitle.value || 'Generated presentation'),
     summary: String(deck?.summary || ''),
-    slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : normalizedSlides
+    slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : deckSlides
   };
 }
 function normalizeCopilotSlide(slide){

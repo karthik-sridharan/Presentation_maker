@@ -4,12 +4,14 @@
 (function(global){
   'use strict';
   var status = global.LuminaCopilotGuardStatus = {
-    stage: 'stage34n-20260425-1',
+    stage: 'stage36w-20260427-1',
     bound: false,
     validationBound: false,
     lastAction: '',
     buttonCount: 0,
-    errors: []
+    errors: [],
+    generationInFlight: false,
+    duplicateClicksIgnored: 0
   };
   function record(message, err){
     var msg = String(message || 'Copilot guard error');
@@ -19,6 +21,16 @@
   }
   function byId(id){ return document.getElementById(id); }
   function currentCore(){ return global.LuminaCopilotCore; }
+  var generationButtonIds = ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'];
+  function setGenerationButtonsBusy(isBusy){
+    generationButtonIds.forEach(function(id){
+      var btn = byId(id);
+      if(!btn) return;
+      btn.dataset.copilotBusy = isBusy ? '1' : '0';
+      btn.disabled = !!isBusy;
+      btn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+    });
+  }
   function add(id, type, fn){
     var el = byId(id);
     if(!el) return false;
@@ -27,8 +39,11 @@
     if(el[guardKey]) return false;
     el[guardKey] = true;
     el.addEventListener(eventType, function(evt){
+      if(evt && evt.preventDefault) evt.preventDefault();
+      if(evt && evt.stopPropagation) evt.stopPropagation();
+      if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
       if(el.dataset && el.dataset.copilotBusy === '1'){
-        if(evt && evt.preventDefault) evt.preventDefault();
+        status.duplicateClicksIgnored += 1;
         return;
       }
       try{
@@ -43,7 +58,7 @@
         record('Copilot action failed for #' + id, err);
         alert(setCoreError(err));
       }
-    });
+    }, true);
     status.buttonCount += 1;
     return true;
   }
@@ -68,6 +83,29 @@
     if(!core || typeof core[method] !== 'function') throw new Error('Copilot core is not ready: ' + method);
     return core[method].apply(core, Array.prototype.slice.call(arguments, 1));
   }
+  function runGeneration(label, method){
+    var args = Array.prototype.slice.call(arguments, 2);
+    if(status.generationInFlight){
+      status.duplicateClicksIgnored += 1;
+      var core = currentCore();
+      if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus('Copilot is already generating. Wait for the current request to finish.', true);
+      return null;
+    }
+    status.generationInFlight = true;
+    setGenerationButtonsBusy(true);
+    var p;
+    try{
+      p = callCore.apply(null, [method].concat(args));
+    }catch(err){
+      status.generationInFlight = false;
+      setGenerationButtonsBusy(false);
+      throw err;
+    }
+    return Promise.resolve(p).finally(function(){
+      status.generationInFlight = false;
+      setGenerationButtonsBusy(false);
+    });
+  }
 
   function bind(){
     var core = currentCore();
@@ -85,9 +123,9 @@
       var model = byId('copilotModel'); if(model) model.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot model setting', err); } });
       var endpoint = byId('copilotEndpoint'); if(endpoint) endpoint.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot endpoint setting', err); } });
       var tone = byId('copilotTone'); if(tone) tone.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot tone setting', err); } });
-      add('copilotDraftSlideBtn', 'click', function(){ status.lastAction = 'draft current slide'; return callCore('generateCopilotSlide', 'replace'); });
-      add('copilotAddSlideBtn', 'click', function(){ status.lastAction = 'append generated slide'; return callCore('generateCopilotSlide', 'append'); });
-      add('copilotGenerateDeckBtn', 'click', function(){ status.lastAction = 'generate deck'; return callCore('generateCopilotDeck'); });
+      add('copilotDraftSlideBtn', 'click', function(){ status.lastAction = 'draft current slide'; return runGeneration('draft current slide', 'generateCopilotSlide', 'replace'); });
+      add('copilotAddSlideBtn', 'click', function(){ status.lastAction = 'append generated slide'; return runGeneration('append generated slide', 'generateCopilotSlide', 'append'); });
+      add('copilotGenerateDeckBtn', 'click', function(){ status.lastAction = 'generate deck'; return runGeneration('generate deck', 'generateCopilotDeck'); });
       add('copilotApplyFirstSlideBtn', 'click', function(){ status.lastAction = 'apply first slide'; return callCore('applyCopilotFirstSlide'); });
       add('copilotAppendResultBtn', 'click', function(){ status.lastAction = 'append result'; return callCore('appendCopilotSlides'); });
       add('copilotReplaceDeckBtn', 'click', function(){ status.lastAction = 'replace deck'; return callCore('replaceDeckWithCopilot'); });
