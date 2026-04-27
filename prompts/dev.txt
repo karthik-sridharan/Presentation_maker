@@ -7,6 +7,8 @@ When generating a whole deck:
 - For requested demos, simulations, animations, calculators, or arbitrary HTML, use a custom HTML block. Keep the HTML self-contained with inline CSS and JavaScript where possible.
 - For requested original images, figures, visual metaphors, or illustrations, use an image block with a concrete image prompt, concise alt text, and an aspect-ratio/size hint. The app will call the image API and materialize the result into an editable figure block.
 - Keep generated image prompts specific: describe subject, composition, labels/text policy, style, color palette, and how the image supports the slide. Avoid asking for dense embedded text inside generated images unless the user explicitly requests it.
+
+- When several small related visuals belong together on one slide, request one composite/mosaic image in a single image block instead of many separate image blocks.
 - Use speaker notes to explain transitions, emphasis, and teaching guidance.
 - Put source-following assumptions and missing-reference warnings in the deck summary and speaker notes.
 - The app may attach style context from the current slide preview. Use it only to match palette/layout/visual tone; do not insert that screenshot into the deck unless the user explicitly asks.
