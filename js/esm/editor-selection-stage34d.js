@@ -59,13 +59,19 @@ function createApi(deps){
     function setFontFamilySelectValue(select, value){
       if(!select) return;
       const nextValue = value || 'inherit';
-      const hasOption = Array.from(select.options || []).some(option => option.value === nextValue);
+      const options = Array.from(select.options || []);
+      const hasOption = options.some(option => option.value === nextValue);
       if(!hasOption){
-        const option = document.createElement('option');
-        option.value = nextValue;
-        option.textContent = nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue;
-        option.dataset.generatedFontOption = '1';
-        select.appendChild(option);
+        const doc = select.ownerDocument || (typeof document !== 'undefined' ? document : null);
+        if(doc && typeof doc.createElement === 'function'){
+          const option = doc.createElement('option');
+          option.value = nextValue;
+          option.textContent = nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue;
+          option.dataset.generatedFontOption = '1';
+          select.appendChild(option);
+        } else if(select.options && typeof select.options.add === 'function' && typeof Option !== 'undefined'){
+          select.options.add(new Option(nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue, nextValue));
+        }
       }
       select.value = nextValue;
     }
