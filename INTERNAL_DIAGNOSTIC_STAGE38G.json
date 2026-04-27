@@ -1,0 +1,94 @@
+{
+  "stage": "stage38g-20260427-1",
+  "diagnosticScriptStage": "stage38g-20260427-1",
+  "indexStageSignature": "index-inline-stage38g-live-deck-structure-sync-20260427-1",
+  "indexDatasetStage": "stage38g-20260427-1",
+  "checkedAt": "2026-04-27T18:48:13.790453Z",
+  "expectedAssetCount": 24,
+  "missingAssets": [],
+  "optionalEsmAssetCount": 29,
+  "optionalEsmAssets": [
+    "js/esm/block-editor-stage34d.js",
+    "js/esm/block-editor-stage34j.js",
+    "js/esm/block-library-stage34c.js",
+    "js/esm/block-library-stage34j.js",
+    "js/esm/block-style-stage34j.js",
+    "js/esm/commands-stage34b.js",
+    "js/esm/commands-stage34j.js",
+    "js/esm/copilot-stage34k.js",
+    "js/esm/deck-stage34d.js",
+    "js/esm/deck-stage34j.js",
+    "js/esm/diagram-editor-stage34b.js",
+    "js/esm/diagram-editor-stage34j.js",
+    "js/esm/editor-selection-stage34d.js",
+    "js/esm/editor-selection-stage34j.js",
+    "js/esm/export-stage34j.js",
+    "js/esm/figure-insert-stage34c.js",
+    "js/esm/figure-insert-stage34j.js",
+    "js/esm/figure-tools-stage34d.js",
+    "js/esm/figure-tools-stage34j.js",
+    "js/esm/file-io-stage34d.js",
+    "js/esm/file-io-stage34j.js",
+    "js/esm/import-stage34j.js",
+    "js/esm/parser-stage34j.js",
+    "js/esm/presets-stage34j.js",
+    "js/esm/renderer-stage34j.js",
+    "js/esm/state-stage34j.js",
+    "js/esm/theme-stage34j.js",
+    "js/esm/ui-stage34j.js",
+    "js/esm/utils-stage34j.js"
+  ],
+  "inlineScriptCount": 38,
+  "externalJsCount": 52,
+  "nodeSyntaxCheck": {
+    "inlineScripts": "passed",
+    "externalScripts": "passed"
+  },
+  "stage38GDeckSyncStatus": {
+    "stage": "stage38g-20260427-1",
+    "unifiedLiveDeckSync": true,
+    "patchPresent": true,
+    "diagnosticFields": [
+      "liveDeckCount",
+      "appDeckCount",
+      "slideRailCount",
+      "outlineCount",
+      "jumpCount",
+      "activeSlideIndex",
+      "allStructureCountsMatch"
+    ],
+    "overridesFinalReportFields": [
+      "slideJumpStatus",
+      "deckOutlineStatus",
+      "slideRailThumbnailStatus",
+      "stage38ESlideStructureStatus"
+    ],
+    "mutationHooks": [
+      "renderDeckList",
+      "addSlide",
+      "updateSlide",
+      "duplicateSlide",
+      "deleteSlide",
+      "moveSlide",
+      "addSlideFromSnippet",
+      "goToSlide",
+      "nextSlide",
+      "previousSlide"
+    ],
+    "canvasFitPreserved": true,
+    "pass": true
+  },
+  "stage38GDeckSyncDiagnostics": {
+    "scriptIdPresent": true,
+    "cssIdPresent": true,
+    "diagnosticsPatched": true,
+    "featureApisPatched": true,
+    "canonicalSnapshotFunction": true,
+    "renderUnifiedOutlineFunction": true,
+    "renderUnifiedJumpFunction": true
+  },
+  "notes": [
+    "Static package and JavaScript syntax checks passed.",
+    "Chromium runtime smoke could not be executed in this container because the bundled Chromium crashes before DevTools startup with a crashpad database error; use the browser diagnostic report after deployment as source of truth for runtime counts."
+  ]
+}
