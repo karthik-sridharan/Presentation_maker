@@ -478,7 +478,7 @@
   }
 
 
-/* Stage 36AC: explicit px font size for selected preview items. */
+/* Stage 36AE: explicit px font size for selected preview items. */
 .preview-block[style*="--block-font-size"], .preview-title[style*="--block-font-size"]{font-size:var(--block-font-size) !important;}
 .preview-block[style*="--block-font-size"] .rich,
 .preview-block[style*="--block-font-size"] .rich *,
