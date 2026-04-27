@@ -28,3 +28,7 @@ Likely next improvements:
 - Add a user-facing option to limit the number of generated images per Copilot request.
 - Add stricter sanitization/validation preview for custom HTML blocks.
 - Add a server-side proxy path for safer API keys and image generation.
+
+
+## Stage 36S note
+Generated standalone presentation navigation was hardened after a report that Next/Previous and the slide map did not change slides. Look in `js/export-stage24c.js` and `js/esm/export-stage34j.js` around `setVisibleSlideState`, `render`, `go`, and the slide-map event delegation.
