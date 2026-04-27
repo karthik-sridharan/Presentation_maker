@@ -680,29 +680,59 @@ async function callCopilot(kind){
     if(typeof deps.persistAutosaveNow === 'function') deps.persistAutosaveNow('Autosaved after replacing deck with Copilot result.');
     showToast('Replaced deck with Copilot result.');
   }
-  async function generateCopilotSlide(applyMode){
+  let copilotGenerationInFlight = false;
+  function setCopilotGenerationButtonsBusy(isBusy){
+    ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'].forEach(id=>{
+      const btn = typeof document !== 'undefined' ? document.getElementById(id) : null;
+      if(!btn) return;
+      btn.dataset.copilotBusy = isBusy ? '1' : '0';
+      btn.disabled = !!isBusy;
+      btn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+    });
+  }
+  async function withCopilotGenerationLock(label, task){
+    if(copilotGenerationInFlight || runtimeStatus.requestInFlight){
+      setCopilotStatus('Copilot is already generating. Wait for the current request to finish before starting another.', true);
+      return null;
+    }
+    copilotGenerationInFlight = true;
+    setCopilotGenerationButtonsBusy(true);
+    updateCopilotRuntime({ activeGenerationAction: label || 'generation', requestInFlight:true });
     try{
-      const deck = await callCopilot('slide');
-      if(applyMode === 'append') appendCopilotSlides(deck);
-      else applyCopilotFirstSlide(deck);
-    }catch(err){
-      console.error(err);
-      const msg = recordCopilotError(err);
-      setCopilotStatus(msg, true);
-      alertFn(msg);
+      return await task();
+    }finally{
+      copilotGenerationInFlight = false;
+      setCopilotGenerationButtonsBusy(false);
+      updateCopilotRuntime({ activeGenerationAction:'', requestInFlight:false });
     }
   }
+  async function generateCopilotSlide(applyMode){
+    return withCopilotGenerationLock('slide', async ()=>{
+      try{
+        const deck = await callCopilot('slide');
+        if(applyMode === 'append') appendCopilotSlides(deck);
+        else applyCopilotFirstSlide(deck);
+      }catch(err){
+        console.error(err);
+        const msg = recordCopilotError(err);
+        setCopilotStatus(msg, true);
+        alertFn(msg);
+      }
+    });
+  }
   async function generateCopilotDeck(){
-    try{
-      const deck = await callCopilot('deck');
-      if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
-      else appendCopilotSlides(deck);
-    }catch(err){
-      console.error(err);
-      const msg = recordCopilotError(err);
-      setCopilotStatus(msg, true);
-      alertFn(msg);
-    }
+    return withCopilotGenerationLock('deck', async ()=>{
+      try{
+        const deck = await callCopilot('deck');
+        if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
+        else appendCopilotSlides(deck);
+      }catch(err){
+        console.error(err);
+        const msg = recordCopilotError(err);
+        setCopilotStatus(msg, true);
+        alertFn(msg);
+      }
+    });
   }
 
   return Object.freeze({
