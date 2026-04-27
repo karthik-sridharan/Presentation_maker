@@ -35,6 +35,7 @@ function createApi(deps){
     'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
   ].join('\n');
   let deckPromptPrefixCache = null;
+  let copilotReferencePdfFiles = [];
   const store = deps.localStorage || (typeof globalThis !== 'undefined' ? globalThis.localStorage : null);
   const fetchImpl = deps.fetch || (typeof globalThis !== 'undefined' ? globalThis.fetch : null);
   const showToast = typeof deps.showToast === 'function' ? deps.showToast : noop;
@@ -42,14 +43,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36ac-20260427-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36ae-20260427-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage36ac-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage36ae-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -260,7 +261,7 @@ function createApi(deps){
   }
   function cacheBustedPromptUrl(fileName){
     const base = safeString(fileName || '').trim();
-    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36ac-20260427-1');
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36ae-20260427-1');
     if(!base || /^data:/i.test(base)) return base;
     return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
   }
@@ -308,15 +309,73 @@ function createApi(deps){
   function textHasUrl(text){ return /https?:\/\/\S+/i.test(safeString(text)); }
   function shouldUseOpenAiWebSearch(kind, endpoint, promptText, deckPromptPrefix){
     const enabled = !!(copilotEls.webSearch && copilotEls.webSearch.checked);
-    if(kind !== 'deck') return { use:false, status:'deck-only' };
+    if(kind !== 'deck' && kind !== 'deck-spec') return { use:false, status:'deck-only' };
     if(!enabled) return { use:false, status:'disabled' };
     if(!isDefaultOpenAiEndpoint(endpoint)) return { use:false, status:'custom-endpoint-disabled' };
     if(!textHasUrl(promptText + '\n' + deckPromptPrefix)) return { use:false, status:'no-url-detected' };
     return { use:true, status:'enabled-url-detected' };
   }
+  function normalizeCopilotReferenceUrls(raw){
+    return safeString(raw || '').split(/\n+/).map(s=>s.trim()).filter(Boolean).filter((value, idx, arr)=>arr.indexOf(value) === idx);
+  }
+  function isLikelyPdfReferenceUrl(url){ return /\.pdf(?:$|[?#])/i.test(safeString(url || '')); }
+  function getCopilotReferenceText(){ return safeString(copilotEls.referenceText && copilotEls.referenceText.value || '').trim(); }
+  function setCopilotReferenceText(text, append=false){
+    if(!copilotEls.referenceText) return;
+    const incoming = safeString(text || '').trim();
+    if(!append){ copilotEls.referenceText.value = incoming; return; }
+    const existing = safeString(copilotEls.referenceText.value || '').trim();
+    copilotEls.referenceText.value = [existing, incoming].filter(Boolean).join('\n\n');
+  }
+  function getCopilotReferenceUrls(){ return normalizeCopilotReferenceUrls(copilotEls.referenceUrls && copilotEls.referenceUrls.value || ''); }
+  function setCopilotReferenceUrls(text){ if(copilotEls.referenceUrls) copilotEls.referenceUrls.value = safeString(text || ''); }
+  function setCopilotReferencePdfFiles(files, append=false){
+    const incoming = Array.isArray(files) ? files.map((file, idx)=>({
+      filename: safeString(file && (file.filename || file.name) || ('reference-' + (idx + 1) + '.pdf')),
+      file_data: safeString(file && file.file_data || ''),
+      bytes: Number(file && file.bytes || 0) || 0
+    })).filter(file=>file.file_data) : [];
+    copilotReferencePdfFiles = append ? copilotReferencePdfFiles.concat(incoming) : incoming;
+    const seen = new Set();
+    copilotReferencePdfFiles = copilotReferencePdfFiles.filter(file=>{
+      const key = file.filename + ':' + file.bytes + ':' + file.file_data.slice(0, 32);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    updateCopilotRuntime({ referencePdfFileCount:copilotReferencePdfFiles.length, referencePdfBytes:copilotReferencePdfFiles.reduce((n,file)=>n + (Number(file.bytes)||0), 0) });
+  }
+  function getCopilotReferencePdfFiles(){ return copilotReferencePdfFiles.slice(); }
+  function getCopilotReferenceMaterial(){
+    const urls = getCopilotReferenceUrls();
+    const text = getCopilotReferenceText();
+    const pdfFiles = getCopilotReferencePdfFiles();
+    const pdfUrls = urls.filter(isLikelyPdfReferenceUrl);
+    const maxChars = 70000;
+    const clipped = text.length > maxChars ? text.slice(0, maxChars) + '\n\n[Reference text truncated to ' + maxChars + ' characters by Lumina before sending to Copilot.]' : text;
+    return { hasAny: !!(urls.length || clipped.trim() || pdfFiles.length), urls, pdfUrls, pdfFiles, text:clipped, originalTextLength:text.length, truncated:text.length > maxChars, pdfBytes:pdfFiles.reduce((n,file)=>n + (Number(file.bytes)||0), 0) };
+  }
+  function summarizeCopilotReferences(){
+    const refs = getCopilotReferenceMaterial();
+    const parts = [];
+    parts.push(refs.urls.length + ' URL' + (refs.urls.length === 1 ? '' : 's'));
+    parts.push(refs.originalTextLength + ' reference text characters');
+    parts.push(refs.pdfFiles.length + ' uploaded PDF' + (refs.pdfFiles.length === 1 ? '' : 's'));
+    if(refs.pdfUrls.length) parts.push(refs.pdfUrls.length + ' PDF URL' + (refs.pdfUrls.length === 1 ? '' : 's'));
+    if(refs.truncated) parts.push('text will be truncated in the API prompt');
+    return 'Reference material: ' + parts.join(', ') + '. PDFs are attached directly when using the default OpenAI Responses endpoint.';
+  }
+  function appendCopilotPdfReferenceInputs(content, endpoint){
+    const refs = getCopilotReferenceMaterial();
+    if(!refs.pdfFiles.length && !refs.pdfUrls.length) return { attached:0, skipped:0 };
+    if(!isDefaultOpenAiEndpoint(endpoint)) return { attached:0, skipped:refs.pdfFiles.length + refs.pdfUrls.length };
+    refs.pdfFiles.forEach(file=>content.push({ type:'input_file', filename:file.filename || 'reference.pdf', file_data:file.file_data }));
+    refs.pdfUrls.forEach(url=>content.push({ type:'input_file', file_url:url }));
+    return { attached:refs.pdfFiles.length + refs.pdfUrls.length, skipped:0 };
+  }
   async function buildCopilotUserPrompt(kind, deckSpecPlan){
     const prompt = (copilotEls.prompt?.value || '').trim();
-    if(!prompt && !deckSpecPlan) throw new Error('Tell Copilot what to create first.');
+    if(!prompt && !deckSpecPlan && !getCopilotReferenceMaterial().hasAny) throw new Error('Tell Copilot what to create first, provide a deck spec, or add reference material.');
     const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
     const count = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || 1)));
     const tone = copilotEls.tone?.value || 'clear and concise';
@@ -326,8 +385,19 @@ function createApi(deps){
       parts.push('Parsed DeckPlan JSON. This is the source of truth for the requested deck. Satisfy every requested slide, figure, and custom HTML demo:', JSON.stringify(deckSpecPlan, null, 2));
       parts.push('Hard rules: expand ranges into slides; every Figure requirement becomes a mode image block; every Demo requirement becomes a mode custom block with self-contained HTML/CSS/JS; do not append a second alternate deck.');
     }
+    const referenceMaterial = getCopilotReferenceMaterial();
+    if(referenceMaterial.hasAny){
+      parts.push(
+        'Reference material supplied by the user. Use this as grounding/source material for the deck. Prioritize it over generic background knowledge. Do not invent facts that conflict with it.',
+        referenceMaterial.urls.length ? ('Reference URLs to use, in order:\n' + referenceMaterial.urls.map((url, idx)=>(idx + 1) + '. ' + url).join('\n')) : 'Reference URLs: none',
+        referenceMaterial.pdfFiles.length ? ('Uploaded PDF reference files attached to this request: ' + referenceMaterial.pdfFiles.map(file=>file.filename).join(', ')) : 'Uploaded PDF reference files: none',
+        referenceMaterial.pdfUrls.length ? ('PDF reference URLs attached as file inputs: ' + referenceMaterial.pdfUrls.join(', ')) : 'PDF reference URLs attached as file inputs: none',
+        referenceMaterial.text ? ('Uploaded/pasted reference text:\n' + referenceMaterial.text) : 'Uploaded/pasted reference text: none',
+        'Reference material rules: preserve important definitions, examples, notation, claims, figures, examples, and ordering from the supplied references; use attached PDFs as source documents when present; use web search for listed non-PDF URLs when available; mention in summary if URL content could not be accessed.'
+      );
+    }
     parts.push(
-      'User request: ' + (prompt || '(Follow the uploaded/pasted DeckPlan exactly.)'),
+      'User request: ' + (prompt || '(Follow the uploaded/pasted DeckPlan and reference material.)'),
       'Target slide count: ' + (kind === 'slide' ? 1 : count),
       'Tone/style: ' + tone,
       collectCopilotStyleContext(),
@@ -601,6 +671,11 @@ async function callCopilot(kind, deckSpecPlan){
             content.push({ type:'input_text', text:'The next image is a screenshot of the current slide preview. Use it only as visual style context.' });
             content.push({ type:'input_image', image_url:callCopilot._styleScreenshot });
           }
+          const pdfAttachStatus = appendCopilotPdfReferenceInputs(content, endpoint);
+          callCopilot._pdfAttachStatus = pdfAttachStatus;
+          if(pdfAttachStatus.skipped){
+            content.push({ type:'input_text', text:'PDF references were uploaded but not attached because the current endpoint is not the default OpenAI Responses endpoint. Use pasted text or the default OpenAI endpoint for direct PDF input.' });
+          }
           return content;
         })() }
       ],
@@ -611,7 +686,8 @@ async function callCopilot(kind, deckSpecPlan){
       body.tools = [{ type:'web_search' }];
       body.tool_choice = 'auto';
     }
-    updateCopilotRuntime({ webSearchEnabled: !!webSearch.use, webSearchStatus: webSearch.status });
+    const referenceMaterialForRuntime = getCopilotReferenceMaterial();
+    updateCopilotRuntime({ webSearchEnabled: !!webSearch.use, webSearchStatus: webSearch.status, referenceUrlCount: referenceMaterialForRuntime.urls.length, referencePdfUrlCount: referenceMaterialForRuntime.pdfUrls.length, referencePdfFileCount: referenceMaterialForRuntime.pdfFiles.length, referencePdfBytes: referenceMaterialForRuntime.pdfBytes, referencePdfInputsAttached: callCopilot._pdfAttachStatus ? callCopilot._pdfAttachStatus.attached : 0, referencePdfInputsSkipped: callCopilot._pdfAttachStatus ? callCopilot._pdfAttachStatus.skipped : 0, referenceTextChars: referenceMaterialForRuntime.originalTextLength, referenceTextTruncated: !!referenceMaterialForRuntime.truncated });
     setCopilotStatus(kind === 'deck' ? 'Generating deck…' : 'Generating slide…');
     updateCopilotRuntime({ requestInFlight:true, requestCount: Number(runtimeStatus.requestCount || 0) + 1, lastError:'' });
     const res = await fetchImpl(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
@@ -778,7 +854,7 @@ async function callCopilot(kind, deckSpecPlan){
   }
 
   return Object.freeze({
-    __stage:'stage36ac-20260427-1',
+    __stage:'stage36ae-20260427-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
@@ -801,6 +877,14 @@ async function callCopilot(kind, deckSpecPlan){
     getCopilotDeckSpecText: maybeClassic('getCopilotDeckSpecText', getCopilotDeckSpecText),
     setCopilotDeckSpecText: maybeClassic('setCopilotDeckSpecText', setCopilotDeckSpecText),
     summarizeCopilotDeckSpec: maybeClassic('summarizeCopilotDeckSpec', summarizeCopilotDeckSpec),
+    getCopilotReferenceText: maybeClassic('getCopilotReferenceText', getCopilotReferenceText),
+    setCopilotReferenceText: maybeClassic('setCopilotReferenceText', setCopilotReferenceText),
+    getCopilotReferenceUrls: maybeClassic('getCopilotReferenceUrls', getCopilotReferenceUrls),
+    setCopilotReferenceUrls: maybeClassic('setCopilotReferenceUrls', setCopilotReferenceUrls),
+    setCopilotReferencePdfFiles: maybeClassic('setCopilotReferencePdfFiles', setCopilotReferencePdfFiles),
+    getCopilotReferencePdfFiles: maybeClassic('getCopilotReferencePdfFiles', getCopilotReferencePdfFiles),
+    getCopilotReferenceMaterial: maybeClassic('getCopilotReferenceMaterial', getCopilotReferenceMaterial),
+    summarizeCopilotReferences: maybeClassic('summarizeCopilotReferences', summarizeCopilotReferences),
     shouldUseOpenAiWebSearch: maybeClassic('shouldUseOpenAiWebSearch', shouldUseOpenAiWebSearch),
     extractResponsesOutputText: maybeClassic('extractResponsesOutputText', extractResponsesOutputText),
     callCopilot: maybeClassic('callCopilot', callCopilot),
