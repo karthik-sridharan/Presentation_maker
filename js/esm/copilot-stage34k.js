@@ -42,14 +42,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36ab-20260427-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36ac-20260427-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage36ab-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage36ac-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -260,7 +260,7 @@ function createApi(deps){
   }
   function cacheBustedPromptUrl(fileName){
     const base = safeString(fileName || '').trim();
-    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36ab-20260427-1');
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36ac-20260427-1');
     if(!base || /^data:/i.test(base)) return base;
     return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
   }
@@ -314,16 +314,21 @@ function createApi(deps){
     if(!textHasUrl(promptText + '\n' + deckPromptPrefix)) return { use:false, status:'no-url-detected' };
     return { use:true, status:'enabled-url-detected' };
   }
-  async function buildCopilotUserPrompt(kind){
+  async function buildCopilotUserPrompt(kind, deckSpecPlan){
     const prompt = (copilotEls.prompt?.value || '').trim();
-    if(!prompt) throw new Error('Tell Copilot what to create first.');
-    const count = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || 1)));
+    if(!prompt && !deckSpecPlan) throw new Error('Tell Copilot what to create first.');
+    const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
+    const count = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || 1)));
     const tone = copilotEls.tone?.value || 'clear and concise';
-    const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
+    const mode = deckSpecPlan ? 'Create a complete deck from the parsed DeckPlan specification.' : (kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.');
     const parts = [mode];
+    if(deckSpecPlan){
+      parts.push('Parsed DeckPlan JSON. This is the source of truth for the requested deck. Satisfy every requested slide, figure, and custom HTML demo:', JSON.stringify(deckSpecPlan, null, 2));
+      parts.push('Hard rules: expand ranges into slides; every Figure requirement becomes a mode image block; every Demo requirement becomes a mode custom block with self-contained HTML/CSS/JS; do not append a second alternate deck.');
+    }
     parts.push(
-      'User request: ' + prompt,
-      'Target slide count: ' + (kind === 'deck' ? count : 1),
+      'User request: ' + (prompt || '(Follow the uploaded/pasted DeckPlan exactly.)'),
+      'Target slide count: ' + (kind === 'slide' ? 1 : count),
       'Tone/style: ' + tone,
       collectCopilotStyleContext(),
       'Current deck context JSON:',
@@ -535,7 +540,40 @@ async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
   return deck;
 }
 
-async function callCopilot(kind){
+
+function parseCopilotDeckSpecText(rawText){
+  const text = safeString(rawText || '').trim();
+  if(!text) throw new Error('Paste or upload a deck spec/outline first.');
+  try{
+    const parsed = JSON.parse(text);
+    if(parsed && typeof parsed === 'object'){
+      const slides = Array.isArray(parsed.slides) ? parsed.slides : [];
+      return { mode:'deck-spec', sourceFormat:'json', deckTitle:safeString(parsed.deckTitle || parsed.title || ''), targetSlideCount:Number(parsed.targetSlideCount || parsed.slideCount || slides.length || 0) || null, themeHint:safeString(parsed.themeHint || parsed.theme || ''), rawText:text, slides, globalInstructions:Array.isArray(parsed.globalInstructions) ? parsed.globalInstructions : [] };
+    }
+  }catch(_){ }
+  const slideMatches = Array.from(text.matchAll(/(?:^|\n)\s*#{0,4}\s*Slide\s+(\d+)(?:\s*[-–]\s*(\d+))?\s*:?\s*([^\n]*)/gi));
+  const targetMatch = text.match(/^\s*Slides?\s*:\s*(\d+)/im);
+  const titleMatch = text.match(/^\s*#\s*Deck\s*:\s*(.+)$/im) || text.match(/^\s*Deck\s*:\s*(.+)$/im) || text.match(/^\s*#\s+(.+)$/m);
+  const slides = slideMatches.map((m, i)=>({ rangeStart:Number(m[1]), rangeEnd:Number(m[2] || m[1]), title:safeString(m[3] || ('Slide ' + (i+1))).trim(), requiredBlocks:[] }));
+  const maxSlide = slides.reduce((n,s)=>Math.max(n, s.rangeEnd || s.rangeStart || 0), 0);
+  return { mode:'deck-spec', sourceFormat:'text/markdown', deckTitle:titleMatch ? safeString(titleMatch[1]).trim() : '', targetSlideCount:targetMatch ? Number(targetMatch[1]) : (maxSlide || null), themeHint:(text.match(/^\s*(?:Theme|Style)\s*:\s*(.+)$/im) || [,''])[1].trim(), rawText:text, slides, globalInstructions:['Follow the raw outline/spec exactly. Convert Demo: items to custom HTML blocks and Figure: items to image blocks.'] };
+}
+function getCopilotDeckSpecText(){ return safeString(copilotEls.specText && copilotEls.specText.value || '').trim(); }
+function setCopilotDeckSpecText(text){ if(copilotEls.specText) copilotEls.specText.value = safeString(text || ''); }
+function summarizeCopilotDeckSpec(plan){ const slideSpecs=Array.isArray(plan && plan.slides) ? plan.slides : []; return 'Deck spec parsed: ' + (plan.targetSlideCount || slideSpecs.length || '?') + ' target slides, ' + slideSpecs.length + ' slide specs.'; }
+async function generateCopilotDeckFromSpec(){
+  return withCopilotGenerationLock('deck-spec', async ()=>{
+    try{
+      const plan = parseCopilotDeckSpecText(getCopilotDeckSpecText());
+      if(plan.targetSlideCount && copilotEls.slideCount) copilotEls.slideCount.value = String(plan.targetSlideCount);
+      setCopilotStatus(summarizeCopilotDeckSpec(plan) + ' Generating…');
+      const deck = await callCopilot('deck-spec', plan);
+      if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
+      else appendCopilotSlides(deck);
+    }catch(err){ console.error(err); const msg=recordCopilotError(err); setCopilotStatus(msg, true); alertFn(msg); }
+  });
+}
+async function callCopilot(kind, deckSpecPlan){
     if(typeof fetchImpl !== 'function') throw new Error('Fetch is not available in this browser, so Copilot cannot call the API endpoint.');
     saveCopilotSettings(false);
     const endpoint = (copilotEls.endpoint?.value || '').trim() || COPILOT_DEFAULT_ENDPOINT;
@@ -545,10 +583,10 @@ async function callCopilot(kind){
     updateCopilotKeyWarning();
     const headers = { 'Content-Type':'application/json' };
     if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
-    const deckPromptPrefix = kind === 'deck' ? await loadDeckPromptPrefix() : '';
-    const userPrompt = await buildCopilotUserPrompt(kind);
+    const deckPromptPrefix = (kind === 'deck' || kind === 'deck-spec') ? await loadDeckPromptPrefix() : '';
+    const userPrompt = await buildCopilotUserPrompt(kind, deckSpecPlan);
     let systemContent = copilotSystemPrompt();
-    if(kind === 'deck' && deckPromptPrefix){
+    if((kind === 'deck' || kind === 'deck-spec') && deckPromptPrefix){
       systemContent += '\n\nDeck-only developer instructions from ' + (runtimeStatus.deckPromptSource || COPILOT_DEV_PROMPT_FILE || COPILOT_DECK_PROMPT_FILE) + ':\n' + deckPromptPrefix;
     }
     const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, deckPromptPrefix);
@@ -590,18 +628,19 @@ async function callCopilot(kind){
     try{ parsed = JSON.parse(output); }
     catch(err){ throw new Error('Copilot returned text that was not valid JSON: ' + output.slice(0, 300)); }
     const enriched = await enrichCopilotDeckAssets(parsed, endpoint, apiKey);
-    const normalized = normalizeCopilotDeck(enriched, kind);
+    const normalized = normalizeCopilotDeck(enriched, kind, deckSpecPlan);
     if(copilotEls.resultJson) copilotEls.resultJson.value = JSON.stringify(normalized, null, 2);
     const successMessage = (normalized.summary || 'Copilot generated slides.') + ' Ready to apply.';
     setCopilotStatus(successMessage);
     recordCopilotSuccess(successMessage);
     return normalized;
   }
-  function normalizeCopilotDeck(deck, kind='deck'){
+  function normalizeCopilotDeck(deck, kind='deck', deckSpecPlan=null){
     const rawSlides = Array.isArray(deck?.slides) ? deck.slides : [];
     if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
     const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
-    const requestedCount = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+    const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
+  const requestedCount = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
     const deckSlides = normalizedSlides.slice(0, requestedCount);
     if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
       updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
@@ -739,7 +778,7 @@ async function callCopilot(kind){
   }
 
   return Object.freeze({
-    __stage:'stage36ab-20260427-1',
+    __stage:'stage36ac-20260427-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
@@ -758,6 +797,10 @@ async function callCopilot(kind){
     compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
     buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
     loadDeckPromptPrefix: maybeClassic('loadDeckPromptPrefix', loadDeckPromptPrefix),
+    parseCopilotDeckSpecText: maybeClassic('parseCopilotDeckSpecText', parseCopilotDeckSpecText),
+    getCopilotDeckSpecText: maybeClassic('getCopilotDeckSpecText', getCopilotDeckSpecText),
+    setCopilotDeckSpecText: maybeClassic('setCopilotDeckSpecText', setCopilotDeckSpecText),
+    summarizeCopilotDeckSpec: maybeClassic('summarizeCopilotDeckSpec', summarizeCopilotDeckSpec),
     shouldUseOpenAiWebSearch: maybeClassic('shouldUseOpenAiWebSearch', shouldUseOpenAiWebSearch),
     extractResponsesOutputText: maybeClassic('extractResponsesOutputText', extractResponsesOutputText),
     callCopilot: maybeClassic('callCopilot', callCopilot),
@@ -768,7 +811,8 @@ async function callCopilot(kind){
     appendCopilotSlides: maybeClassic('appendCopilotSlides', appendCopilotSlides),
     replaceDeckWithCopilot: maybeClassic('replaceDeckWithCopilot', replaceDeckWithCopilot),
     generateCopilotSlide: maybeClassic('generateCopilotSlide', generateCopilotSlide),
-    generateCopilotDeck: maybeClassic('generateCopilotDeck', generateCopilotDeck)
+    generateCopilotDeck: maybeClassic('generateCopilotDeck', generateCopilotDeck),
+    generateCopilotDeckFromSpec: maybeClassic('generateCopilotDeckFromSpec', generateCopilotDeckFromSpec)
   });
 }
 
