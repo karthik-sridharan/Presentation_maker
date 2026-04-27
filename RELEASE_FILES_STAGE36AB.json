@@ -1,0 +1,13 @@
+{
+  "stage": "stage36ab-20260427-1",
+  "files": [
+    "index.html",
+    "css/styles-stage24c.css",
+    "js/",
+    "prompts/",
+    "README_DEPLOY_STAGE36AB.md",
+    "DEPLOY_CHECK_STAGE36AB.md",
+    "NEXT_STAGE_CONTEXT_STAGE36AB.md",
+    "RELEASE_NOTES_STAGE36AB.md"
+  ]
+}
