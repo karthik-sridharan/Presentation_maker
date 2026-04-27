@@ -197,17 +197,17 @@
   .preview-block .pseudo-latex-block,
   .preview-block .bullet-card,
   .preview-block .placeholder{font-family:var(--block-font-family,inherit);color:var(--block-font-color,inherit)}
-  .preview-block .rich p{font-size:calc(1.26rem * var(--block-font-scale,1))}
-  .preview-block .rich ul,.preview-block .rich ol,.preview-block .rich li{font-size:calc(1.22rem * var(--block-font-scale,1))}
-  .preview-block .rich h3{font-size:calc(1.3rem * var(--block-font-scale,1))}
-  .preview-block .display-math,.preview-block .pseudo-block,.preview-block .pseudo-latex-block,.preview-block .bullet-card{font-size:calc(1.08rem * var(--block-font-scale,1))}
+  .preview-block .rich p{font-size:var(--block-font-size,calc(1.26rem * var(--block-font-scale,1)))}
+  .preview-block .rich ul,.preview-block .rich ol,.preview-block .rich li{font-size:var(--block-font-size,calc(1.22rem * var(--block-font-scale,1)))}
+  .preview-block .rich h3{font-size:var(--block-font-size,calc(1.3rem * var(--block-font-scale,1)))}
+  .preview-block .display-math,.preview-block .pseudo-block,.preview-block .pseudo-latex-block,.preview-block .bullet-card{font-size:var(--block-font-size,calc(1.08rem * var(--block-font-scale,1)))}
   .preview-block .rich ul{list-style-type:var(--block-bullet-type,disc)}
   .preview-block .rich ol{list-style-type:var(--block-bullet-type,decimal)}
   .preview-block-props{display:grid;gap:.8rem}
   .preview-title{position:relative;border-radius:18px;cursor:pointer;transition:outline-color .12s ease, box-shadow .12s ease;--block-font-scale:1;--block-font-family:inherit;--block-font-color:inherit}
   .preview-title:hover{box-shadow:0 0 0 2px rgba(97,180,255,.18)}
   .preview-title.selected{outline:4px solid rgba(97,180,255,.92);outline-offset:4px}
-  .preview-title > h1,.preview-title > h2,.preview-title > h3,.preview-title > h4,.preview-title > h5,.preview-title > h6{font-family:var(--block-font-family,inherit);color:var(--block-font-color,inherit);font-size:calc(var(--title-base-size,1em) * var(--block-font-scale,1))}
+  .preview-title > h1,.preview-title > h2,.preview-title > h3,.preview-title > h4,.preview-title > h5,.preview-title > h6{font-family:var(--block-font-family,inherit);color:var(--block-font-color,inherit);font-size:var(--block-font-size,calc(var(--title-base-size,1em) * var(--block-font-scale,1)))}
   .placeholder{min-height:220px;display:grid;place-items:center;color:rgba(17,17,17,.72);padding:1rem 1.15rem;text-align:center}
   .slide .figure-embed{
     padding:0 !important;
