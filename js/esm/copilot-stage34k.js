@@ -1,4 +1,4 @@
-/* Stage 34N: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
+/* Stage 36W: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
    Stage 34K filename retained for cache-compatible loader continuity.
 
    It receives a narrow dependency bridge from legacy-app-stage24c.js and keeps
@@ -42,14 +42,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage34n-20260425-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36w-20260427-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage34n-20260425-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage36w-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -229,10 +229,12 @@ function createApi(deps){
       'Set inheritTheme to true unless the user explicitly asks for custom colors.',
       'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
       'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
-      'Do not invent citations, URLs, or image files. Use placeholder blocks when a figure is needed.',
+    'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
+      'Do not invent citations or external image-file URLs. When a figure is needed, prefer an image block with a concrete assetPrompt; the app will generate the image.',
       'If the user asks to follow lecture notes or a reference link, do not answer as a generic topic summary; organize the deck around the referenced material and say in the summary when reference content could not be accessed.',
       'If the instructions mention figures, diagrams, plots, pictures, or visuals, prefer mode image with a concrete assetPrompt instead of a vague placeholder.',
       'For image blocks, set mode to image, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize. Use empty asset fields for non-image blocks.',
+      'When several small related visuals are needed on one slide, ask for one composite image/mosaic in a single image block instead of many separate image blocks.',
       'Write image prompts that match the slide style and avoid dense embedded text unless the user explicitly asks for text inside the image.',
       'For demos, animations, simulations, calculators, or arbitrary HTML, use mode custom and put a complete self-contained HTML document or fragment in content. Use inline CSS and JavaScript. Keep it sandbox-friendly: no external libraries, no network calls, no popups, no tracking, and no infinite heavy loops.',
       'When provided with style context or a style screenshot, use it to match colors, spacing, and visual tone. Do not embed the screenshot itself unless the user explicitly asks.'
@@ -258,7 +260,7 @@ function createApi(deps){
   }
   function cacheBustedPromptUrl(fileName){
     const base = safeString(fileName || '').trim();
-    const version = safeString(deps.stage || runtimeStatus.stage || 'stage34n-20260425-1');
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36w-20260427-1');
     if(!base || /^data:/i.test(base)) return base;
     return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
   }
@@ -518,15 +520,11 @@ async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
     });
   });
   if(!pending.length) return deck;
-  const limit = Math.min(pending.length, 6);
-  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:limit });
+  const totalImages = pending.length;
+  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:totalImages });
   for(let i=0; i<pending.length; i+=1){
     const item = pending[i];
-    if(i >= limit){
-      item.slide[item.column][item.blockIndex] = materializeCopilotImageFallback(item.block, 'Skipped because more than 6 images were requested in one generation.');
-      continue;
-    }
-    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + limit + '…');
+    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + totalImages + '…');
     try{
       const src = await generateCopilotImageAsset(item.block, endpoint, apiKey, item.slide);
       item.slide[item.column][item.blockIndex] = materializeCopilotImageBlock(item.block, src);
@@ -603,10 +601,15 @@ async function callCopilot(kind){
     const rawSlides = Array.isArray(deck?.slides) ? deck.slides : [];
     if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
     const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
+    const requestedCount = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+    const deckSlides = normalizedSlides.slice(0, requestedCount);
+    if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
+      updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
+    }
     return {
       deckTitle: safeString(deck?.deckTitle || fields.deckTitle?.value || 'Generated presentation'),
       summary: safeString(deck?.summary || ''),
-      slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : normalizedSlides
+      slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : deckSlides
     };
   }
   function normalizeCopilotSlide(slide){
@@ -736,7 +739,7 @@ async function callCopilot(kind){
   }
 
   return Object.freeze({
-    __stage:'stage34n-20260425-1',
+    __stage:'stage36w-20260427-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
