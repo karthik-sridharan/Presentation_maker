@@ -3316,179 +3316,6 @@ https://example.com/lecture-notes.html"></textarea>
     document.getElementById('insertBtn').addEventListener('click',()=>{ const svgMarkup=trimmedSvgMarkup(); if(window.opener&&!window.opener.closed&&typeof window.opener.__stage35uReplaceFigureHtmlFromEditor==='function'){ window.opener.__stage35uReplaceFigureHtmlFromEditor('<figure>'+svgMarkup+'</figure>'); window.close(); } else alert('Could not send the diagram back to the generator.'); });
     window.addEventListener('keydown',evt=>{ if((evt.key==='Delete'||evt.key==='Backspace')&&selected){ evt.preventDefault(); removeEl(selected); } });
     <\/script>
-
-<style id="stage38b-keynote-toolbar-css">
-  /* Stage 38B: Keynote-style persistent top toolbar layered on top of the Stage 38A canvas-first shell. */
-  body.stage38a-canvas-first.stage38b-keynote-toolbar .page.stage38a-page{
-    grid-template-rows:auto minmax(0,1fr) !important;
-    row-gap:.72rem !important;
-  }
-  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38b-top-toolbar{
-    grid-column:1 / -1;
-    min-width:0;
-    display:grid;
-    grid-template-columns:auto minmax(0,1fr) auto;
-    align-items:center;
-    gap:.75rem;
-    padding:.48rem .58rem;
-    border:1px solid rgba(15,42,74,.14);
-    border-radius:22px;
-    background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(237,244,251,.96));
-    box-shadow:0 14px 38px rgba(15,42,74,.12), inset 0 1px 0 rgba(255,255,255,.82);
-    backdrop-filter:blur(14px);
-  }
-  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-rail-col,
-  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-canvas-center,
-  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-inspector-col{ grid-row:2; }
-  .stage38b-toolbar-brand{display:flex;align-items:center;gap:.55rem;min-width:0;color:#10233b;font-weight:850;letter-spacing:-.02em;}
-  .stage38b-toolbar-brand-mark{width:1.85rem;height:1.85rem;border-radius:11px;background:linear-gradient(135deg,#1f4e79,#17365d);box-shadow:0 8px 18px rgba(23,54,93,.22);display:grid;place-items:center;color:#fff;font-weight:900;}
-  .stage38b-toolbar-brand small{display:block;color:#64748b;font-size:.64rem;font-weight:750;letter-spacing:.04em;text-transform:uppercase;margin-top:.02rem;}
-  .stage38b-toolbar-group{display:flex;align-items:center;justify-content:center;gap:.36rem;min-width:0;}
-  .stage38b-toolbar-group.stage38b-toolbar-right{justify-content:flex-end;}
-  .stage38b-toolbar-divider{width:1px;align-self:stretch;background:rgba(15,42,74,.14);margin:0 .15rem;}
-  .stage38b-tool-btn{appearance:none;border:1px solid rgba(23,54,93,.16);border-radius:14px;background:#fff;color:#17365d;min-height:2.18rem;padding:.42rem .58rem;font:760 .72rem/1.05 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(15,42,74,.05);display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap;}
-  .stage38b-tool-btn:hover{background:#f8fbff;transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,42,74,.10);}
-  .stage38b-tool-btn[data-primary="1"]{background:linear-gradient(180deg,#1f4e79,#17365d);color:#fff;border-color:#17365d;box-shadow:0 10px 24px rgba(23,54,93,.22);}
-  .stage38b-tool-btn span[aria-hidden="true"]{font-size:.92rem;line-height:1;}
-  .stage38b-mode-pill{display:inline-flex;align-items:center;gap:.2rem;border:1px solid rgba(23,54,93,.16);border-radius:999px;padding:.18rem;background:#eef4fb;}
-  .stage38b-mode-pill button{appearance:none;border:0;border-radius:999px;background:transparent;color:#17365d;padding:.38rem .58rem;font:800 .69rem/1 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;}
-  .stage38b-mode-pill button.active{background:#17365d;color:#fff;box-shadow:0 6px 16px rgba(23,54,93,.18);}
-  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-canvas-center .preview-wrap{padding:.78rem!important;}
-  html body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-canvas-center .preview-frame,
-  html body.stage38a-canvas-first.stage38b-keynote-toolbar.stage35o-right-tight .stage38a-canvas-center .preview-frame{width:min(100%,calc((100svh - 8.9rem) * 16 / 9))!important;}
-  @media (max-width:1180px){
-    body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38b-top-toolbar{grid-template-columns:1fr;gap:.45rem;}
-    .stage38b-toolbar-brand{justify-content:center;}
-    .stage38b-toolbar-group,.stage38b-toolbar-group.stage38b-toolbar-right{justify-content:center;flex-wrap:wrap;}
-    .stage38b-toolbar-divider{display:none;}
-  }
-</style>
-
-
-
-<script id="stage38b-keynote-toolbar-script">
-(function(){
-  'use strict';
-  var W=window,D=document,STAGE='stage38b-20260427-1';
-  function byId(id){return D.getElementById(id)}
-  function qs(sel,root){return (root||D).querySelector(sel)}
-  function qsa(sel,root){return Array.prototype.slice.call((root||D).querySelectorAll(sel))}
-  function clickEl(el){ if(el && typeof el.click==='function'){ el.click(); return true; } return false; }
-  function clickId(id){ return clickEl(byId(id)); }
-  function openDrawer(tab,subtab){
-    if(W.LuminaStage38A && typeof W.LuminaStage38A.setDrawerOpen==='function') W.LuminaStage38A.setDrawerOpen(true);
-    setTimeout(function(){
-      var proxy=qs('[data-left-tab-proxy="'+tab+'"]')||qs('[data-left-tab="'+tab+'"]');
-      clickEl(proxy);
-      if(subtab) clickEl(qs('[data-subtab="'+subtab+'"]'));
-    },0);
-  }
-  function runAction(action){
-    if(action==='add') return (W.LuminaSlideActionsRestore&&W.LuminaSlideActionsRestore.invoke&&W.LuminaSlideActionsRestore.invoke('add')!==false)||clickId('addSlideBtn');
-    if(action==='update') return (W.LuminaSlideActionsRestore&&W.LuminaSlideActionsRestore.invoke&&W.LuminaSlideActionsRestore.invoke('update')!==false)||clickId('updateSlideBtn');
-    if(action==='duplicate') return (W.LuminaSlideActionsRestore&&W.LuminaSlideActionsRestore.invoke&&W.LuminaSlideActionsRestore.invoke('duplicate')!==false)||clickId('duplicateSlideBtn');
-    if(action==='undo') return clickId('undoBtn') || (D.execCommand&&D.execCommand('undo'));
-    if(action==='redo') return clickId('redoBtn') || (D.execCommand&&D.execCommand('redo'));
-    if(action==='copilot'){openDrawer('copilot');return true;}
-    if(action==='edit'){openDrawer('edit');return true;}
-    if(action==='theme'){openDrawer('presets','presets:styles');return true;}
-    if(action==='present'){openDrawer('files','files:save');return true;}
-    if(action==='advanced'){openDrawer('slides');return true;}
-    if(action==='diagnostics'){
-      openDrawer('slides');
-      setTimeout(function(){ if(W.LuminaDiagnostics&&W.LuminaDiagnostics.copyReport) W.LuminaDiagnostics.copyReport().catch(function(){}); },120);
-      return true;
-    }
-    return false;
-  }
-  function setModeActive(mode){
-    qsa('.stage38b-mode-pill button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-stage38b-mode')===mode)});
-  }
-  function makeToolbar(){
-    if(byId('stage38bTopToolbar')) return true;
-    var page=qs('.page.stage38a-page')||qs('.page');
-    if(!page) return false;
-    var bar=D.createElement('div');
-    bar.id='stage38bTopToolbar';
-    bar.className='stage38b-top-toolbar';
-    bar.setAttribute('role','toolbar');
-    bar.setAttribute('aria-label','Keynote style presentation toolbar');
-    bar.innerHTML=''
-      +'<div class="stage38b-toolbar-brand"><div class="stage38b-toolbar-brand-mark">L</div><div>Lumina<small>Presenter</small></div></div>'
-      +'<div class="stage38b-toolbar-group">'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="add"><span aria-hidden="true">＋</span>Add slide</button>'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="update"><span aria-hidden="true">✓</span>Update</button>'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="duplicate"><span aria-hidden="true">⧉</span>Duplicate</button>'
-      +'<span class="stage38b-toolbar-divider" aria-hidden="true"></span>'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="undo"><span aria-hidden="true">↶</span>Undo</button>'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="redo"><span aria-hidden="true">↷</span>Redo</button>'
-      +'<span class="stage38b-toolbar-divider" aria-hidden="true"></span>'
-      +'<span class="stage38b-mode-pill" aria-label="Workspace mode"><button type="button" class="active" data-stage38b-mode="create" data-stage38b-action="copilot">Create</button><button type="button" data-stage38b-mode="edit" data-stage38b-action="edit">Edit</button><button type="button" data-stage38b-mode="present" data-stage38b-action="present">Present</button><button type="button" data-stage38b-mode="advanced" data-stage38b-action="advanced">Advanced</button></span>'
-      +'</div>'
-      +'<div class="stage38b-toolbar-group stage38b-toolbar-right">'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="theme"><span aria-hidden="true">◐</span>Theme</button>'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="copilot"><span aria-hidden="true">✨</span>AI</button>'
-      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="present" data-primary="1"><span aria-hidden="true">▶</span>Export</button>'
-      +'</div>';
-    page.insertBefore(bar,page.firstChild);
-    bar.addEventListener('click',function(evt){
-      var t=evt.target&&evt.target.closest&&evt.target.closest('[data-stage38b-action]');
-      if(!t) return;
-      evt.preventDefault();
-      var mode=t.getAttribute('data-stage38b-mode'); if(mode) setModeActive(mode);
-      var ok=runAction(t.getAttribute('data-stage38b-action'));
-      if(!ok && W.luminaBootError) W.luminaBootError('Stage 38B toolbar action failed: '+t.getAttribute('data-stage38b-action'));
-      publishStatus();
-    },true);
-    return true;
-  }
-  function publishStatus(){
-    var bar=byId('stage38bTopToolbar');
-    var status={
-      stage:STAGE,
-      keynoteToolbar:!!bar,
-      buttonCount:bar?qsa('[data-stage38b-action]',bar).length:0,
-      modeButtonCount:bar?qsa('[data-stage38b-mode]',bar).length:0,
-      canvasFirstStillActive:!!(D.body.classList.contains('stage38a-canvas-first')&&byId('stage38aCanvasCenter')),
-      pass:false
-    };
-    status.pass=!!(status.keynoteToolbar&&status.buttonCount>=10&&status.modeButtonCount===4&&status.canvasFirstStillActive);
-    W.__LUMINA_STAGE38B_STATUS=status;
-    return status;
-  }
-  function patchDiagnostics(){
-    var LD=W.LuminaDiagnostics;
-    if(!LD||LD.__stage38bPatched) return;
-    var prev=(LD.getReport&&LD.getReport.bind(LD))||(LD.collectReport&&LD.collectReport.bind(LD));
-    if(!prev) return;
-    function reportWrap(){
-      var report=prev()||{};
-      report.stage38KeynoteToolbarStatus=publishStatus();
-      report.stage38KeynoteToolbarDiagnostics={
-        topToolbar:!!byId('stage38bTopToolbar'),
-        actions:qsa('#stage38bTopToolbar [data-stage38b-action]').map(function(b){return b.getAttribute('data-stage38b-action')}),
-        modePill:qsa('#stage38bTopToolbar [data-stage38b-mode]').map(function(b){return b.getAttribute('data-stage38b-mode')}),
-        canvasCenter:!!byId('stage38aCanvasCenter'),
-        inspectorColumn:!!byId('stage38aInspectorColumn')
-      };
-      return report;
-    }
-    if(LD.getReport) LD.getReport=reportWrap;
-    if(LD.collectReport) LD.collectReport=reportWrap;
-    LD.__stage38bPatched=true;
-  }
-  function init(){
-    D.body.classList.add('stage38b-keynote-toolbar');
-    makeToolbar();
-    patchDiagnostics();
-    setTimeout(function(){makeToolbar();patchDiagnostics();publishStatus();},400);
-    setTimeout(function(){publishStatus();},1300);
-  }
-  if(D.readyState==='loading') D.addEventListener('DOMContentLoaded',init,{once:true}); else init();
-  W.LuminaStage38B={makeToolbar:makeToolbar,publishStatus:publishStatus,runAction:runAction};
-})();
-</script>
-
 </body></html>`;
     popup.document.open(); popup.document.write(editorHtml); popup.document.close();
   }
@@ -7751,6 +7578,179 @@ setTimeout(function(){
   function init(){D.body.classList.add('stage38a-canvas-first'); buildCanvasFirst(); patchDiagnostics()}
   if(D.readyState==='loading') D.addEventListener('DOMContentLoaded',init,{once:true}); else init();
   W.LuminaStage38A={buildCanvasFirst:buildCanvasFirst,publishStatus:publishStatus,setDrawerOpen:setDrawerOpen};
+})();
+</script>
+
+
+<style id="stage38b-keynote-toolbar-css">
+  /* Stage 38B: Keynote-style persistent top toolbar layered on top of the Stage 38A canvas-first shell. */
+  body.stage38a-canvas-first.stage38b-keynote-toolbar .page.stage38a-page{
+    grid-template-rows:auto minmax(0,1fr) !important;
+    row-gap:.72rem !important;
+  }
+  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38b-top-toolbar{
+    grid-column:1 / -1;
+    min-width:0;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:.75rem;
+    padding:.48rem .58rem;
+    border:1px solid rgba(15,42,74,.14);
+    border-radius:22px;
+    background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(237,244,251,.96));
+    box-shadow:0 14px 38px rgba(15,42,74,.12), inset 0 1px 0 rgba(255,255,255,.82);
+    backdrop-filter:blur(14px);
+  }
+  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-rail-col,
+  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-canvas-center,
+  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-inspector-col{ grid-row:2; }
+  .stage38b-toolbar-brand{display:flex;align-items:center;gap:.55rem;min-width:0;color:#10233b;font-weight:850;letter-spacing:-.02em;}
+  .stage38b-toolbar-brand-mark{width:1.85rem;height:1.85rem;border-radius:11px;background:linear-gradient(135deg,#1f4e79,#17365d);box-shadow:0 8px 18px rgba(23,54,93,.22);display:grid;place-items:center;color:#fff;font-weight:900;}
+  .stage38b-toolbar-brand small{display:block;color:#64748b;font-size:.64rem;font-weight:750;letter-spacing:.04em;text-transform:uppercase;margin-top:.02rem;}
+  .stage38b-toolbar-group{display:flex;align-items:center;justify-content:center;gap:.36rem;min-width:0;}
+  .stage38b-toolbar-group.stage38b-toolbar-right{justify-content:flex-end;}
+  .stage38b-toolbar-divider{width:1px;align-self:stretch;background:rgba(15,42,74,.14);margin:0 .15rem;}
+  .stage38b-tool-btn{appearance:none;border:1px solid rgba(23,54,93,.16);border-radius:14px;background:#fff;color:#17365d;min-height:2.18rem;padding:.42rem .58rem;font:760 .72rem/1.05 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(15,42,74,.05);display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap;}
+  .stage38b-tool-btn:hover{background:#f8fbff;transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,42,74,.10);}
+  .stage38b-tool-btn[data-primary="1"]{background:linear-gradient(180deg,#1f4e79,#17365d);color:#fff;border-color:#17365d;box-shadow:0 10px 24px rgba(23,54,93,.22);}
+  .stage38b-tool-btn span[aria-hidden="true"]{font-size:.92rem;line-height:1;}
+  .stage38b-mode-pill{display:inline-flex;align-items:center;gap:.2rem;border:1px solid rgba(23,54,93,.16);border-radius:999px;padding:.18rem;background:#eef4fb;}
+  .stage38b-mode-pill button{appearance:none;border:0;border-radius:999px;background:transparent;color:#17365d;padding:.38rem .58rem;font:800 .69rem/1 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer;}
+  .stage38b-mode-pill button.active{background:#17365d;color:#fff;box-shadow:0 6px 16px rgba(23,54,93,.18);}
+  body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-canvas-center .preview-wrap{padding:.78rem!important;}
+  html body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38a-canvas-center .preview-frame,
+  html body.stage38a-canvas-first.stage38b-keynote-toolbar.stage35o-right-tight .stage38a-canvas-center .preview-frame{width:min(100%,calc((100svh - 8.9rem) * 16 / 9))!important;}
+  @media (max-width:1180px){
+    body.stage38a-canvas-first.stage38b-keynote-toolbar .stage38b-top-toolbar{grid-template-columns:1fr;gap:.45rem;}
+    .stage38b-toolbar-brand{justify-content:center;}
+    .stage38b-toolbar-group,.stage38b-toolbar-group.stage38b-toolbar-right{justify-content:center;flex-wrap:wrap;}
+    .stage38b-toolbar-divider{display:none;}
+  }
+</style>
+
+
+
+<script id="stage38b-keynote-toolbar-script">
+(function(){
+  'use strict';
+  var W=window,D=document,STAGE='stage38b-20260427-1';
+  function byId(id){return D.getElementById(id)}
+  function qs(sel,root){return (root||D).querySelector(sel)}
+  function qsa(sel,root){return Array.prototype.slice.call((root||D).querySelectorAll(sel))}
+  function clickEl(el){ if(el && typeof el.click==='function'){ el.click(); return true; } return false; }
+  function clickId(id){ return clickEl(byId(id)); }
+  function openDrawer(tab,subtab){
+    if(W.LuminaStage38A && typeof W.LuminaStage38A.setDrawerOpen==='function') W.LuminaStage38A.setDrawerOpen(true);
+    setTimeout(function(){
+      var proxy=qs('[data-left-tab-proxy="'+tab+'"]')||qs('[data-left-tab="'+tab+'"]');
+      clickEl(proxy);
+      if(subtab) clickEl(qs('[data-subtab="'+subtab+'"]'));
+    },0);
+  }
+  function runAction(action){
+    if(action==='add') return (W.LuminaSlideActionsRestore&&W.LuminaSlideActionsRestore.invoke&&W.LuminaSlideActionsRestore.invoke('add')!==false)||clickId('addSlideBtn');
+    if(action==='update') return (W.LuminaSlideActionsRestore&&W.LuminaSlideActionsRestore.invoke&&W.LuminaSlideActionsRestore.invoke('update')!==false)||clickId('updateSlideBtn');
+    if(action==='duplicate') return (W.LuminaSlideActionsRestore&&W.LuminaSlideActionsRestore.invoke&&W.LuminaSlideActionsRestore.invoke('duplicate')!==false)||clickId('duplicateSlideBtn');
+    if(action==='undo') return clickId('undoBtn') || (D.execCommand&&D.execCommand('undo'));
+    if(action==='redo') return clickId('redoBtn') || (D.execCommand&&D.execCommand('redo'));
+    if(action==='copilot'){openDrawer('copilot');return true;}
+    if(action==='edit'){openDrawer('edit');return true;}
+    if(action==='theme'){openDrawer('presets','presets:styles');return true;}
+    if(action==='present'){openDrawer('files','files:save');return true;}
+    if(action==='advanced'){openDrawer('slides');return true;}
+    if(action==='diagnostics'){
+      openDrawer('slides');
+      setTimeout(function(){ if(W.LuminaDiagnostics&&W.LuminaDiagnostics.copyReport) W.LuminaDiagnostics.copyReport().catch(function(){}); },120);
+      return true;
+    }
+    return false;
+  }
+  function setModeActive(mode){
+    qsa('.stage38b-mode-pill button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-stage38b-mode')===mode)});
+  }
+  function makeToolbar(){
+    if(byId('stage38bTopToolbar')) return true;
+    var page=qs('.page.stage38a-page')||qs('.page');
+    if(!page) return false;
+    var bar=D.createElement('div');
+    bar.id='stage38bTopToolbar';
+    bar.className='stage38b-top-toolbar';
+    bar.setAttribute('role','toolbar');
+    bar.setAttribute('aria-label','Keynote style presentation toolbar');
+    bar.innerHTML=''
+      +'<div class="stage38b-toolbar-brand"><div class="stage38b-toolbar-brand-mark">L</div><div>Lumina<small>Presenter</small></div></div>'
+      +'<div class="stage38b-toolbar-group">'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="add"><span aria-hidden="true">＋</span>Add slide</button>'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="update"><span aria-hidden="true">✓</span>Update</button>'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="duplicate"><span aria-hidden="true">⧉</span>Duplicate</button>'
+      +'<span class="stage38b-toolbar-divider" aria-hidden="true"></span>'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="undo"><span aria-hidden="true">↶</span>Undo</button>'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="redo"><span aria-hidden="true">↷</span>Redo</button>'
+      +'<span class="stage38b-toolbar-divider" aria-hidden="true"></span>'
+      +'<span class="stage38b-mode-pill" aria-label="Workspace mode"><button type="button" class="active" data-stage38b-mode="create" data-stage38b-action="copilot">Create</button><button type="button" data-stage38b-mode="edit" data-stage38b-action="edit">Edit</button><button type="button" data-stage38b-mode="present" data-stage38b-action="present">Present</button><button type="button" data-stage38b-mode="advanced" data-stage38b-action="advanced">Advanced</button></span>'
+      +'</div>'
+      +'<div class="stage38b-toolbar-group stage38b-toolbar-right">'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="theme"><span aria-hidden="true">◐</span>Theme</button>'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="copilot"><span aria-hidden="true">✨</span>AI</button>'
+      +'<button class="stage38b-tool-btn" type="button" data-stage38b-action="present" data-primary="1"><span aria-hidden="true">▶</span>Export</button>'
+      +'</div>';
+    page.insertBefore(bar,page.firstChild);
+    bar.addEventListener('click',function(evt){
+      var t=evt.target&&evt.target.closest&&evt.target.closest('[data-stage38b-action]');
+      if(!t) return;
+      evt.preventDefault();
+      var mode=t.getAttribute('data-stage38b-mode'); if(mode) setModeActive(mode);
+      var ok=runAction(t.getAttribute('data-stage38b-action'));
+      if(!ok && W.luminaBootError) W.luminaBootError('Stage 38B toolbar action failed: '+t.getAttribute('data-stage38b-action'));
+      publishStatus();
+    },true);
+    return true;
+  }
+  function publishStatus(){
+    var bar=byId('stage38bTopToolbar');
+    var status={
+      stage:STAGE,
+      keynoteToolbar:!!bar,
+      buttonCount:bar?qsa('[data-stage38b-action]',bar).length:0,
+      modeButtonCount:bar?qsa('[data-stage38b-mode]',bar).length:0,
+      canvasFirstStillActive:!!(D.body.classList.contains('stage38a-canvas-first')&&byId('stage38aCanvasCenter')),
+      pass:false
+    };
+    status.pass=!!(status.keynoteToolbar&&status.buttonCount>=10&&status.modeButtonCount===4&&status.canvasFirstStillActive);
+    W.__LUMINA_STAGE38B_STATUS=status;
+    return status;
+  }
+  function patchDiagnostics(){
+    var LD=W.LuminaDiagnostics;
+    if(!LD||LD.__stage38bPatched) return;
+    var prev=(LD.getReport&&LD.getReport.bind(LD))||(LD.collectReport&&LD.collectReport.bind(LD));
+    if(!prev) return;
+    function reportWrap(){
+      var report=prev()||{};
+      report.stage38KeynoteToolbarStatus=publishStatus();
+      report.stage38KeynoteToolbarDiagnostics={
+        topToolbar:!!byId('stage38bTopToolbar'),
+        actions:qsa('#stage38bTopToolbar [data-stage38b-action]').map(function(b){return b.getAttribute('data-stage38b-action')}),
+        modePill:qsa('#stage38bTopToolbar [data-stage38b-mode]').map(function(b){return b.getAttribute('data-stage38b-mode')}),
+        canvasCenter:!!byId('stage38aCanvasCenter'),
+        inspectorColumn:!!byId('stage38aInspectorColumn')
+      };
+      return report;
+    }
+    if(LD.getReport) LD.getReport=reportWrap;
+    if(LD.collectReport) LD.collectReport=reportWrap;
+    LD.__stage38bPatched=true;
+  }
+  function init(){
+    D.body.classList.add('stage38b-keynote-toolbar');
+    makeToolbar();
+    patchDiagnostics();
+    setTimeout(function(){makeToolbar();patchDiagnostics();publishStatus();},400);
+    setTimeout(function(){publishStatus();},1300);
+  }
+  if(D.readyState==='loading') D.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+  W.LuminaStage38B={makeToolbar:makeToolbar,publishStatus:publishStatus,runAction:runAction};
 })();
 </script>
 
