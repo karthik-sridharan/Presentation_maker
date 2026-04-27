@@ -1,0 +1,13 @@
+{
+  "stage": "stage38q-20260427-1",
+  "changes": [
+    "AI drawer for Copilot",
+    "Advanced drawer for JSON/diagnostics/raw controls",
+    "Window-capture route interception for stale Copilot/Advanced entrypoints"
+  ],
+  "expected": {
+    "stage38QAiDrawerAdvancedStatus.pass": true,
+    "stage38OCenterActionsStatus.pass": true,
+    "stage38PDiagnosticsAlignmentStatus.pass": true
+  }
+}

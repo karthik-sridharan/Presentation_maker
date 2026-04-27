@@ -1,0 +1,12 @@
+{
+  "stage": "stage38q-20260427-1",
+  "files": [
+    "index.html",
+    "README_DEPLOY_STAGE38Q.md",
+    "RELEASE_NOTES_STAGE38Q.md",
+    "DEPLOY_CHECK_STAGE38Q.md",
+    "NEXT_STAGE_CONTEXT_STAGE38Q.md",
+    "INTERNAL_DIAGNOSTIC_STAGE38Q.json"
+  ],
+  "note": "Stage 38Q is implemented as late guarded CSS/JS appended to index.html. No JS module files changed."
+}
