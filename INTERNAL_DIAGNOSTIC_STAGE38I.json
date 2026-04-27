@@ -1,0 +1,14 @@
+{
+  "stage": "stage38i-20260427-1",
+  "indexStageSignature": "index-inline-stage38i-safe-command-deck-structure-sync-20260427-1",
+  "status": "static-build-check-passed",
+  "checks": {
+    "stage38iScriptPresent": true,
+    "stage38gScriptAbsent": true,
+    "commandOnlySync": true,
+    "noNewMutationObserver": true,
+    "noReloadHooks": true,
+    "stage38fPreserved": true,
+    "stage38hRollbackGuardPreserved": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "stage": "stage38i-20260427-1",
+  "primary": "index.html",
+  "deployUrlHint": "index.html?v=stage38i-20260427-1&clearLuminaStorage=1",
+  "notes": [
+    "RELEASE_NOTES_STAGE38I.md",
+    "README_DEPLOY_STAGE38I.md",
+    "DEPLOY_CHECK_STAGE38I.md",
+    "NEXT_STAGE_CONTEXT_STAGE38I.md",
+    "INTERNAL_DIAGNOSTIC_STAGE38I.json"
+  ]
+}
