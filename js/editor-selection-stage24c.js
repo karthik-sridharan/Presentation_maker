@@ -40,6 +40,37 @@
 
     let selectedPreviewBlockRef = null;
 
+    function fontSizeToPx(style, fallbackPx){
+      const s = style || {};
+      if(s.fontSize !== undefined && s.fontSize !== null && String(s.fontSize).trim() !== ''){
+        const n = Number(String(s.fontSize).trim().replace(/px$/i, ''));
+        if(Number.isFinite(n)) return String(Math.max(8, Math.min(120, Math.round(n))));
+      }
+      const scale = Number(s.fontScale);
+      const base = Number.isFinite(Number(fallbackPx)) ? Number(fallbackPx) : 20;
+      const px = Number.isFinite(scale) ? Math.round(base * scale) : Math.round(base);
+      return String(Math.max(8, Math.min(120, px)));
+    }
+    function titleBasePx(){
+      const slide = currentDraftSlide ? currentDraftSlide() : {};
+      const heading = String((slide && slide.headingLevel) || 'h2').toLowerCase();
+      const map = { h1:90, h2:50, h3:39, h4:34, h5:29, h6:25 };
+      return map[heading] || 50;
+    }
+    function setFontFamilySelectValue(select, value){
+      if(!select) return;
+      const nextValue = value || 'inherit';
+      const hasOption = Array.from(select.options || []).some(option => option.value === nextValue);
+      if(!hasOption){
+        const option = document.createElement('option');
+        option.value = nextValue;
+        option.textContent = nextValue === 'inherit' ? 'Theme default' : 'Custom: ' + nextValue;
+        option.dataset.generatedFontOption = '1';
+        select.appendChild(option);
+      }
+      select.value = nextValue;
+    }
+
     function selectedPreviewBlock(){
       if(!selectedPreviewBlockRef || selectedPreviewBlockRef.type === 'title') return null;
       return getDraftBlock(selectedPreviewBlockRef.column, selectedPreviewBlockRef.index);
@@ -49,15 +80,15 @@
     }
     function populatePreviewBlockStyleEditor(block){
       const style = normalizeBlockStyle(block && block.style);
-      if(previewBlockFontScale) previewBlockFontScale.value = String(style.fontScale);
-      if(previewBlockFontFamily) previewBlockFontFamily.value = style.fontFamily;
+      if(previewBlockFontScale) previewBlockFontScale.value = fontSizeToPx(style, 20);
+      setFontFamilySelectValue(previewBlockFontFamily, style.fontFamily);
       if(previewBlockFontColor) previewBlockFontColor.value = style.fontColor;
       if(previewBlockBulletType) previewBlockBulletType.value = style.bulletType;
     }
     function populatePreviewTitleStyleEditor(){
       const style = selectedPreviewTitleStyle();
-      if(previewBlockFontScale) previewBlockFontScale.value = String(style.fontScale);
-      if(previewBlockFontFamily) previewBlockFontFamily.value = style.fontFamily;
+      if(previewBlockFontScale) previewBlockFontScale.value = fontSizeToPx(style, titleBasePx());
+      setFontFamilySelectValue(previewBlockFontFamily, style.fontFamily);
       if(previewBlockFontColor) previewBlockFontColor.value = style.fontColor;
       if(previewBlockBulletType) previewBlockBulletType.value = style.bulletType || 'disc';
     }
@@ -125,7 +156,7 @@
     }
     function resetSelectedPreviewBlockStyle(){
       if(!selectedPreviewBlockRef) return;
-      applySelectedPreviewBlockStyle({ fontScale:1, fontFamily:'inherit', fontColor:'#111111', bulletType:'disc' });
+      applySelectedPreviewBlockStyle({ fontSize:'', fontScale:1, fontFamily:'inherit', fontColor:'#111111', bulletType:'disc' });
     }
     function selectedAnimationTargetInfo(){
       const boxes = getSelectedFigureBoxes();

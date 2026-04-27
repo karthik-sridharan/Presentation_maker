@@ -1800,7 +1800,11 @@ document.querySelectorAll('[data-preset]').forEach(btn=>btn.addEventListener('cl
 document.querySelectorAll('[data-style-preset]').forEach(btn=>btn.addEventListener('click', ()=>applyStylePreset(btn.dataset.stylePreset)));
 document.getElementById('applyStyleBuilderBtn')?.addEventListener('click', applyStyleBuilder);
 document.getElementById('randomizeStyleBtn')?.addEventListener('click', randomizeStyleBuilder);
-previewBlockFontScale?.addEventListener('input', ()=>applySelectedPreviewBlockStyle({ fontScale: Number(previewBlockFontScale.value || 1) }));
+previewBlockFontScale?.addEventListener('input', ()=>{
+  const px = Number(previewBlockFontScale.value || 20);
+  const fontSize = Number.isFinite(px) ? (Math.max(8, Math.min(120, px)) + 'px') : '';
+  applySelectedPreviewBlockStyle({ fontSize });
+});
 previewBlockFontFamily?.addEventListener('change', ()=>applySelectedPreviewBlockStyle({ fontFamily: previewBlockFontFamily.value || 'inherit' }));
 previewBlockFontColor?.addEventListener('input', ()=>applySelectedPreviewBlockStyle({ fontColor: previewBlockFontColor.value || '#111111' }));
 previewBlockBulletType?.addEventListener('change', ()=>applySelectedPreviewBlockStyle({ bulletType: previewBlockBulletType.value || 'disc' }));

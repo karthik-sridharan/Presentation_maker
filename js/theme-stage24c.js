@@ -143,7 +143,7 @@
       let bg = useTheme ? theme.bgColor : (slide.bgColor || theme.bgColor);
       let font = useTheme ? theme.fontColor : (slide.fontColor || theme.fontColor);
       const styleId = String(theme.beamerStyle || 'classic').toLowerCase();
-      // Stage 36X: visual theme presets should control their own canvas even on
+      // Stage 36Y: visual theme presets should control their own canvas even on
       // slides that were previously saved with per-slide colours.
       if(styleId === 'chalkboard'){
         bg = theme.bgColor || '#050807';
