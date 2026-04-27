@@ -1,0 +1,17 @@
+{
+  "stage": "stage38e-20260427-1",
+  "entrypoint": "index.html",
+  "notes": [
+    "Stage 38E is an inline UI overlay on top of Stage 38D.",
+    "No new external JS/CSS asset is required.",
+    "Existing optional ESM assets remain unchanged."
+  ],
+  "primaryFilesChanged": [
+    "index.html",
+    "RELEASE_NOTES_STAGE38E.md",
+    "README_DEPLOY_STAGE38E.md",
+    "DEPLOY_CHECK_STAGE38E.md",
+    "NEXT_STAGE_CONTEXT_STAGE38E.md",
+    "INTERNAL_DIAGNOSTIC_STAGE38E.json"
+  ]
+}

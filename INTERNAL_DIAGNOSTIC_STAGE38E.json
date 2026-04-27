@@ -1,0 +1,22 @@
+{
+  "stage": "stage38e-20260427-1",
+  "indexStageSignature": "index-inline-stage38e-slide-structure-outline-polish-20260427-1",
+  "implemented": {
+    "slideStructurePanel": true,
+    "railThumbnailActionBars": true,
+    "railDragReorder": true,
+    "outlineDragReorder": true,
+    "sectionAffordances": true,
+    "diagnosticsPatch": true
+  },
+  "newDiagnostics": [
+    "stage38ESlideStructureStatus",
+    "stage38ESlideStructureDiagnostics"
+  ],
+  "staticChecks": {
+    "stage38eInlineScriptPresent": true,
+    "stage38eInlineCssPresent": true,
+    "stage38dBaseReplacedInStageSignature": true,
+    "nodeSyntaxCheckForStage38eScript": true
+  }
+}
