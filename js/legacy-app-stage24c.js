@@ -2103,6 +2103,11 @@ if(expandDiagramSnippet){ expandDiagramSnippet.addEventListener('change', buildP
 if(!restoreAutosave()){
   applyThemeToForm(normalizeTheme({}));
   applyPreset('concept');
+  // Stage 38L: on a clean launch, seed the editable deck with the visible
+  // default concept slide. Earlier builds showed a preview but left the
+  // slide rail/outline with zero items after clearLuminaStorage=1.
+  slides = [currentDraftSlide()];
+  activeIndex = 0;
   buildPreview();
   renderDeckList();
 }
