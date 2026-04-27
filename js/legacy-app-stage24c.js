@@ -181,7 +181,6 @@ const copilotEls = {
   model: document.getElementById('copilotModel'),
   endpoint: document.getElementById('copilotEndpoint'),
   apiKey: document.getElementById('copilotApiKey'),
-  webSearch: document.getElementById('copilotWebSearch'),
   status: document.getElementById('copilotStatus'),
   resultJson: document.getElementById('copilotResultJson'),
   keyWarning: document.getElementById('copilotKeyWarning')
@@ -843,7 +842,6 @@ function loadCopilotSettings(){
     if(copilotEls.model && s.model) copilotEls.model.value = s.model;
     if(copilotEls.endpoint && s.endpoint) copilotEls.endpoint.value = s.endpoint;
     if(copilotEls.tone && s.tone) copilotEls.tone.value = s.tone;
-    if(copilotEls.webSearch && typeof s.webSearch === 'boolean') copilotEls.webSearch.checked = s.webSearch;
     const key = localStorage.getItem(COPILOT_API_KEY_STORAGE);
     if(copilotEls.apiKey && key) copilotEls.apiKey.value = key;
     updateCopilotKeyWarning();
@@ -854,8 +852,7 @@ function saveCopilotSettings(saveKey=false){
     const s = {
       model: copilotEls.model?.value || 'gpt-4.1-mini',
       endpoint: copilotEls.endpoint?.value || COPILOT_DEFAULT_ENDPOINT,
-      tone: copilotEls.tone?.value || 'clear and concise',
-      webSearch: !!(copilotEls.webSearch && copilotEls.webSearch.checked)
+      tone: copilotEls.tone?.value || 'clear and concise'
     };
     const key = (copilotEls.apiKey?.value || '').trim();
     validateCopilotApiKey(key, s.endpoint, { requireKey:false });
@@ -876,7 +873,6 @@ function saveCopilotSettings(saveKey=false){
     return false;
   }
 }
-
 function copilotBlockSchema(){
   return {
     type:'object',
@@ -884,12 +880,12 @@ function copilotBlockSchema(){
     properties:{
       mode:{ type:'string', enum:['panel','plain','pseudocode','pseudocode-latex','placeholder','custom','image'] },
       title:{ type:'string', description:'Short editor-only label for the block.' },
-      content:{ type:'string', description:'For panel/plain, use the lightweight generator syntax. For custom blocks, provide a self-contained HTML document or fragment. For image blocks, use this as an optional visible caption or explanation.' },
-      assetPrompt:{ type:'string', description:'For image blocks, describe the image to generate.' },
-      assetAlt:{ type:'string', description:'Short alt text for a generated image.' },
-      assetSize:{ type:'string', description:'Optional hint such as wide, square, tall, 1536x1024, 1024x1024, or 1024x1536.' }
+      content:{ type:'string', description:'Slide content. For panel/plain, use generator syntax. For custom blocks, use self-contained HTML. For image blocks, use this as a short caption.' },
+        assetPrompt:{ type:'string', description:'For image blocks, the prompt used to generate the image. Use an empty string for non-image blocks.' },
+        assetAlt:{ type:'string', description:'For image blocks, short alt text. Use an empty string for non-image blocks.' },
+        assetSize:{ type:'string', description:'For image blocks, one of wide, square, tall, 1536x1024, 1024x1024, or 1024x1536. Use an empty string for non-image blocks.' }
     },
-    required:['mode','title','content']
+    required:['mode','title','content','assetPrompt','assetAlt','assetSize']
   };
 }
 function copilotSlideSchema(){
@@ -935,150 +931,75 @@ function copilotSystemPrompt(){
     'Use h1 for title slides and h2 for normal slides.',
     'Set inheritTheme to true unless the user explicitly asks for custom colors.',
     'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
-    'You may use mode custom for interactive demos, animations, or arbitrary HTML. Put a self-contained HTML document in content, with inline CSS and JavaScript whenever possible.',
-    'You may use mode image when the user wants original visuals or figures to be generated. Put the image-generation instruction in assetPrompt, a short alt text in assetAlt, and an optional size hint in assetSize. Use content only for a short caption or explanation.',
-    'Prefer mode custom for demos, simulations, calculators, animations, or rich HTML widgets.',
-    'Prefer mode image instead of placeholder when the user asks for a picture, illustration, diagram, concept art, icon, cover image, or other original visual that should be created automatically.',
     'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
-    'If the user asks to follow lecture notes or a reference link, do not answer as a generic topic summary; organize the deck around the referenced material and say in the summary when reference content could not be accessed.',
-    'If a style screenshot is provided, use it only as visual context for colors, spacing, tone, and composition. Do not copy text from it unless the user asked to revise the current slide.'
+    'Do not invent citations, URLs, or image files. Use placeholder blocks when a figure is needed.'
   ].join('\n');
 }
 function compactDeckForCopilot(){
   const deck = currentDeckData();
-  const deckSlides = Array.isArray(deck.slides) ? deck.slides : [];
   return {
     deckTitle: deck.deckTitle,
     theme: deck.theme,
-    slideCount: deckSlides.length,
-    slides: deckSlides.slice(0, 20).map((s, idx)=>(
-      {
-        index: idx + 1,
-        slideType: s.slideType,
-        title: s.title,
-        kicker: s.kicker,
-        lede: s.lede,
-        leftBlocks: (s.leftBlocks || []).map(b=>({ mode:b.mode, title:b.title, content:String(b.content || '').slice(0, 700) })),
-        rightBlocks: (s.rightBlocks || []).map(b=>({ mode:b.mode, title:b.title, content:String(b.content || '').slice(0, 700) }))
-      }
-    ))
+    slideCount: deck.slides.length,
+    slides: deck.slides.slice(0, 20).map((s, idx)=>({
+      index: idx + 1,
+      slideType: s.slideType,
+      title: s.title,
+      kicker: s.kicker,
+      lede: s.lede,
+      leftBlocks: (s.leftBlocks || []).map(b=>({ mode:b.mode, title:b.title, content:String(b.content || '').slice(0, 700) })),
+      rightBlocks: (s.rightBlocks || []).map(b=>({ mode:b.mode, title:b.title, content:String(b.content || '').slice(0, 700) }))
+    }))
   };
 }
-async function fetchPromptFile(fileName){
-  const name = String(fileName || '').trim();
-  if(!name) return { text:'', source:name, status:'empty-file-name' };
-  try{
-    const res = await fetch(name + (name.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(window.LUMINA_STAGE || 'stage36q-20260426-1'), { cache:'no-store' });
-    if(res && res.ok){
-      const loadedText = String(await res.text()).trim();
-      return { text:loadedText, source:name, status: loadedText ? 'loaded-file' : 'blank-file' };
-    }
-    return { text:'', source:name, status: res ? ('file-http-' + res.status) : 'file-no-response' };
-  }catch(err){
-    return { text:'', source:name, status:'file-load-error', error:(err && err.message) || String(err) };
-  }
+function deckPromptUrl(){
+  const base = String(COPILOT_DECK_PROMPT_FILE || 'prompts/deck.txt').trim() || 'prompts/deck.txt';
+  const version = String(window.LUMINA_STAGE || copilotRuntimeStatus.stage || 'stage34m-20260425-1');
+  return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
 }
 async function loadDeckPromptPrefix(){
   if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
-  const result = await fetchPromptFile(COPILOT_DECK_PROMPT_FILE);
-  deckPromptPrefixCache = result.text || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
+  let fileText = '';
+  let source = 'builtin-default';
+  let status = 'builtin-default';
+  try{
+    if(typeof fetch === 'function'){
+      const res = await fetch(deckPromptUrl(), { cache:'no-store' });
+      if(res && res.ok){
+        fileText = String(await res.text() || '').trim();
+        if(fileText){
+          source = COPILOT_DECK_PROMPT_FILE;
+          status = 'loaded-file';
+        }else{
+          status = 'blank-file-used-builtin-default';
+        }
+      }else if(res){
+        status = 'file-http-' + res.status + '-used-builtin-default';
+      }
+    }else{
+      status = 'fetch-unavailable-used-builtin-default';
+    }
+  }catch(err){
+    status = 'file-load-error-used-builtin-default';
+    updateCopilotRuntime({ deckPromptLastError: (err && err.message) || String(err) });
+  }
+  deckPromptPrefixCache = fileText || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
   updateCopilotRuntime({
-    deckPromptSource: result.text ? result.source : 'builtin-default',
-    deckPromptStatus: result.text ? result.status : (result.status + ';used-builtin-default'),
+    deckPromptFile: COPILOT_DECK_PROMPT_FILE,
+    deckPromptSource: source,
+    deckPromptStatus: status,
+    deckPromptAppliesTo: 'deck-only',
     deckPromptLoadedAt: new Date().toISOString()
   });
   return deckPromptPrefixCache;
-}
-function collectCopilotStyleContext(){
-  let out = [];
-  try{
-    const deck = currentDeckData ? currentDeckData() : {};
-    const theme = deck && deck.theme ? deck.theme : {};
-    const currentSlide = activeIndex >= 0 && slides[activeIndex] ? normalizeSlide(slides[activeIndex]) : null;
-    out.push('Presentation style context:');
-    out.push('Deck title: ' + String((deck && deck.deckTitle) || fields.deckTitle.value || 'Untitled presentation'));
-    if(theme && typeof theme === 'object'){
-      out.push('Theme style: ' + String(theme.style || 'default'));
-      out.push('Theme accent: ' + String(theme.accentColor || theme.accent || theme.primary || '')); 
-      out.push('Theme background: ' + String(theme.bgColor || theme.background || ''));
-      out.push('Theme font color: ' + String(theme.fontColor || theme.textColor || ''));
-    }
-    if(currentSlide){
-      out.push('Active slide title: ' + String(currentSlide.title || ''));
-      out.push('Active slide type: ' + String(currentSlide.slideType || 'single'));
-      out.push('Active slide background: ' + String(currentSlide.bgColor || ''));
-      out.push('Active slide font color: ' + String(currentSlide.fontColor || ''));
-    }
-  }catch(err){
-    out.push('Presentation style context unavailable: ' + ((err && err.message) || String(err)));
-  }
-  return out.join('\n');
-}
-function collectDocumentCssText(){
-  const pieces = [];
-  try{
-    Array.from(document.styleSheets || []).forEach(sheet=>{
-      try{
-        Array.from(sheet.cssRules || []).forEach(rule=>pieces.push(rule.cssText));
-      }catch(_){ }
-    });
-  }catch(_){ }
-  return pieces.join('\n');
-}
-async function capturePreviewScreenshotDataUrl(){
-  const root = document.getElementById('preview');
-  const node = root && (root.querySelector('.slide') || root.firstElementChild);
-  if(!node || typeof XMLSerializer === 'undefined'){
-    updateCopilotRuntime({ styleScreenshotStatus:'unavailable' });
-    return '';
-  }
-  try{
-    const rect = node.getBoundingClientRect();
-    const width = Math.max(1, Math.round(rect.width || node.offsetWidth || 960));
-    const height = Math.max(1, Math.round(rect.height || node.offsetHeight || 540));
-    const clone = node.cloneNode(true);
-    clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    const cssText = collectDocumentCssText();
-    const markup = new XMLSerializer().serializeToString(clone);
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '"><foreignObject x="0" y="0" width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style><![CDATA[' + cssText + ']]></style>' + markup + '</div></foreignObject></svg>';
-    const img = new Image();
-    const scale = 1;
-    const canvas = document.createElement('canvas');
-    canvas.width = width * scale;
-    canvas.height = height * scale;
-    const ctx = canvas.getContext('2d');
-    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-    const dataUrl = await new Promise(resolve=>{
-      img.onload = ()=>{
-        try{
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/png'));
-        }catch(_){ resolve(''); }
-      };
-      img.onerror = ()=>resolve('');
-      img.src = svgUrl;
-    });
-    updateCopilotRuntime({ styleScreenshotStatus: dataUrl ? 'captured' : 'capture-failed', lastStyleScreenshotAt:new Date().toISOString() });
-    return dataUrl;
-  }catch(err){
-    updateCopilotRuntime({ styleScreenshotStatus:'capture-error', styleScreenshotError:(err && err.message) || String(err) });
-    return '';
-  }
-}
-function shouldUseOpenAiWebSearch(kind, endpoint, promptText, deckPromptPrefix){
-  const enabled = !!(copilotEls.webSearch && copilotEls.webSearch.checked);
-  if(kind !== 'deck') return { use:false, status:'deck-only' };
-  if(!enabled) return { use:false, status:'disabled' };
-  if(!isDefaultOpenAiEndpoint(endpoint)) return { use:false, status:'custom-endpoint-disabled' };
-  if(!/https?:\/\/\S+/i.test(String(promptText || '') + '\n' + String(deckPromptPrefix || ''))) return { use:false, status:'no-url-detected' };
-  return { use:true, status:'enabled-url-detected' };
 }
 async function buildCopilotUserPrompt(kind){
   const prompt = (copilotEls.prompt?.value || '').trim();
   if(!prompt) throw new Error('Tell Copilot what to create first.');
   const count = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || 1)));
   const tone = copilotEls.tone?.value || 'clear and concise';
-  const parts = [kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.'];
+  const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
+  const parts = [mode];
   if(kind === 'deck'){
     const deckPromptPrefix = await loadDeckPromptPrefix();
     if(deckPromptPrefix){
@@ -1107,13 +1028,92 @@ function extractResponsesOutputText(data){
   });
   return parts.join('\n').trim();
 }
+
+
+function safeString(value){ return String(value == null ? '' : value); }
+function collectCopilotStyleContext(){
+  const lines = [];
+  try{
+    const deck = typeof deps !== 'undefined' && typeof deps.currentDeckData === 'function' ? deps.currentDeckData() : (typeof currentDeckData === 'function' ? currentDeckData() : {});
+    const theme = deck && deck.theme ? deck.theme : {};
+    const activeSlides = typeof deps !== 'undefined' && typeof deps.getSlides === 'function' ? deps.getSlides() : (typeof slides !== 'undefined' ? slides : []);
+    const activeIdx = typeof deps !== 'undefined' && typeof deps.getActiveIndex === 'function' ? deps.getActiveIndex() : (typeof activeIndex !== 'undefined' ? activeIndex : -1);
+    const currentSlide = activeIdx >= 0 && activeSlides && activeSlides[activeIdx] ? activeSlides[activeIdx] : null;
+    lines.push('Presentation style context:');
+    lines.push('Deck title: ' + safeString(deck && deck.deckTitle || fields.deckTitle?.value || 'Untitled presentation'));
+    if(theme && typeof theme === 'object'){
+      lines.push('Theme style: ' + safeString(theme.style || theme.name || 'default'));
+      lines.push('Theme accent color: ' + safeString(theme.accentColor || theme.accent || theme.primary || ''));
+      lines.push('Theme background: ' + safeString(theme.bgColor || theme.background || ''));
+      lines.push('Theme font color: ' + safeString(theme.fontColor || theme.textColor || ''));
+    }
+    if(currentSlide){
+      lines.push('Current slide title: ' + safeString(currentSlide.title || ''));
+      lines.push('Current slide type: ' + safeString(currentSlide.slideType || ''));
+      lines.push('Current slide background: ' + safeString(currentSlide.bgColor || ''));
+      lines.push('Current slide font color: ' + safeString(currentSlide.fontColor || ''));
+    }
+  }catch(err){
+    lines.push('Presentation style context unavailable: ' + ((err && err.message) || safeString(err)));
+  }
+  return lines.join('\n');
+}
+function collectCopilotCssText(){
+  const pieces = [];
+  try{
+    Array.from(document.styleSheets || []).forEach(sheet=>{
+      try{ Array.from(sheet.cssRules || []).forEach(rule=>pieces.push(rule.cssText)); }catch(_){ }
+    });
+  }catch(_){ }
+  return pieces.join('\n');
+}
+async function captureCopilotStyleScreenshot(){
+  try{
+    const previewRoot = document.getElementById('preview');
+    const node = previewRoot && (previewRoot.querySelector('.slide') || previewRoot.firstElementChild);
+    if(!node || typeof XMLSerializer === 'undefined'){
+      updateCopilotRuntime({ styleScreenshotStatus:'unavailable' });
+      return '';
+    }
+    const rect = node.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width || node.offsetWidth || 960));
+    const height = Math.max(1, Math.round(rect.height || node.offsetHeight || 540));
+    const clone = node.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    const markup = new XMLSerializer().serializeToString(clone);
+    const cssText = collectCopilotCssText();
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '"><foreignObject x="0" y="0" width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style><![CDATA[' + cssText + ']]></style>' + markup + '</div></foreignObject></svg>';
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    const dataUrl = await new Promise(resolve=>{
+      img.onload = ()=>{
+        try{ ctx.drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/png')); }
+        catch(_){ resolve(''); }
+      };
+      img.onerror = ()=>resolve('');
+      img.src = url;
+    });
+    updateCopilotRuntime({ styleScreenshotStatus:dataUrl ? 'attached' : 'capture-failed', lastStyleScreenshotAt:new Date().toISOString() });
+    return dataUrl;
+  }catch(err){
+    updateCopilotRuntime({ styleScreenshotStatus:'capture-error', styleScreenshotError:(err && err.message) || safeString(err) });
+    return '';
+  }
+}
+function copilotEscapeAttr(value){
+  return safeString(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
 function deriveCopilotImagesEndpoint(endpoint){
   try{
-    const url = new URL(endpoint || COPILOT_DEFAULT_ENDPOINT, location.href);
+    const url = new URL(endpoint || COPILOT_DEFAULT_ENDPOINT, (typeof location !== 'undefined' && location.href) || 'https://example.invalid/');
     const path = url.pathname || '/v1/responses';
     if(/\/responses\/?$/i.test(path)) url.pathname = path.replace(/\/responses\/?$/i, '/images/generations');
     else if(/\/chat\/completions\/?$/i.test(path)) url.pathname = path.replace(/\/chat\/completions\/?$/i, '/images/generations');
-    else if(/\/v\d+\/?$/i.test(path)) url.pathname = path.replace(/\/?$/,'/images/generations');
+    else if(/\/v\d+\/?$/i.test(path)) url.pathname = path.replace(/\/?$/, '/images/generations');
     else url.pathname = path.replace(/\/$/, '') + '/images/generations';
     url.search = '';
     return url.toString();
@@ -1122,49 +1122,52 @@ function deriveCopilotImagesEndpoint(endpoint){
   }
 }
 function copilotImageSizeHint(value){
-  const hint = String(value || '').toLowerCase();
-  if(hint.indexOf('square') >= 0 || hint.indexOf('1024x1024') >= 0) return '1024x1024';
-  if(hint.indexOf('tall') >= 0 || hint.indexOf('portrait') >= 0 || hint.indexOf('1024x1536') >= 0) return '1024x1536';
-  if(hint.indexOf('wide') >= 0 || hint.indexOf('landscape') >= 0 || hint.indexOf('1536x1024') >= 0) return '1536x1024';
+  const hint = safeString(value).toLowerCase();
+  if(hint.includes('square') || hint.includes('1024x1024')) return '1024x1024';
+  if(hint.includes('tall') || hint.includes('portrait') || hint.includes('1024x1536')) return '1024x1536';
   return '1536x1024';
 }
 function buildCopilotFigureHtml(src, alt){
-  const esc = value => String(value ?? '').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-  const safeSrc = esc(src || '');
-  const safeAlt = esc(alt || '');
-  return '<figure data-figure-kind="image" data-box-x="0" data-box-y="0" data-box-w="" data-box-h="" data-original-w="" data-original-h="" data-lock-aspect="1" data-user-moved="0" data-user-sized="0" data-crop="0" data-z-index="1" data-object-fit="contain"><img src="' + safeSrc + '" alt="' + safeAlt + '" /></figure>';
+  return '<figure data-figure-kind="image" data-box-x="0" data-box-y="0" data-box-w="" data-box-h="" data-original-w="" data-original-h="" data-lock-aspect="1" data-user-moved="0" data-user-sized="0" data-crop="0" data-z-index="1" data-object-fit="contain"><img src="' + copilotEscapeAttr(src) + '" alt="' + copilotEscapeAttr(alt || 'Generated image') + '" /></figure>';
 }
-function wrapCopilotCustomHtml(content, title){
-  const raw = String(content || '').trim();
-  if(!raw) return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Inter,Arial,sans-serif}body{display:grid;place-items:center;min-height:100vh;padding:1rem}.placeholder{border:2px dashed rgba(17,17,17,.2);border-radius:16px;padding:1rem;text-align:center}</style></head><body><div class="placeholder">Custom HTML block</div></body></html>';
-  if(/<html[\s>]/i.test(raw) || /<!DOCTYPE/i.test(raw)) return raw;
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>' + String(title || 'Custom block').replace(/[<&>]/g, '') + '</title><style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Inter,Arial,sans-serif}*{box-sizing:border-box}body{min-height:100vh}</style></head><body>' + raw + '</body></html>';
+function materializeCopilotImageBlock(block, src){
+  const caption = safeString(block.content || '').trim();
+  return {
+    mode:'plain',
+    title:block.title || 'Generated image',
+    content:'\\begin{figurehtml}\n' + buildCopilotFigureHtml(src, block.assetAlt || block.title || 'Generated image') + '\n\\end{figurehtml}' + (caption ? ('\n\n' + caption) : '')
+  };
+}
+function materializeCopilotImageFallback(block, reason){
+  const prompt = safeString(block.assetPrompt || block.content || block.title).trim();
+  return {
+    mode:'placeholder',
+    title:block.title || 'Image placeholder',
+    content:'Image requested but automatic generation failed. Prompt: ' + prompt + (reason ? ('\nReason: ' + reason) : '')
+  };
 }
 async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
-  const prompt = String(block.assetPrompt || block.content || block.title || '').trim();
+  const imageFetch = (typeof fetchImpl === 'function') ? fetchImpl : (typeof fetch === 'function' ? fetch.bind(window) : null);
+  if(!imageFetch) throw new Error('Fetch is unavailable for image generation.');
+  const prompt = safeString(block.assetPrompt || block.content || block.title).trim();
   if(!prompt) throw new Error('Image block is missing assetPrompt.');
   const headers = { 'Content-Type':'application/json' };
   if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
   const body = {
     model:'gpt-image-1',
     prompt:[
-      'Create an original image for a slide deck.',
-      'Match the tone of an educational or presentation visual.',
-      'Avoid large text baked into the image unless the prompt explicitly requests it.',
-      'Requested image:',
-      prompt,
-      'Presentation style context:',
+      'Create an original slide image. Match the presentation style and avoid dense embedded text unless explicitly requested.',
       collectCopilotStyleContext(),
-      slide ? ('Slide title: ' + String(slide.title || '')) : ''
+      slide && slide.title ? ('Slide title: ' + slide.title) : '',
+      'Image request: ' + prompt
     ].filter(Boolean).join('\n'),
     size: copilotImageSizeHint(block.assetSize || (slide && slide.slideType === 'two-col' ? 'square' : 'wide')),
     response_format:'b64_json'
   };
-  const imageEndpoint = deriveCopilotImagesEndpoint(endpoint);
-  const res = await fetch(imageEndpoint, { method:'POST', headers, body:JSON.stringify(body) });
+  const res = await imageFetch(deriveCopilotImagesEndpoint(endpoint), { method:'POST', headers, body:JSON.stringify(body) });
   const raw = await res.text();
   let data;
-  try{ data = raw ? JSON.parse(raw) : {}; }catch(err){ data = { raw }; }
+  try{ data = raw ? JSON.parse(raw) : {}; }catch(_){ data = { raw }; }
   if(!res.ok){
     const message = data?.error?.message || raw || ('Image generation failed with status ' + res.status);
     throw new Error(friendlyCopilotHttpError(res.status, message));
@@ -1173,46 +1176,37 @@ async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
   const b64 = first && (first.b64_json || first.base64 || first.image_base64);
   const url = first && first.url;
   if(b64) return 'data:image/png;base64,' + b64;
-  if(url) return String(url);
+  if(url) return safeString(url);
   throw new Error('Image generation returned no usable image payload.');
 }
-function materializeCopilotImageBlock(block, src){
-  const alt = String(block.assetAlt || block.title || 'Generated image').trim() || 'Generated image';
-  const caption = String(block.content || '').trim();
-  return normalizeBlock({
-    mode:'plain',
-    title:block.title || 'Figure',
-    content:'\\begin{figurehtml}\n' + buildCopilotFigureHtml(src, alt) + '\n\\end{figurehtml}' + (caption ? ('\n\n' + caption) : '')
+function normalizeCopilotCustomBlock(block){
+  if(!block || block.mode !== 'custom') return block;
+  const raw = safeString(block.content || '').trim();
+  if(/<html[\s>]/i.test(raw) || /<!DOCTYPE/i.test(raw) || !raw) return block;
+  return Object.assign({}, block, {
+    content:'<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Inter,Arial,sans-serif}*{box-sizing:border-box}body{min-height:100vh}</style></head><body>' + raw + '</body></html>'
   });
 }
-function materializeCopilotFallbackImageBlock(block, reason){
-  return normalizeBlock({
-    mode:'placeholder',
-    title:block.title || 'Figure',
-    content:'Image requested but automatic generation failed. Prompt: ' + String(block.assetPrompt || block.content || block.title || '').trim() + (reason ? ('\nReason: ' + reason) : '')
-  });
-}
-function blockNeedsImageAsset(block){
-  return !!(block && (block.mode === 'image' || (String(block.assetPrompt || '').trim() && block.mode !== 'custom')));
-}
-async function enrichCopilotDeckAssets(deck, endpoint, apiKey){
-  const slidesList = Array.isArray(deck && deck.slides) ? deck.slides : [];
+async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
+  const deck = rawDeck && typeof rawDeck === 'object' ? rawDeck : {};
+  const deckSlides = Array.isArray(deck.slides) ? deck.slides : [];
   const pending = [];
-  slidesList.forEach((slide, slideIndex)=>{
+  deckSlides.forEach((slide)=>{
     ['leftBlocks','rightBlocks'].forEach(column=>{
-      (slide[column] || []).forEach((block, blockIndex)=>{
-        if(block && block.mode === 'custom') block.content = wrapCopilotCustomHtml(block.content, block.title || 'Custom HTML block');
-        if(blockNeedsImageAsset(block)) pending.push({ slide, slideIndex, column, blockIndex, block });
+      const arr = Array.isArray(slide[column]) ? slide[column] : [];
+      arr.forEach((block, blockIndex)=>{
+        if(block && block.mode === 'custom') arr[blockIndex] = normalizeCopilotCustomBlock(block);
+        if(block && block.mode === 'image') pending.push({ slide, column, blockIndex, block });
       });
     });
   });
   if(!pending.length) return deck;
   const limit = Math.min(pending.length, 6);
-  updateCopilotRuntime({ requestedGeneratedImages: pending.length, generatedImagesPlanned: limit });
-  for(let i = 0; i < pending.length; i += 1){
+  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:limit });
+  for(let i=0; i<pending.length; i+=1){
     const item = pending[i];
     if(i >= limit){
-      item.slide[item.column][item.blockIndex] = materializeCopilotFallbackImageBlock(item.block, 'Skipped because the deck requested more than 6 generated images in one pass.');
+      item.slide[item.column][item.blockIndex] = materializeCopilotImageFallback(item.block, 'Skipped because more than 6 images were requested in one generation.');
       continue;
     }
     setCopilotStatus('Generating image ' + (i + 1) + ' of ' + limit + '…');
@@ -1220,11 +1214,12 @@ async function enrichCopilotDeckAssets(deck, endpoint, apiKey){
       const src = await generateCopilotImageAsset(item.block, endpoint, apiKey, item.slide);
       item.slide[item.column][item.blockIndex] = materializeCopilotImageBlock(item.block, src);
     }catch(err){
-      item.slide[item.column][item.blockIndex] = materializeCopilotFallbackImageBlock(item.block, (err && err.message) || String(err));
+      item.slide[item.column][item.blockIndex] = materializeCopilotImageFallback(item.block, (err && err.message) || safeString(err));
     }
   }
   return deck;
 }
+
 async function callCopilot(kind){
   saveCopilotSettings(false);
   const endpoint = (copilotEls.endpoint?.value || '').trim() || COPILOT_DEFAULT_ENDPOINT;
@@ -1234,29 +1229,24 @@ async function callCopilot(kind){
   updateCopilotKeyWarning();
   const headers = { 'Content-Type':'application/json' };
   if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
-  const deckPromptPrefix = kind === 'deck' ? await loadDeckPromptPrefix() : '';
   const userPrompt = await buildCopilotUserPrompt(kind);
-  const screenshot = await capturePreviewScreenshotDataUrl();
-  const userContent = [{ type:'input_text', text:userPrompt }];
-  if(screenshot){
-    userContent.push({ type:'input_text', text:'The next image is a screenshot of the current slide preview. Use it as style context only.' });
-    userContent.push({ type:'input_image', image_url:screenshot });
-  }
+  callCopilot._styleScreenshot = await captureCopilotStyleScreenshot();
   const body = {
     model,
     input:[
-      { role:'system', content: copilotSystemPrompt() + (deckPromptPrefix ? ('\n\nDeck prompt file instructions:\n' + deckPromptPrefix) : '') },
-      { role:'user', content: userContent }
+      { role:'system', content: copilotSystemPrompt() },
+      { role:'user', content: (function(){
+        const content = [{ type:'input_text', text:userPrompt }];
+        if(callCopilot._styleScreenshot){
+          content.push({ type:'input_text', text:'The next image is a screenshot of the current slide preview. Use it only as visual style context.' });
+          content.push({ type:'input_image', image_url:callCopilot._styleScreenshot });
+        }
+        return content;
+      })() }
     ],
     text:{ format:{ type:'json_schema', name:'presentation_deck', schema:copilotDeckSchema(), strict:true } },
     store:false
   };
-  const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, deckPromptPrefix);
-  if(webSearch.use){
-    body.tools = [{ type:'web_search' }];
-    body.tool_choice = 'auto';
-  }
-  updateCopilotRuntime({ webSearchEnabled: !!webSearch.use, webSearchStatus: webSearch.status });
   setCopilotStatus(kind === 'deck' ? 'Generating deck…' : 'Generating slide…');
   updateCopilotRuntime({ requestInFlight:true, requestCount: copilotRuntimeStatus.requestCount + 1, lastError:'' });
   const res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
@@ -1272,9 +1262,9 @@ async function callCopilot(kind){
   let parsed;
   try{ parsed = JSON.parse(output); }
   catch(err){ throw new Error('Copilot returned text that was not valid JSON: ' + output.slice(0, 300)); }
-  let normalized = normalizeCopilotDeck(parsed, kind);
-  normalized = await enrichCopilotDeckAssets(normalized, endpoint, apiKey);
-  if(copilotEls.resultJson) copilotEls.resultJson.value = JSON.stringify(normalized, null, 2);
+  const enriched = await enrichCopilotDeckAssets(parsed, endpoint, apiKey);
+  const normalized = normalizeCopilotDeck(enriched, kind);
+  copilotEls.resultJson.value = JSON.stringify(normalized, null, 2);
   const successMessage = (normalized.summary || 'Copilot generated slides.') + ' Ready to apply.';
   setCopilotStatus(successMessage);
   recordCopilotSuccess(successMessage);
@@ -1377,6 +1367,7 @@ async function generateCopilotDeck(){
     alert(msg);
   }
 }
+
 // Stage 34K: expose the narrow dependency bridge needed by the guarded ESM Copilot core.
 // The bridge keeps mutable deck state inside legacy-app while allowing Copilot logic to migrate.
 window.LuminaCopilotDepsStage34K = {
@@ -1386,7 +1377,6 @@ window.LuminaCopilotDepsStage34K = {
   settingsStorage: COPILOT_SETTINGS_STORAGE,
   defaultEndpoint: COPILOT_DEFAULT_ENDPOINT,
   deckPromptFile: COPILOT_DECK_PROMPT_FILE,
-  previewRoot: () => document.getElementById('preview'),
   copilotRuntimeStatus,
   updateRuntime: updateCopilotRuntime,
   showToast,
@@ -1429,9 +1419,6 @@ window.LuminaCopilotCore = {
   buildCopilotUserPrompt,
   loadDeckPromptPrefix,
   extractResponsesOutputText,
-  collectCopilotStyleContext,
-  capturePreviewScreenshotDataUrl,
-  enrichCopilotDeckAssets,
   callCopilot,
   normalizeCopilotDeck,
   normalizeCopilotSlide,
