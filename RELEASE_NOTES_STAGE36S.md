@@ -8,5 +8,5 @@ Bug fix release for generated standalone HTML presentations.
 - Exposed `window.LuminaStandaloneDeckGo(index)` in generated presentations for quick debugging from the browser console.
 
 ## Preserved
-- Stage 36W/36R Copilot custom HTML demos and generated image handling.
+- Stage 36X/36R Copilot custom HTML demos and generated image handling.
 - Generated-presentation optional controls, pointer menu, drawing, annotated export, and PDF controls.
