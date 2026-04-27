@@ -22,7 +22,15 @@
   function add(id, type, fn){
     var el = byId(id);
     if(!el) return false;
-    el.addEventListener(type || 'click', function(evt){
+    var eventType = type || 'click';
+    var guardKey = '__luminaCopilotGuardBound_' + eventType;
+    if(el[guardKey]) return false;
+    el[guardKey] = true;
+    el.addEventListener(eventType, function(evt){
+      if(el.dataset && el.dataset.copilotBusy === '1'){
+        if(evt && evt.preventDefault) evt.preventDefault();
+        return;
+      }
       try{
         var result = fn(evt);
         if(result && typeof result.catch === 'function'){
