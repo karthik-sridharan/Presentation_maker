@@ -1,4 +1,4 @@
-/* Stage 36W: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
+/* Stage 36X: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
    Stage 34K filename retained for cache-compatible loader continuity.
 
    It receives a narrow dependency bridge from legacy-app-stage24c.js and keeps
@@ -42,14 +42,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36w-20260427-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36x-20260427-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage36w-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage36x-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -260,7 +260,7 @@ function createApi(deps){
   }
   function cacheBustedPromptUrl(fileName){
     const base = safeString(fileName || '').trim();
-    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36w-20260427-1');
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36x-20260427-1');
     if(!base || /^data:/i.test(base)) return base;
     return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
   }
@@ -739,7 +739,7 @@ async function callCopilot(kind){
   }
 
   return Object.freeze({
-    __stage:'stage36w-20260427-1',
+    __stage:'stage36x-20260427-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),

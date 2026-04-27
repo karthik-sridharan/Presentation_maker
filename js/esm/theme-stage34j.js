@@ -140,14 +140,23 @@ function createApi(deps){
     function buildSlideStyle(slide){
       const theme = currentThemeFromFields();
       const useTheme = slide.inheritTheme !== false;
-      const bg = useTheme ? theme.bgColor : (slide.bgColor || theme.bgColor);
-      const font = useTheme ? theme.fontColor : (slide.fontColor || theme.fontColor);
+      let bg = useTheme ? theme.bgColor : (slide.bgColor || theme.bgColor);
+      let font = useTheme ? theme.fontColor : (slide.fontColor || theme.fontColor);
+      const styleId = String(theme.beamerStyle || 'classic').toLowerCase();
+      // Stage 36X: visual theme presets should control their own canvas even on
+      // slides that were previously saved with per-slide colours.
+      if(styleId === 'chalkboard'){
+        bg = theme.bgColor || '#050807';
+        font = theme.fontColor || '#f8fafc';
+      } else if(styleId === 'notebook'){
+        bg = theme.bgColor || '#fffdf3';
+        font = theme.fontColor || '#1f2937';
+      }
       const muted = rgbaFromHex(font, 0.72);
       const line = rgbaFromHex(font, 0.14);
       const titleTransform = String(theme.titleCaps) === '1' ? 'uppercase' : 'none';
       const titleLetterSpacing = String(theme.titleCaps) === '1' ? '.04em' : 'normal';
       let extra = '';
-      const styleId = String(theme.beamerStyle || 'classic').toLowerCase();
       if(styleId === 'berkeley'){
         extra += 'padding-left:calc(3.3rem + ' + theme.sidebarWidth + 'px);';
         extra += 'background-image:linear-gradient(90deg,' + theme.chromeColor + ' 0 ' + theme.sidebarWidth + 'px, transparent ' + theme.sidebarWidth + 'px 100%),linear-gradient(180deg,' + theme.accentColor + ' 0 18px, transparent 18px 100%);';
