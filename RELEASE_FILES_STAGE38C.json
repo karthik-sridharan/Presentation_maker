@@ -1,5 +1,5 @@
 {
-  "stage": "stage38c-20260427-1",
+  "stage": "stage38c-20260427-2",
   "root": "lumina-presenter-stage38c-clean-deploy",
   "entry": "index.html",
   "notes": [
@@ -15,5 +15,7 @@
     "js/esm/",
     "prompts/dev.txt",
     "prompts/deck.txt"
-  ]
+  ],
+  "package": "lumina-presenter-stage38c-clean-deploy-v2.zip",
+  "diagnosticFix": "Scoped inspector mode tabs in Stage 38C diagnostics."
 }

@@ -2,7 +2,7 @@
 
 After deploying, open:
 
-`index.html?v=stage38c-20260427-1&clearLuminaStorage=1`
+`index.html?v=stage38c-20260427-2&clearLuminaStorage=1`
 
 Recommended manual checks:
 

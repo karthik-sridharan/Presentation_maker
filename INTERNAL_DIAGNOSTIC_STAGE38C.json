@@ -1,7 +1,7 @@
 {
-  "stage": "stage38c-20260427-1",
-  "root": "lumina-presenter-stage38c-clean-deploy",
-  "index_bytes": 484897,
+  "stage": "stage38c-20260427-2",
+  "root": "lumina-presenter-stage38c-clean-deploy-v2",
+  "index_bytes": 485309,
   "checks": {
     "stage_string": true,
     "signature": true,
@@ -18,7 +18,9 @@
     "old_docs_removed": true,
     "script_tag_balance": true,
     "style_tag_balance": true,
-    "asset_refs_exist": true
+    "asset_refs_exist": true,
+    "inspector_mode_tabs_scoped": true,
+    "toolbar_workspace_modes_not_counted_as_inspector_tabs": true
   },
   "missing_refs": [],
   "parser_tag_counts": {
@@ -30,7 +32,11 @@
   "chromium_smoke": {
     "attempted": true,
     "pass": false,
-    "note": "Headless Chromium in this container timed out before DOM dump; static asset, parser, and Stage 38C syntax checks were completed instead."
+    "note": "System Chromium/Playwright launch timed out or unavailable in this container; static asset checks and Node syntax check for the Stage 38C patch passed."
   },
-  "pass": true
+  "pass": true,
+  "diagnostic_fix": "Scoped Stage 38C inspector mode-tab diagnostics to .stage38c-inspector-tabs so the toolbar workspace mode buttons are not counted as inspector tabs.",
+  "node_syntax_check": {
+    "stage38c_toolbar_polish_inspector_reset_script": true
+  }
 }

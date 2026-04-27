@@ -17,3 +17,9 @@
 ## Diagnostics
 - Added `window.__LUMINA_STAGE38C_STATUS`, `window.__LUMINA_STAGE38C_TESTS`, and `window.LuminaStage38C`.
 - Patched diagnostics with `stage38CToolbarPolishStatus` and `stage38CSelectionAwareInspectorStatus`.
+
+
+## Stage 38C v2 diagnostic fix
+
+- Scoped the selection-aware inspector tab diagnostic to the inspector tab strip.
+- Toolbar workspace mode buttons are now reported separately and no longer make `stage38CSelectionAwareInspectorStatus.pass` fail.
