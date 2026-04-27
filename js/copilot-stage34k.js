@@ -4,7 +4,7 @@
 (function(global){
   'use strict';
   var status = global.LuminaCopilotGuardStatus = {
-    stage: 'stage37e-20260427-1',
+    stage: 'stage37f-20260427-1',
     bound: false,
     validationBound: false,
     lastAction: '',
