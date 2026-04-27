@@ -1,144 +1,776 @@
-/* Stage 34K: Guarded Copilot UI binding.
-   The button handlers resolve window.LuminaCopilotCore at click time so the
-   guarded ESM Copilot core can replace the classic fallback before use. */
-(function(global){
-  'use strict';
-  var status = global.LuminaCopilotGuardStatus = {
-    stage: 'stage36x-20260427-1',
-    bound: false,
-    validationBound: false,
-    lastAction: '',
-    buttonCount: 0,
-    errors: [],
-    generationInFlight: false,
-    duplicateClicksIgnored: 0
-  };
-  function record(message, err){
-    var msg = String(message || 'Copilot guard error');
-    if(err && err.message) msg += ': ' + err.message;
-    status.errors.push({ time: new Date().toISOString(), message: msg });
-    if(global.console && console.warn) console.warn('[Lumina Copilot Guard]', msg, err || '');
+/* Stage 36Y: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
+   Stage 34K filename retained for cache-compatible loader continuity.
+
+   It receives a narrow dependency bridge from legacy-app-stage24c.js and keeps
+   the main editor protected by the Stage 24C/34K guarded binder. */
+function safeString(value){ return String(value == null ? '' : value); }
+function noop(){ }
+function createApi(deps){
+  deps = deps || {};
+  const classicCore = deps.classicCore || null;
+  const classicCompat = !!deps.__classicCompat && !!classicCore;
+  function maybeClassic(method, fallback){
+    return function(){
+      if(classicCompat && classicCore && typeof classicCore[method] === 'function'){
+        return classicCore[method].apply(classicCore, arguments);
+      }
+      return fallback.apply(null, arguments);
+    };
   }
-  function byId(id){ return document.getElementById(id); }
-  function currentCore(){ return global.LuminaCopilotCore; }
-  var generationButtonIds = ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'];
-  function setGenerationButtonsBusy(isBusy){
-    generationButtonIds.forEach(function(id){
-      var btn = byId(id);
+  const copilotEls = deps.copilotEls || {};
+  const COPILOT_API_KEY_STORAGE = deps.apiKeyStorage || 'html-presentation-generator-openai-api-key-v1';
+  const COPILOT_SETTINGS_STORAGE = deps.settingsStorage || 'html-presentation-generator-copilot-settings-v1';
+  const COPILOT_DEFAULT_ENDPOINT = deps.defaultEndpoint || 'https://api.openai.com/v1/responses';
+  const COPILOT_DEV_PROMPT_FILE = deps.devPromptFile || 'prompts/dev.txt';
+  const COPILOT_DECK_PROMPT_FILE = deps.deckPromptFile || 'prompts/deck.txt';
+  const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
+    'Deck-level generation instructions:',
+    'Treat these as deck-only developer instructions.',
+    'Create a coherent complete presentation, not a loose collection of slides.',
+    'Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.',
+    'Make slide titles specific and informative.',
+    'When the user provides reference lecture notes, pasted excerpts, or URLs, follow that source structure closely instead of giving a generic topic overview.',
+    'When the request or these instructions ask for figures, include explicit placeholder figure blocks with concrete figure descriptions, even if no image file is available.',
+    'Use speaker notes to explain transitions, emphasis, and teaching guidance.',
+    'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
+  ].join('\n');
+  let deckPromptPrefixCache = null;
+  const store = deps.localStorage || (typeof globalThis !== 'undefined' ? globalThis.localStorage : null);
+  const fetchImpl = deps.fetch || (typeof globalThis !== 'undefined' ? globalThis.fetch : null);
+  const showToast = typeof deps.showToast === 'function' ? deps.showToast : noop;
+  const alertFn = typeof deps.alert === 'function' ? deps.alert : function(message){ if(typeof globalThis !== 'undefined' && globalThis.alert) globalThis.alert(message); };
+  const fields = deps.fields || {};
+  const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
+  const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage36z-20260427-1' };
+
+  function updateCopilotRuntime(patch){
+    if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
+    Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
+    return runtimeStatus;
+  }
+  updateCopilotRuntime({ stage:'stage36z-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+
+  function setCopilotStatus(message, isError=false){
+    updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
+    if(copilotEls.status){
+      copilotEls.status.textContent = message;
+      copilotEls.status.style.color = isError ? '#ffb4b4' : '';
+      copilotEls.status.style.borderColor = isError ? 'rgba(255,120,120,.35)' : '';
+    }
+  }
+  function getStorageItem(key){ try{ return store ? store.getItem(key) : null; }catch(_){ return null; } }
+  function setStorageItem(key, value){ try{ if(store) store.setItem(key, value); }catch(_){ } }
+  function removeStorageItem(key){ try{ if(store) store.removeItem(key); }catch(_){ } }
+
+  function isDefaultOpenAiEndpoint(endpoint){
+    try{
+      const host = new URL(endpoint || COPILOT_DEFAULT_ENDPOINT, deps.locationHref || (typeof location !== 'undefined' ? location.href : 'https://example.invalid/')).hostname;
+      return /(^|\.)api\.openai\.com$/i.test(host);
+    }catch(_){
+      return false;
+    }
+  }
+  function visibleKeyPrefix(key){
+    const k = safeString(key).trim();
+    if(!k) return '';
+    return k.slice(0, Math.min(10, k.length)) + (k.length > 10 ? '…' : '');
+  }
+  function validateCopilotApiKey(key, endpoint, options={}){
+    const k = safeString(key).trim();
+    const usingOpenAI = isDefaultOpenAiEndpoint(endpoint);
+    if(k && /^https?:\/\//i.test(k)){
+      throw new Error('The API key field contains a URL. Paste the secret key value itself, usually starting with sk-proj- or sk-, not the API keys page link.');
+    }
+    if(usingOpenAI && options.requireKey && !k){
+      throw new Error('Enter an OpenAI API key, or change the endpoint to your own backend proxy that injects credentials server-side.');
+    }
+    if(usingOpenAI && k && !/^sk-/i.test(k)){
+      throw new Error('This does not look like an OpenAI API key. OpenAI keys usually start with sk-proj- or sk-. Current value begins with: ' + visibleKeyPrefix(k));
+    }
+    if(!usingOpenAI && k && /^sk-/i.test(k)){
+      return 'You are using a custom endpoint with a key that looks like a direct OpenAI key. For production, prefer keeping the key only on your backend.';
+    }
+    if(usingOpenAI && k){
+      return 'Looks like an OpenAI key. For public deployment, move requests through a backend proxy instead of storing the key in the browser.';
+    }
+    return '';
+  }
+  function updateCopilotKeyWarning(){
+    const endpoint = (copilotEls.endpoint?.value || '').trim() || COPILOT_DEFAULT_ENDPOINT;
+    const key = (copilotEls.apiKey?.value || '').trim();
+    let warning = '';
+    let isError = false;
+    try{ warning = validateCopilotApiKey(key, endpoint, { requireKey:false }) || ''; }
+    catch(err){ warning = err.message || String(err); isError = true; }
+    updateCopilotRuntime({ lastValidationWarning: warning });
+    if(copilotEls.keyWarning){
+      copilotEls.keyWarning.textContent = warning;
+      copilotEls.keyWarning.style.display = warning ? '' : 'none';
+      copilotEls.keyWarning.style.color = isError ? '#ffb4b4' : '#ffd6a0';
+      copilotEls.keyWarning.style.borderLeftColor = isError ? 'rgba(255,120,120,.8)' : 'rgba(255,214,160,.8)';
+    }
+    return !isError;
+  }
+  function friendlyCopilotHttpError(status, message){
+    const raw = safeString(message).trim();
+    if(status === 401) return 'OpenAI rejected the API key. Check that you pasted the secret key value itself, not the API keys page URL, and that the key has not been revoked. Details: ' + raw;
+    if(status === 403) return 'The request was forbidden. Check project permissions, model access, endpoint, and whether your key is allowed to use this API. Details: ' + raw;
+    if(status === 404) return 'The endpoint or model was not found. Check the endpoint URL and model name. Details: ' + raw;
+    if(status === 429) return 'OpenAI returned a rate limit/quota error. Check billing, project limits, or wait and retry. Details: ' + raw;
+    if(status >= 500) return 'The API service returned a server error. Retry later or check the endpoint/backend logs. Details: ' + raw;
+    return raw || ('Copilot request failed with status ' + status);
+  }
+  function recordCopilotError(err){
+    const msg = (err && err.message) || safeString(err || 'Copilot failed.');
+    updateCopilotRuntime({ lastError: msg, lastErrorAt: new Date().toISOString(), requestInFlight:false });
+    return msg;
+  }
+  function recordCopilotSuccess(summary){
+    updateCopilotRuntime({ lastSuccessAt: new Date().toISOString(), lastStatus: summary || 'success', lastError:'', requestInFlight:false });
+  }
+
+  function loadCopilotSettings(){
+    try{
+      const raw = getStorageItem(COPILOT_SETTINGS_STORAGE);
+      const s = raw ? JSON.parse(raw) : {};
+      if(copilotEls.model && s.model) copilotEls.model.value = s.model;
+      if(copilotEls.endpoint && s.endpoint) copilotEls.endpoint.value = s.endpoint;
+      if(copilotEls.tone && s.tone) copilotEls.tone.value = s.tone;
+      if(copilotEls.webSearch && typeof s.webSearch === 'boolean') copilotEls.webSearch.checked = s.webSearch;
+      const key = getStorageItem(COPILOT_API_KEY_STORAGE);
+      if(copilotEls.apiKey && key) copilotEls.apiKey.value = key;
+      updateCopilotKeyWarning();
+    }catch(err){ console.warn('Could not load Copilot settings', err); updateCopilotKeyWarning(); }
+  }
+  function saveCopilotSettings(saveKey=false){
+    try{
+      const s = {
+        model: copilotEls.model?.value || 'gpt-4.1-mini',
+        endpoint: copilotEls.endpoint?.value || COPILOT_DEFAULT_ENDPOINT,
+        tone: copilotEls.tone?.value || 'clear and concise'
+      };
+      const key = (copilotEls.apiKey?.value || '').trim();
+      validateCopilotApiKey(key, s.endpoint, { requireKey:false });
+      setStorageItem(COPILOT_SETTINGS_STORAGE, JSON.stringify(s));
+      if(saveKey && copilotEls.apiKey){
+        if(key) setStorageItem(COPILOT_API_KEY_STORAGE, key);
+        else removeStorageItem(COPILOT_API_KEY_STORAGE);
+        showToast(key ? 'Saved Copilot key locally.' : 'Cleared saved Copilot key.');
+      }
+      updateCopilotKeyWarning();
+      return true;
+    }catch(err){
+      const msg = recordCopilotError(err);
+      console.warn('Could not save Copilot settings', err);
+      setCopilotStatus(msg, true);
+      updateCopilotKeyWarning();
+      showToast('Copilot settings need attention.');
+      return false;
+    }
+  }
+
+  function copilotBlockSchema(){
+    return {
+      type:'object',
+      additionalProperties:false,
+      properties:{
+        mode:{ type:'string', enum:['panel','plain','pseudocode','pseudocode-latex','placeholder','custom','image'] },
+        title:{ type:'string', description:'Short editor-only label for the block.' },
+        content:{ type:'string', description:'Slide content. For panel/plain, use generator syntax. For custom blocks, use self-contained HTML. For image blocks, use this as a short caption.' },
+        assetPrompt:{ type:'string', description:'For image blocks, the prompt used to generate the image. Use an empty string for non-image blocks.' },
+        assetAlt:{ type:'string', description:'For image blocks, short alt text. Use an empty string for non-image blocks.' },
+        assetSize:{ type:'string', description:'For image blocks, one of wide, square, tall, 1536x1024, 1024x1024, or 1024x1536. Use an empty string for non-image blocks.' }
+      },
+      required:['mode','title','content','assetPrompt','assetAlt','assetSize']
+    };
+  }
+  function copilotSlideSchema(){
+    const block = copilotBlockSchema();
+    return {
+      type:'object',
+      additionalProperties:false,
+      properties:{
+        slideType:{ type:'string', enum:['title-center','single','two-col'] },
+        headingLevel:{ type:'string', enum:['h1','h2'] },
+        bgColor:{ type:'string' },
+        fontColor:{ type:'string' },
+        inheritTheme:{ type:'boolean' },
+        title:{ type:'string' },
+        kicker:{ type:'string' },
+        lede:{ type:'string' },
+        leftBlocks:{ type:'array', items:block },
+        rightBlocks:{ type:'array', items:block },
+        notesTitle:{ type:'string' },
+        notesBody:{ type:'string' }
+      },
+      required:['slideType','headingLevel','bgColor','fontColor','inheritTheme','title','kicker','lede','leftBlocks','rightBlocks','notesTitle','notesBody']
+    };
+  }
+  function copilotDeckSchema(){
+    return {
+      type:'object',
+      additionalProperties:false,
+      properties:{
+        deckTitle:{ type:'string' },
+        summary:{ type:'string' },
+        slides:{ type:'array', items:copilotSlideSchema() }
+      },
+      required:['deckTitle','summary','slides']
+    };
+  }
+  function copilotSystemPrompt(){
+    return [
+      'You are a presentation copilot embedded in an HTML slide generator.',
+      'Return only JSON that matches the provided schema.',
+      'Create editable slide objects that work in the generator.',
+      'Use only slideType values title-center, single, or two-col.',
+      'Use h1 for title slides and h2 for normal slides.',
+      'Set inheritTheme to true unless the user explicitly asks for custom colors.',
+      'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
+      'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
+    'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
+      'Do not invent citations or external image-file URLs. When a figure is needed, prefer an image block with a concrete assetPrompt; the app will generate the image.',
+      'If the user asks to follow lecture notes or a reference link, do not answer as a generic topic summary; organize the deck around the referenced material and say in the summary when reference content could not be accessed.',
+      'If the instructions mention figures, diagrams, plots, pictures, or visuals, prefer mode image with a concrete assetPrompt instead of a vague placeholder.',
+      'For image blocks, set mode to image, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize. Use empty asset fields for non-image blocks.',
+      'When several small related visuals are needed on one slide, ask for one composite image/mosaic in a single image block instead of many separate image blocks.',
+      'Write image prompts that match the slide style and avoid dense embedded text unless the user explicitly asks for text inside the image.',
+      'For demos, animations, simulations, calculators, or arbitrary HTML, use mode custom and put a complete self-contained HTML document or fragment in content. Use inline CSS and JavaScript. Keep it sandbox-friendly: no external libraries, no network calls, no popups, no tracking, and no infinite heavy loops.',
+      'When provided with style context or a style screenshot, use it to match colors, spacing, and visual tone. Do not embed the screenshot itself unless the user explicitly asks.'
+    ].join('\n');
+  }
+  function compactDeckForCopilot(){
+    const deck = typeof deps.currentDeckData === 'function' ? deps.currentDeckData() : {};
+    const slides = Array.isArray(deck.slides) ? deck.slides : [];
+    return {
+      deckTitle: deck.deckTitle,
+      theme: deck.theme,
+      slideCount: slides.length,
+      slides: slides.slice(0, 20).map((s, idx)=>({
+        index: idx + 1,
+        slideType: s.slideType,
+        title: s.title,
+        kicker: s.kicker,
+        lede: s.lede,
+        leftBlocks: (s.leftBlocks || []).map(b=>({ mode:b.mode, title:b.title, content:safeString(b.content).slice(0, 700) })),
+        rightBlocks: (s.rightBlocks || []).map(b=>({ mode:b.mode, title:b.title, content:safeString(b.content).slice(0, 700) }))
+      }))
+    };
+  }
+  function cacheBustedPromptUrl(fileName){
+    const base = safeString(fileName || '').trim();
+    const version = safeString(deps.stage || runtimeStatus.stage || 'stage36z-20260427-1');
+    if(!base || /^data:/i.test(base)) return base;
+    return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'v=' + encodeURIComponent(version);
+  }
+  async function fetchPromptFile(fileName){
+    const name = safeString(fileName || '').trim();
+    if(!name || typeof fetchImpl !== 'function') return { text:'', source:name, status: typeof fetchImpl === 'function' ? 'empty-file-name' : 'fetch-unavailable' };
+    try{
+      const res = await fetchImpl(cacheBustedPromptUrl(name), { cache:'no-store' });
+      if(res && res.ok){
+        const text = safeString(await res.text()).trim();
+        return { text, source:name, status: text ? 'loaded-file' : 'blank-file' };
+      }
+      return { text:'', source:name, status: res ? ('file-http-' + res.status) : 'file-no-response' };
+    }catch(err){
+      return { text:'', source:name, status:'file-load-error', error:(err && err.message) || safeString(err) };
+    }
+  }
+  async function loadDeckPromptPrefix(){
+    if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
+    const attempts = [];
+    const dev = await fetchPromptFile(COPILOT_DEV_PROMPT_FILE);
+    attempts.push(dev);
+    let chosen = dev;
+    if(!chosen.text){
+      const deck = await fetchPromptFile(COPILOT_DECK_PROMPT_FILE);
+      attempts.push(deck);
+      if(deck.text) chosen = deck;
+    }
+    const lastError = attempts.map(a=>a.error).filter(Boolean).join('\n');
+    if(lastError) updateCopilotRuntime({ deckPromptLastError:lastError });
+    deckPromptPrefixCache = chosen.text || COPILOT_DEFAULT_DECK_PROMPT_PREFIX;
+    const status = chosen.text ? chosen.status : attempts.map(a=>a.source + ':' + a.status).join(';') + ';used-builtin-default';
+    const source = chosen.text ? chosen.source : 'builtin-default';
+    updateCopilotRuntime({
+      devPromptFile: COPILOT_DEV_PROMPT_FILE,
+      deckPromptFile: COPILOT_DECK_PROMPT_FILE,
+      deckPromptSource: source,
+      deckPromptStatus: status,
+      deckPromptAttempts: attempts.map(a=>({ source:a.source, status:a.status })),
+      deckPromptAppliesTo: 'deck-only',
+      deckPromptLoadedAt: new Date().toISOString()
+    });
+    return deckPromptPrefixCache;
+  }
+  function textHasUrl(text){ return /https?:\/\/\S+/i.test(safeString(text)); }
+  function shouldUseOpenAiWebSearch(kind, endpoint, promptText, deckPromptPrefix){
+    const enabled = !!(copilotEls.webSearch && copilotEls.webSearch.checked);
+    if(kind !== 'deck') return { use:false, status:'deck-only' };
+    if(!enabled) return { use:false, status:'disabled' };
+    if(!isDefaultOpenAiEndpoint(endpoint)) return { use:false, status:'custom-endpoint-disabled' };
+    if(!textHasUrl(promptText + '\n' + deckPromptPrefix)) return { use:false, status:'no-url-detected' };
+    return { use:true, status:'enabled-url-detected' };
+  }
+  async function buildCopilotUserPrompt(kind){
+    const prompt = (copilotEls.prompt?.value || '').trim();
+    if(!prompt) throw new Error('Tell Copilot what to create first.');
+    const count = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || 1)));
+    const tone = copilotEls.tone?.value || 'clear and concise';
+    const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
+    const parts = [mode];
+    parts.push(
+      'User request: ' + prompt,
+      'Target slide count: ' + (kind === 'deck' ? count : 1),
+      'Tone/style: ' + tone,
+      collectCopilotStyleContext(),
+      'Current deck context JSON:',
+      JSON.stringify(compactDeckForCopilot(), null, 2),
+      'Important: output JSON with deckTitle, summary, and slides. For single-slide requests, slides must contain exactly one slide.'
+    );
+    return parts.join('\n\n');
+  }
+  function extractResponsesOutputText(data){
+    if(data && typeof data.output_text === 'string') return data.output_text;
+    const parts = [];
+    (data?.output || []).forEach(item=>{
+      (item.content || []).forEach(c=>{
+        if(typeof c.text === 'string') parts.push(c.text);
+        else if(typeof c.output_text === 'string') parts.push(c.output_text);
+      });
+    });
+    return parts.join('\n').trim();
+  }
+  
+
+function collectCopilotStyleContext(){
+  const lines = [];
+  try{
+    const deck = typeof deps !== 'undefined' && typeof deps.currentDeckData === 'function' ? deps.currentDeckData() : (typeof currentDeckData === 'function' ? currentDeckData() : {});
+    const theme = deck && deck.theme ? deck.theme : {};
+    const activeSlides = typeof deps !== 'undefined' && typeof deps.getSlides === 'function' ? deps.getSlides() : (typeof slides !== 'undefined' ? slides : []);
+    const activeIdx = typeof deps !== 'undefined' && typeof deps.getActiveIndex === 'function' ? deps.getActiveIndex() : (typeof activeIndex !== 'undefined' ? activeIndex : -1);
+    const currentSlide = activeIdx >= 0 && activeSlides && activeSlides[activeIdx] ? activeSlides[activeIdx] : null;
+    lines.push('Presentation style context:');
+    lines.push('Deck title: ' + safeString(deck && deck.deckTitle || fields.deckTitle?.value || 'Untitled presentation'));
+    if(theme && typeof theme === 'object'){
+      lines.push('Theme style: ' + safeString(theme.style || theme.name || 'default'));
+      lines.push('Theme accent color: ' + safeString(theme.accentColor || theme.accent || theme.primary || ''));
+      lines.push('Theme background: ' + safeString(theme.bgColor || theme.background || ''));
+      lines.push('Theme font color: ' + safeString(theme.fontColor || theme.textColor || ''));
+    }
+    if(currentSlide){
+      lines.push('Current slide title: ' + safeString(currentSlide.title || ''));
+      lines.push('Current slide type: ' + safeString(currentSlide.slideType || ''));
+      lines.push('Current slide background: ' + safeString(currentSlide.bgColor || ''));
+      lines.push('Current slide font color: ' + safeString(currentSlide.fontColor || ''));
+    }
+  }catch(err){
+    lines.push('Presentation style context unavailable: ' + ((err && err.message) || safeString(err)));
+  }
+  return lines.join('\n');
+}
+function collectCopilotCssText(){
+  const pieces = [];
+  try{
+    Array.from(document.styleSheets || []).forEach(sheet=>{
+      try{ Array.from(sheet.cssRules || []).forEach(rule=>pieces.push(rule.cssText)); }catch(_){ }
+    });
+  }catch(_){ }
+  return pieces.join('\n');
+}
+async function captureCopilotStyleScreenshot(){
+  try{
+    const previewRoot = document.getElementById('preview');
+    const node = previewRoot && (previewRoot.querySelector('.slide') || previewRoot.firstElementChild);
+    if(!node || typeof XMLSerializer === 'undefined'){
+      updateCopilotRuntime({ styleScreenshotStatus:'unavailable' });
+      return '';
+    }
+    const rect = node.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width || node.offsetWidth || 960));
+    const height = Math.max(1, Math.round(rect.height || node.offsetHeight || 540));
+    const clone = node.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    const markup = new XMLSerializer().serializeToString(clone);
+    const cssText = collectCopilotCssText();
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '"><foreignObject x="0" y="0" width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style><![CDATA[' + cssText + ']]></style>' + markup + '</div></foreignObject></svg>';
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    const dataUrl = await new Promise(resolve=>{
+      img.onload = ()=>{
+        try{ ctx.drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/png')); }
+        catch(_){ resolve(''); }
+      };
+      img.onerror = ()=>resolve('');
+      img.src = url;
+    });
+    updateCopilotRuntime({ styleScreenshotStatus:dataUrl ? 'attached' : 'capture-failed', lastStyleScreenshotAt:new Date().toISOString() });
+    return dataUrl;
+  }catch(err){
+    updateCopilotRuntime({ styleScreenshotStatus:'capture-error', styleScreenshotError:(err && err.message) || safeString(err) });
+    return '';
+  }
+}
+function copilotEscapeAttr(value){
+  return safeString(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+function deriveCopilotImagesEndpoint(endpoint){
+  try{
+    const url = new URL(endpoint || COPILOT_DEFAULT_ENDPOINT, (typeof location !== 'undefined' && location.href) || 'https://example.invalid/');
+    const path = url.pathname || '/v1/responses';
+    if(/\/responses\/?$/i.test(path)) url.pathname = path.replace(/\/responses\/?$/i, '/images/generations');
+    else if(/\/chat\/completions\/?$/i.test(path)) url.pathname = path.replace(/\/chat\/completions\/?$/i, '/images/generations');
+    else if(/\/v\d+\/?$/i.test(path)) url.pathname = path.replace(/\/?$/, '/images/generations');
+    else url.pathname = path.replace(/\/$/, '') + '/images/generations';
+    url.search = '';
+    return url.toString();
+  }catch(_){
+    return 'https://api.openai.com/v1/images/generations';
+  }
+}
+function copilotImageSizeHint(value){
+  const hint = safeString(value).toLowerCase();
+  if(hint.includes('square') || hint.includes('1024x1024')) return '1024x1024';
+  if(hint.includes('tall') || hint.includes('portrait') || hint.includes('1024x1536')) return '1024x1536';
+  return '1536x1024';
+}
+function buildCopilotFigureHtml(src, alt){
+  return '<figure data-figure-kind="image" data-box-x="0" data-box-y="0" data-box-w="" data-box-h="" data-original-w="" data-original-h="" data-lock-aspect="1" data-user-moved="0" data-user-sized="0" data-crop="0" data-z-index="1" data-object-fit="contain"><img src="' + copilotEscapeAttr(src) + '" alt="' + copilotEscapeAttr(alt || 'Generated image') + '" /></figure>';
+}
+function materializeCopilotImageBlock(block, src){
+  const caption = safeString(block.content || '').trim();
+  return {
+    mode:'plain',
+    title:block.title || 'Generated image',
+    content:'\\begin{figurehtml}\n' + buildCopilotFigureHtml(src, block.assetAlt || block.title || 'Generated image') + '\n\\end{figurehtml}' + (caption ? ('\n\n' + caption) : '')
+  };
+}
+function materializeCopilotImageFallback(block, reason){
+  const prompt = safeString(block.assetPrompt || block.content || block.title).trim();
+  return {
+    mode:'placeholder',
+    title:block.title || 'Image placeholder',
+    content:'Image requested but automatic generation failed. Prompt: ' + prompt + (reason ? ('\nReason: ' + reason) : '')
+  };
+}
+async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
+  const imageFetch = (typeof fetchImpl === 'function') ? fetchImpl : (typeof fetch === 'function' ? fetch.bind(window) : null);
+  if(!imageFetch) throw new Error('Fetch is unavailable for image generation.');
+  const prompt = safeString(block.assetPrompt || block.content || block.title).trim();
+  if(!prompt) throw new Error('Image block is missing assetPrompt.');
+  const headers = { 'Content-Type':'application/json' };
+  if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
+  const body = {
+    model:'gpt-image-1',
+    prompt:[
+      'Create an original slide image. Match the presentation style and avoid dense embedded text unless explicitly requested.',
+      collectCopilotStyleContext(),
+      slide && slide.title ? ('Slide title: ' + slide.title) : '',
+      'Image request: ' + prompt
+    ].filter(Boolean).join('\n'),
+    size: copilotImageSizeHint(block.assetSize || (slide && slide.slideType === 'two-col' ? 'square' : 'wide'))
+  };
+  const res = await imageFetch(deriveCopilotImagesEndpoint(endpoint), { method:'POST', headers, body:JSON.stringify(body) });
+  const raw = await res.text();
+  let data;
+  try{ data = raw ? JSON.parse(raw) : {}; }catch(_){ data = { raw }; }
+  if(!res.ok){
+    const message = data?.error?.message || raw || ('Image generation failed with status ' + res.status);
+    throw new Error(friendlyCopilotHttpError(res.status, message));
+  }
+  const first = data && Array.isArray(data.data) ? data.data[0] : null;
+  const firstOutput = data && Array.isArray(data.output) ? data.output[0] : null;
+  const imagePayload = firstOutput && Array.isArray(firstOutput.content)
+    ? firstOutput.content.find(item => item && (item.type === 'output_image' || item.b64_json || item.image_base64 || item.base64 || item.url))
+    : null;
+  const b64 = (first && (first.b64_json || first.base64 || first.image_base64))
+    || (imagePayload && (imagePayload.b64_json || imagePayload.base64 || imagePayload.image_base64))
+    || (firstOutput && (firstOutput.b64_json || firstOutput.base64 || firstOutput.image_base64));
+  const url = (first && first.url) || (imagePayload && imagePayload.url) || (firstOutput && firstOutput.url);
+  if(b64) return 'data:image/png;base64,' + b64;
+  if(url) return safeString(url);
+  throw new Error('Image generation returned no usable image payload.');
+}
+function normalizeCopilotCustomBlock(block){
+  if(!block || block.mode !== 'custom') return block;
+  const raw = safeString(block.content || '').trim();
+  if(/<html[\s>]/i.test(raw) || /<!DOCTYPE/i.test(raw) || !raw) return block;
+  return Object.assign({}, block, {
+    content:'<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Inter,Arial,sans-serif}*{box-sizing:border-box}body{min-height:100vh}</style></head><body>' + raw + '</body></html>'
+  });
+}
+async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
+  const deck = rawDeck && typeof rawDeck === 'object' ? rawDeck : {};
+  const deckSlides = Array.isArray(deck.slides) ? deck.slides : [];
+  const pending = [];
+  deckSlides.forEach((slide)=>{
+    ['leftBlocks','rightBlocks'].forEach(column=>{
+      const arr = Array.isArray(slide[column]) ? slide[column] : [];
+      arr.forEach((block, blockIndex)=>{
+        if(block && block.mode === 'custom') arr[blockIndex] = normalizeCopilotCustomBlock(block);
+        if(block && block.mode === 'image') pending.push({ slide, column, blockIndex, block });
+      });
+    });
+  });
+  if(!pending.length) return deck;
+  const totalImages = pending.length;
+  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:totalImages });
+  for(let i=0; i<pending.length; i+=1){
+    const item = pending[i];
+    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + totalImages + '…');
+    try{
+      const src = await generateCopilotImageAsset(item.block, endpoint, apiKey, item.slide);
+      item.slide[item.column][item.blockIndex] = materializeCopilotImageBlock(item.block, src);
+    }catch(err){
+      item.slide[item.column][item.blockIndex] = materializeCopilotImageFallback(item.block, (err && err.message) || safeString(err));
+    }
+  }
+  return deck;
+}
+
+async function callCopilot(kind){
+    if(typeof fetchImpl !== 'function') throw new Error('Fetch is not available in this browser, so Copilot cannot call the API endpoint.');
+    saveCopilotSettings(false);
+    const endpoint = (copilotEls.endpoint?.value || '').trim() || COPILOT_DEFAULT_ENDPOINT;
+    const apiKey = (copilotEls.apiKey?.value || '').trim();
+    const model = (copilotEls.model?.value || '').trim() || 'gpt-4.1-mini';
+    validateCopilotApiKey(apiKey, endpoint, { requireKey: isDefaultOpenAiEndpoint(endpoint) });
+    updateCopilotKeyWarning();
+    const headers = { 'Content-Type':'application/json' };
+    if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
+    const deckPromptPrefix = kind === 'deck' ? await loadDeckPromptPrefix() : '';
+    const userPrompt = await buildCopilotUserPrompt(kind);
+    let systemContent = copilotSystemPrompt();
+    if(kind === 'deck' && deckPromptPrefix){
+      systemContent += '\n\nDeck-only developer instructions from ' + (runtimeStatus.deckPromptSource || COPILOT_DEV_PROMPT_FILE || COPILOT_DECK_PROMPT_FILE) + ':\n' + deckPromptPrefix;
+    }
+    const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, deckPromptPrefix);
+    callCopilot._styleScreenshot = await captureCopilotStyleScreenshot();
+    const body = {
+      model,
+      input:[
+        { role:'system', content: systemContent },
+        { role:'user', content: (function(){
+          const content = [{ type:'input_text', text:userPrompt }];
+          if(callCopilot._styleScreenshot){
+            content.push({ type:'input_text', text:'The next image is a screenshot of the current slide preview. Use it only as visual style context.' });
+            content.push({ type:'input_image', image_url:callCopilot._styleScreenshot });
+          }
+          return content;
+        })() }
+      ],
+      text:{ format:{ type:'json_schema', name:'presentation_deck', schema:copilotDeckSchema(), strict:true } },
+      store:false
+    };
+    if(webSearch.use){
+      body.tools = [{ type:'web_search' }];
+      body.tool_choice = 'auto';
+    }
+    updateCopilotRuntime({ webSearchEnabled: !!webSearch.use, webSearchStatus: webSearch.status });
+    setCopilotStatus(kind === 'deck' ? 'Generating deck…' : 'Generating slide…');
+    updateCopilotRuntime({ requestInFlight:true, requestCount: Number(runtimeStatus.requestCount || 0) + 1, lastError:'' });
+    const res = await fetchImpl(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
+    const raw = await res.text();
+    let data;
+    try{ data = raw ? JSON.parse(raw) : {}; }catch(err){ data = { raw }; }
+    if(!res.ok){
+      const message = data?.error?.message || raw || ('Copilot request failed with status ' + res.status);
+      throw new Error(friendlyCopilotHttpError(res.status, message));
+    }
+    const output = extractResponsesOutputText(data);
+    if(!output) throw new Error('Copilot returned an empty response.');
+    let parsed;
+    try{ parsed = JSON.parse(output); }
+    catch(err){ throw new Error('Copilot returned text that was not valid JSON: ' + output.slice(0, 300)); }
+    const enriched = await enrichCopilotDeckAssets(parsed, endpoint, apiKey);
+    const normalized = normalizeCopilotDeck(enriched, kind);
+    if(copilotEls.resultJson) copilotEls.resultJson.value = JSON.stringify(normalized, null, 2);
+    const successMessage = (normalized.summary || 'Copilot generated slides.') + ' Ready to apply.';
+    setCopilotStatus(successMessage);
+    recordCopilotSuccess(successMessage);
+    return normalized;
+  }
+  function normalizeCopilotDeck(deck, kind='deck'){
+    const rawSlides = Array.isArray(deck?.slides) ? deck.slides : [];
+    if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
+    const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
+    const requestedCount = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+    const deckSlides = normalizedSlides.slice(0, requestedCount);
+    if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
+      updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
+    }
+    return {
+      deckTitle: safeString(deck?.deckTitle || fields.deckTitle?.value || 'Generated presentation'),
+      summary: safeString(deck?.summary || ''),
+      slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : deckSlides
+    };
+  }
+  function normalizeCopilotSlide(slide){
+    const s = normalizeSlide(slide || {});
+    if(!['title-center','single','two-col'].includes(s.slideType)) s.slideType = 'single';
+    s.headingLevel = ['h1','h2'].includes(s.headingLevel) ? s.headingLevel : (s.slideType === 'title-center' ? 'h1' : 'h2');
+    s.bgColor = s.bgColor || '#ffffff';
+    s.fontColor = s.fontColor || '#111111';
+    s.inheritTheme = s.inheritTheme !== false;
+    s.title = s.title || 'Untitled slide';
+    s.kicker = s.kicker || '';
+    s.lede = s.lede || '';
+    s.leftBlocks = Array.isArray(s.leftBlocks) ? s.leftBlocks.map(normalizeBlock) : [];
+    s.rightBlocks = s.slideType === 'two-col' && Array.isArray(s.rightBlocks) ? s.rightBlocks.map(normalizeBlock) : [];
+    if(s.slideType === 'title-center'){
+      s.leftBlocks = [];
+      s.rightBlocks = [];
+    }
+    s.notesTitle = s.notesTitle || 'Speaker notes';
+    s.notesBody = s.notesBody || '';
+    return s;
+  }
+  function parseCopilotResult(){
+    const raw = (copilotEls.resultJson?.value || '').trim();
+    if(!raw) throw new Error('No Copilot result to apply yet.');
+    return normalizeCopilotDeck(JSON.parse(raw), 'deck');
+  }
+  function getSlides(){ return typeof deps.getSlides === 'function' ? deps.getSlides() : []; }
+  function setSlides(value){ if(typeof deps.setSlides === 'function') deps.setSlides(value); }
+  function getActiveIndex(){ return typeof deps.getActiveIndex === 'function' ? deps.getActiveIndex() : -1; }
+  function setActiveIndex(value){ if(typeof deps.setActiveIndex === 'function') deps.setActiveIndex(value); }
+  function applyCopilotFirstSlide(deck){
+    const payload = deck || parseCopilotResult();
+    const slide = payload.slides[0];
+    if(!slide) throw new Error('No slide found in Copilot result.');
+    if(typeof deps.applySlideToForm === 'function') deps.applySlideToForm(slide);
+    const currentSlides = getSlides().slice();
+    const idx = getActiveIndex();
+    if(idx >= 0 && idx < currentSlides.length){
+      currentSlides[idx] = slide;
+      setSlides(currentSlides);
+    }
+    if(typeof deps.buildPreview === 'function') deps.buildPreview();
+    if(typeof deps.renderDeckList === 'function') deps.renderDeckList();
+    if(typeof deps.scheduleAutosave === 'function') deps.scheduleAutosave('Autosaved after Copilot slide apply.');
+    showToast('Applied Copilot slide.');
+  }
+  function appendCopilotSlides(deck){
+    const payload = deck || parseCopilotResult();
+    const newSlides = payload.slides.map(normalizeCopilotSlide);
+    if(!newSlides.length) throw new Error('No slides found in Copilot result.');
+    const combined = (getSlides().length ? getSlides().slice() : []).concat(newSlides);
+    setSlides(combined);
+    setActiveIndex(combined.length - newSlides.length);
+    if(typeof deps.applySlideToForm === 'function') deps.applySlideToForm(combined[getActiveIndex()]);
+    if(typeof deps.buildPreview === 'function') deps.buildPreview();
+    if(typeof deps.renderDeckList === 'function') deps.renderDeckList();
+    if(typeof deps.scheduleAutosave === 'function') deps.scheduleAutosave('Autosaved after appending Copilot slides.');
+    showToast('Appended Copilot slides.');
+  }
+  function replaceDeckWithCopilot(deck){
+    const payload = deck || parseCopilotResult();
+    const newSlides = payload.slides.map(normalizeCopilotSlide);
+    if(!newSlides.length) throw new Error('No slides found in Copilot result.');
+    if(fields.deckTitle) fields.deckTitle.value = payload.deckTitle || fields.deckTitle.value;
+    setSlides(newSlides);
+    setActiveIndex(0);
+    if(typeof deps.applySlideToForm === 'function') deps.applySlideToForm(newSlides[0]);
+    if(typeof deps.buildPreview === 'function') deps.buildPreview();
+    if(typeof deps.renderDeckList === 'function') deps.renderDeckList();
+    if(typeof deps.persistAutosaveNow === 'function') deps.persistAutosaveNow('Autosaved after replacing deck with Copilot result.');
+    showToast('Replaced deck with Copilot result.');
+  }
+  let copilotGenerationInFlight = false;
+  function setCopilotGenerationButtonsBusy(isBusy){
+    ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'].forEach(id=>{
+      const btn = typeof document !== 'undefined' ? document.getElementById(id) : null;
       if(!btn) return;
       btn.dataset.copilotBusy = isBusy ? '1' : '0';
       btn.disabled = !!isBusy;
       btn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
     });
   }
-  function add(id, type, fn){
-    var el = byId(id);
-    if(!el) return false;
-    var eventType = type || 'click';
-    var guardKey = '__luminaCopilotGuardBound_' + eventType;
-    if(el[guardKey]) return false;
-    el[guardKey] = true;
-    el.addEventListener(eventType, function(evt){
-      if(evt && evt.preventDefault) evt.preventDefault();
-      if(evt && evt.stopPropagation) evt.stopPropagation();
-      if(evt && evt.stopImmediatePropagation) evt.stopImmediatePropagation();
-      if(el.dataset && el.dataset.copilotBusy === '1'){
-        status.duplicateClicksIgnored += 1;
-        return;
-      }
-      try{
-        var result = fn(evt);
-        if(result && typeof result.catch === 'function'){
-          result.catch(function(err){
-            record('Copilot action failed for #' + id, err);
-            alert(setCoreError(err));
-          });
-        }
-      }catch(err){
-        record('Copilot action failed for #' + id, err);
-        alert(setCoreError(err));
-      }
-    }, true);
-    status.buttonCount += 1;
-    return true;
-  }
-
-  function setCoreError(err){
-    var core = currentCore();
-    var msg = (err && err.message) || String(err || 'Copilot failed.');
-    if(core && typeof core.recordCopilotError === 'function') msg = core.recordCopilotError(err || msg);
-    if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus(msg, true);
-    return msg;
-  }
-  function safeValidate(){
-    var core = currentCore();
-    if(core && typeof core.updateCopilotKeyWarning === 'function'){
-      try{ return core.updateCopilotKeyWarning(); }
-      catch(err){ setCoreError(err); return false; }
-    }
-    return true;
-  }
-  function callCore(method){
-    var core = currentCore();
-    if(!core || typeof core[method] !== 'function') throw new Error('Copilot core is not ready: ' + method);
-    return core[method].apply(core, Array.prototype.slice.call(arguments, 1));
-  }
-  function runGeneration(label, method){
-    var args = Array.prototype.slice.call(arguments, 2);
-    if(status.generationInFlight){
-      status.duplicateClicksIgnored += 1;
-      var core = currentCore();
-      if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus('Copilot is already generating. Wait for the current request to finish.', true);
+  async function withCopilotGenerationLock(label, task){
+    if(copilotGenerationInFlight || runtimeStatus.requestInFlight){
+      setCopilotStatus('Copilot is already generating. Wait for the current request to finish before starting another.', true);
       return null;
     }
-    status.generationInFlight = true;
-    setGenerationButtonsBusy(true);
-    var p;
+    copilotGenerationInFlight = true;
+    setCopilotGenerationButtonsBusy(true);
+    updateCopilotRuntime({ activeGenerationAction: label || 'generation', requestInFlight:true });
     try{
-      p = callCore.apply(null, [method].concat(args));
-    }catch(err){
-      status.generationInFlight = false;
-      setGenerationButtonsBusy(false);
-      throw err;
+      return await task();
+    }finally{
+      copilotGenerationInFlight = false;
+      setCopilotGenerationButtonsBusy(false);
+      updateCopilotRuntime({ activeGenerationAction:'', requestInFlight:false });
     }
-    return Promise.resolve(p).finally(function(){
-      status.generationInFlight = false;
-      setGenerationButtonsBusy(false);
+  }
+  async function generateCopilotSlide(applyMode){
+    return withCopilotGenerationLock('slide', async ()=>{
+      try{
+        const deck = await callCopilot('slide');
+        if(applyMode === 'append') appendCopilotSlides(deck);
+        else applyCopilotFirstSlide(deck);
+      }catch(err){
+        console.error(err);
+        const msg = recordCopilotError(err);
+        setCopilotStatus(msg, true);
+        alertFn(msg);
+      }
+    });
+  }
+  async function generateCopilotDeck(){
+    return withCopilotGenerationLock('deck', async ()=>{
+      try{
+        const deck = await callCopilot('deck');
+        if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
+        else appendCopilotSlides(deck);
+      }catch(err){
+        console.error(err);
+        const msg = recordCopilotError(err);
+        setCopilotStatus(msg, true);
+        alertFn(msg);
+      }
     });
   }
 
-  function bind(){
-    var core = currentCore();
-    if(!core){
-      record('LuminaCopilotCore is missing. Main app still works, but Copilot controls are disabled.');
-      status.bound = false;
-      return;
-    }
-    try{
-      if(typeof core.loadCopilotSettings === 'function') core.loadCopilotSettings();
-      ['copilotApiKey','copilotEndpoint'].forEach(function(id){ var el = byId(id); if(el) el.addEventListener('input', safeValidate); });
-      status.validationBound = true;
-      safeValidate();
-      add('saveCopilotKeyBtn', 'click', function(){ status.lastAction = 'save settings'; return callCore('saveCopilotSettings', true); });
-      var model = byId('copilotModel'); if(model) model.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot model setting', err); } });
-      var endpoint = byId('copilotEndpoint'); if(endpoint) endpoint.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot endpoint setting', err); } });
-      var tone = byId('copilotTone'); if(tone) tone.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot tone setting', err); } });
-      add('copilotDraftSlideBtn', 'click', function(){ status.lastAction = 'draft current slide'; return runGeneration('draft current slide', 'generateCopilotSlide', 'replace'); });
-      add('copilotAddSlideBtn', 'click', function(){ status.lastAction = 'append generated slide'; return runGeneration('append generated slide', 'generateCopilotSlide', 'append'); });
-      add('copilotGenerateDeckBtn', 'click', function(){ status.lastAction = 'generate deck'; return runGeneration('generate deck', 'generateCopilotDeck'); });
-      add('copilotApplyFirstSlideBtn', 'click', function(){ status.lastAction = 'apply first slide'; return callCore('applyCopilotFirstSlide'); });
-      add('copilotAppendResultBtn', 'click', function(){ status.lastAction = 'append result'; return callCore('appendCopilotSlides'); });
-      add('copilotReplaceDeckBtn', 'click', function(){ status.lastAction = 'replace deck'; return callCore('replaceDeckWithCopilot'); });
-      status.bound = true;
-      if(typeof currentCore().setCopilotStatus === 'function'){
-        currentCore().setCopilotStatus('Copilot ready. Main app is guarded from Copilot startup failures.');
-      }
-    }catch(err){
-      status.bound = false;
-      record('Copilot binding failed. Main app should remain usable.', err);
-      if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus('Copilot failed to initialize. Main editor should still work.', true);
-    }
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, { once:true });
-  else bind();
-})(window);
+  return Object.freeze({
+    __stage:'stage36z-20260427-1',
+    __source:'esm:js/esm/copilot-stage34k.js',
+    __classicCompat: classicCompat,
+    setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
+    loadCopilotSettings: maybeClassic('loadCopilotSettings', loadCopilotSettings),
+    saveCopilotSettings: maybeClassic('saveCopilotSettings', saveCopilotSettings),
+    validateCopilotApiKey: maybeClassic('validateCopilotApiKey', validateCopilotApiKey),
+    updateCopilotKeyWarning: maybeClassic('updateCopilotKeyWarning', updateCopilotKeyWarning),
+    friendlyCopilotHttpError: maybeClassic('friendlyCopilotHttpError', friendlyCopilotHttpError),
+    recordCopilotError: maybeClassic('recordCopilotError', recordCopilotError),
+    recordCopilotSuccess: maybeClassic('recordCopilotSuccess', recordCopilotSuccess),
+    copilotRuntimeStatus: runtimeStatus,
+    copilotBlockSchema: maybeClassic('copilotBlockSchema', copilotBlockSchema),
+    copilotSlideSchema: maybeClassic('copilotSlideSchema', copilotSlideSchema),
+    copilotDeckSchema: maybeClassic('copilotDeckSchema', copilotDeckSchema),
+    copilotSystemPrompt: maybeClassic('copilotSystemPrompt', copilotSystemPrompt),
+    compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
+    buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
+    loadDeckPromptPrefix: maybeClassic('loadDeckPromptPrefix', loadDeckPromptPrefix),
+    shouldUseOpenAiWebSearch: maybeClassic('shouldUseOpenAiWebSearch', shouldUseOpenAiWebSearch),
+    extractResponsesOutputText: maybeClassic('extractResponsesOutputText', extractResponsesOutputText),
+    callCopilot: maybeClassic('callCopilot', callCopilot),
+    normalizeCopilotDeck: maybeClassic('normalizeCopilotDeck', normalizeCopilotDeck),
+    normalizeCopilotSlide: maybeClassic('normalizeCopilotSlide', normalizeCopilotSlide),
+    parseCopilotResult: maybeClassic('parseCopilotResult', parseCopilotResult),
+    applyCopilotFirstSlide: maybeClassic('applyCopilotFirstSlide', applyCopilotFirstSlide),
+    appendCopilotSlides: maybeClassic('appendCopilotSlides', appendCopilotSlides),
+    replaceDeckWithCopilot: maybeClassic('replaceDeckWithCopilot', replaceDeckWithCopilot),
+    generateCopilotSlide: maybeClassic('generateCopilotSlide', generateCopilotSlide),
+    generateCopilotDeck: maybeClassic('generateCopilotDeck', generateCopilotDeck)
+  });
+}
+
+export { createApi };
+export default { createApi };
