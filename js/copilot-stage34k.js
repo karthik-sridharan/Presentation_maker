@@ -4,7 +4,7 @@
 (function(global){
   'use strict';
   var status = global.LuminaCopilotGuardStatus = {
-    stage: 'stage36ac-20260427-1',
+    stage: 'stage36ae-20260427-1',
     bound: false,
     validationBound: false,
     lastAction: '',
@@ -99,6 +99,70 @@
     reader.onerror = function(){ record('Could not read deck spec file', reader.error || new Error(file.name)); };
     reader.readAsText(file);
   }
+  function readReferenceFileInput(evt){
+    var input = evt && evt.target ? evt.target : byId('copilotReferenceFile');
+    var files = input && input.files ? Array.prototype.slice.call(input.files) : [];
+    if(!files.length) return;
+    var core = currentCore();
+    var allowedText = /\.(txt|md|markdown|json|csv|tex|html?|xml|yaml|yml)$/i;
+    var skipped = [];
+    var maxPdfBytes = 50 * 1024 * 1024;
+    var jobs = files.map(function(file){
+      return new Promise(function(resolve){
+        var name = file && file.name ? file.name : 'reference-file';
+        var type = file && file.type ? file.type : '';
+        var isPdf = /\.pdf$/i.test(name) || /application\/pdf/i.test(type);
+        if(isPdf){
+          if(file.size && file.size > maxPdfBytes){
+            skipped.push(name + ' (PDF is larger than 50 MB)');
+            resolve({ kind:'skip' });
+            return;
+          }
+          var pdfReader = new FileReader();
+          pdfReader.onload = function(){
+            var dataUrl = String(pdfReader.result || '');
+            var comma = dataUrl.indexOf(',');
+            var base64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+            if(!base64){ skipped.push(name); resolve({ kind:'skip' }); return; }
+            resolve({ kind:'pdf', file:{ filename:name, file_data:base64, bytes:file.size || 0 } });
+          };
+          pdfReader.onerror = function(){ skipped.push(name); resolve({ kind:'skip' }); };
+          pdfReader.readAsDataURL(file);
+          return;
+        }
+        if(file && name && !allowedText.test(name) && !/^text\//i.test(type) && !/json/i.test(type)){
+          skipped.push(name);
+          resolve({ kind:'skip' });
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(){
+          var text = String(reader.result || '');
+          var maxChars = 140000;
+          if(text.length > maxChars) text = text.slice(0, maxChars) + '\n\n[File truncated to ' + maxChars + ' characters before adding to Copilot references.]';
+          resolve({ kind:'text', text:'--- Reference file: ' + name + ' ---\n' + text });
+        };
+        reader.onerror = function(){ skipped.push(name); resolve({ kind:'skip' }); };
+        reader.readAsText(file);
+      });
+    });
+    Promise.all(jobs).then(function(items){
+      var textChunks = items.filter(function(x){ return x && x.kind === 'text' && x.text; }).map(function(x){ return x.text; });
+      var pdfFiles = items.filter(function(x){ return x && x.kind === 'pdf' && x.file; }).map(function(x){ return x.file; });
+      var added = textChunks.join('\n\n');
+      if(added){
+        if(core && typeof core.setCopilotReferenceText === 'function') core.setCopilotReferenceText(added, true);
+        else { var box = byId('copilotReferenceText'); if(box) box.value = [box.value, added].filter(Boolean).join('\n\n'); }
+      }
+      if(pdfFiles.length && core && typeof core.setCopilotReferencePdfFiles === 'function') core.setCopilotReferencePdfFiles(pdfFiles, true);
+      var loadedCount = textChunks.length + pdfFiles.length;
+      var message = 'Loaded ' + loadedCount + ' reference file' + (loadedCount === 1 ? '' : 's') + '.';
+      if(pdfFiles.length) message += ' Attached ' + pdfFiles.length + ' PDF' + (pdfFiles.length === 1 ? '' : 's') + ' for Copilot.';
+      if(skipped.length) message += ' Skipped unsupported file(s): ' + skipped.join(', ') + '.';
+      if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus(message);
+      if(input) input.value = '';
+    });
+  }
   function parseSpecOnly(){
     var core = currentCore();
     if(!core || typeof core.parseCopilotDeckSpecText !== 'function') throw new Error('Copilot spec parser is not ready.');
@@ -151,6 +215,9 @@
       var endpoint = byId('copilotEndpoint'); if(endpoint) endpoint.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot endpoint setting', err); } });
       var tone = byId('copilotTone'); if(tone) tone.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot tone setting', err); } });
       var specFile = byId('copilotSpecFile'); if(specFile && !specFile.__luminaCopilotSpecFileBound){ specFile.__luminaCopilotSpecFileBound = true; specFile.addEventListener('change', readSpecFileInput); }
+      var referenceFile = byId('copilotReferenceFile'); if(referenceFile && !referenceFile.__luminaCopilotReferenceFileBound){ referenceFile.__luminaCopilotReferenceFileBound = true; referenceFile.addEventListener('change', readReferenceFileInput); }
+      add('copilotCheckRefsBtn', 'click', function(){ status.lastAction = 'check references'; var core=currentCore(); if(core && typeof core.summarizeCopilotReferences === 'function' && typeof core.setCopilotStatus === 'function') core.setCopilotStatus(core.summarizeCopilotReferences()); return false; });
+      add('copilotClearRefsBtn', 'click', function(){ status.lastAction = 'clear references'; var core=currentCore(); if(core && typeof core.setCopilotReferenceText === 'function') core.setCopilotReferenceText('', false); else { var rt=byId('copilotReferenceText'); if(rt) rt.value=''; } if(core && typeof core.setCopilotReferenceUrls === 'function') core.setCopilotReferenceUrls(''); else { var ru=byId('copilotReferenceUrls'); if(ru) ru.value=''; } if(core && typeof core.setCopilotReferencePdfFiles === 'function') core.setCopilotReferencePdfFiles([], false); if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus('Cleared Copilot reference material.'); return false; });
       add('copilotParseSpecBtn', 'click', function(){ status.lastAction = 'parse deck spec'; return parseSpecOnly(); });
       add('copilotGenerateSpecDeckBtn', 'click', function(){ status.lastAction = 'generate deck from spec'; return runGeneration('generate deck from spec', 'generateCopilotDeckFromSpec'); });
       add('copilotDraftSlideBtn', 'click', function(){ status.lastAction = 'draft current slide'; return runGeneration('draft current slide', 'generateCopilotSlide', 'replace'); });

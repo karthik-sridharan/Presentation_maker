@@ -181,7 +181,10 @@ const copilotEls = {
   model: document.getElementById('copilotModel'),
   endpoint: document.getElementById('copilotEndpoint'),
   apiKey: document.getElementById('copilotApiKey'),
+  webSearch: document.getElementById('copilotWebSearch'),
   specText: document.getElementById('copilotSpecText'),
+  referenceText: document.getElementById('copilotReferenceText'),
+  referenceUrls: document.getElementById('copilotReferenceUrls'),
   status: document.getElementById('copilotStatus'),
   resultJson: document.getElementById('copilotResultJson'),
   keyWarning: document.getElementById('copilotKeyWarning')
@@ -200,6 +203,7 @@ const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
   'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
 ].join('\n');
 let deckPromptPrefixCache = null;
+let copilotReferencePdfFiles = [];
 const copilotRuntimeStatus = window.LuminaCopilotRuntimeStatus = {
   stage: window.LUMINA_STAGE || 'stage34m-20260425-1',
   lastValidationWarning: '',
@@ -1079,6 +1083,82 @@ function parseCopilotDeckSpecText(rawText){
 function getCopilotDeckSpecText(){ return safeString(copilotEls.specText && copilotEls.specText.value || '').trim(); }
 function setCopilotDeckSpecText(text){ if(copilotEls.specText) copilotEls.specText.value = safeString(text || ''); }
 function summarizeCopilotDeckSpec(plan){ const slideSpecs=Array.isArray(plan && plan.slides) ? plan.slides : []; const figures=slideSpecs.reduce((n,s)=>n + ((s.figures || []).length), 0); const demos=slideSpecs.reduce((n,s)=>n + ((s.demos || []).length), 0); return 'Deck spec parsed: ' + (plan.targetSlideCount || slideSpecs.length || '?') + ' target slides, ' + slideSpecs.length + ' slide specs, ' + figures + ' figures, ' + demos + ' demos.'; }
+function normalizeCopilotReferenceUrls(raw){
+  return safeString(raw || '')
+    .split(/\n+/)
+    .map(s=>s.trim())
+    .filter(Boolean)
+    .filter((value, idx, arr)=>arr.indexOf(value) === idx);
+}
+function isLikelyPdfReferenceUrl(url){ return /\.pdf(?:$|[?#])/i.test(safeString(url || '')); }
+function getCopilotReferenceText(){ return safeString(copilotEls.referenceText && copilotEls.referenceText.value || '').trim(); }
+function setCopilotReferenceText(text, append=false){
+  if(!copilotEls.referenceText) return;
+  const incoming = safeString(text || '').trim();
+  if(!append){ copilotEls.referenceText.value = incoming; return; }
+  const existing = safeString(copilotEls.referenceText.value || '').trim();
+  copilotEls.referenceText.value = [existing, incoming].filter(Boolean).join('\n\n');
+}
+function getCopilotReferenceUrls(){ return normalizeCopilotReferenceUrls(copilotEls.referenceUrls && copilotEls.referenceUrls.value || ''); }
+function setCopilotReferenceUrls(text){ if(copilotEls.referenceUrls) copilotEls.referenceUrls.value = safeString(text || ''); }
+function setCopilotReferencePdfFiles(files, append=false){
+  const incoming = Array.isArray(files) ? files.map((file, idx)=>({
+    filename: safeString(file && (file.filename || file.name) || ('reference-' + (idx + 1) + '.pdf')),
+    file_data: safeString(file && file.file_data || ''),
+    bytes: Number(file && file.bytes || 0) || 0
+  })).filter(file=>file.file_data) : [];
+  copilotReferencePdfFiles = append ? copilotReferencePdfFiles.concat(incoming) : incoming;
+  const seen = new Set();
+  copilotReferencePdfFiles = copilotReferencePdfFiles.filter(file=>{
+    const key = file.filename + ':' + file.bytes + ':' + file.file_data.slice(0, 32);
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  updateCopilotRuntime({ referencePdfFileCount: copilotReferencePdfFiles.length, referencePdfBytes: copilotReferencePdfFiles.reduce((n,file)=>n + (Number(file.bytes)||0), 0) });
+}
+function getCopilotReferencePdfFiles(){ return copilotReferencePdfFiles.slice(); }
+function getCopilotReferenceMaterial(){
+  const urls = getCopilotReferenceUrls();
+  const text = getCopilotReferenceText();
+  const pdfFiles = getCopilotReferencePdfFiles();
+  const pdfUrls = urls.filter(isLikelyPdfReferenceUrl);
+  const maxChars = 70000;
+  const clipped = text.length > maxChars ? text.slice(0, maxChars) + '\n\n[Reference text truncated to ' + maxChars + ' characters by Lumina before sending to Copilot.]' : text;
+  return {
+    hasAny: !!(urls.length || clipped.trim() || pdfFiles.length),
+    urls,
+    pdfUrls,
+    pdfFiles,
+    text: clipped,
+    originalTextLength: text.length,
+    truncated: text.length > maxChars,
+    pdfBytes: pdfFiles.reduce((n,file)=>n + (Number(file.bytes)||0), 0)
+  };
+}
+function summarizeCopilotReferences(){
+  const refs = getCopilotReferenceMaterial();
+  const parts = [];
+  parts.push(refs.urls.length + ' URL' + (refs.urls.length === 1 ? '' : 's'));
+  parts.push(refs.originalTextLength + ' reference text characters');
+  parts.push(refs.pdfFiles.length + ' uploaded PDF' + (refs.pdfFiles.length === 1 ? '' : 's'));
+  if(refs.pdfUrls.length) parts.push(refs.pdfUrls.length + ' PDF URL' + (refs.pdfUrls.length === 1 ? '' : 's'));
+  if(refs.truncated) parts.push('text will be truncated in the API prompt');
+  return 'Reference material: ' + parts.join(', ') + '. PDFs are attached directly when using the default OpenAI Responses endpoint.';
+}
+function appendCopilotPdfReferenceInputs(content, endpoint){
+  const refs = getCopilotReferenceMaterial();
+  if(!refs.pdfFiles.length && !refs.pdfUrls.length) return { attached:0, skipped:0 };
+  if(!isDefaultOpenAiEndpoint(endpoint)) return { attached:0, skipped:refs.pdfFiles.length + refs.pdfUrls.length };
+  refs.pdfFiles.forEach(file=>{
+    content.push({ type:'input_file', filename:file.filename || 'reference.pdf', file_data:file.file_data });
+  });
+  refs.pdfUrls.forEach(url=>{
+    content.push({ type:'input_file', file_url:url });
+  });
+  return { attached:refs.pdfFiles.length + refs.pdfUrls.length, skipped:0 };
+}
+
 async function buildCopilotUserPrompt(kind, deckSpecPlan){
   const prompt = (copilotEls.prompt?.value || '').trim();
   const isSpecMode = kind === 'deck-spec';
@@ -1102,6 +1182,17 @@ async function buildCopilotUserPrompt(kind, deckSpecPlan){
       '- Every requiredBlocks item with kind=customHtmlDemo must become a mode custom block with self-contained HTML/CSS/JS in content.',
       '- Do not replace required demos or figures with placeholders unless the spec explicitly says placeholder.',
       '- Preserve the requested order of slides and topics. Do not add a second alternate deck.'
+    );
+  }
+  const referenceMaterial = getCopilotReferenceMaterial();
+  if(referenceMaterial.hasAny){
+    parts.push(
+      'Reference material supplied by the user. Use this as grounding/source material for the deck. Prioritize it over generic background knowledge. Do not invent facts that conflict with it.',
+      referenceMaterial.urls.length ? ('Reference URLs to use, in order:\n' + referenceMaterial.urls.map((url, idx)=>(idx + 1) + '. ' + url).join('\n')) : 'Reference URLs: none',
+      referenceMaterial.pdfFiles.length ? ('Uploaded PDF reference files attached to this request: ' + referenceMaterial.pdfFiles.map(file=>file.filename).join(', ')) : 'Uploaded PDF reference files: none',
+      referenceMaterial.pdfUrls.length ? ('PDF reference URLs attached as file inputs: ' + referenceMaterial.pdfUrls.join(', ')) : 'PDF reference URLs attached as file inputs: none',
+      referenceMaterial.text ? ('Uploaded/pasted reference text:\n' + referenceMaterial.text) : 'Uploaded/pasted reference text: none',
+      'Reference material rules: preserve the important definitions, examples, notation, claims, figures, examples, and ordering from the supplied references; use attached PDFs as source documents when present; use web search for listed non-PDF URLs when available; mention in summary if URL content could not be accessed.'
     );
   }
   parts.push(
@@ -1342,12 +1433,24 @@ async function callCopilot(kind, deckSpecPlan){
           content.push({ type:'input_text', text:'The next image is a screenshot of the current slide preview. Use it only as visual style context.' });
           content.push({ type:'input_image', image_url:callCopilot._styleScreenshot });
         }
+        const pdfAttachStatus = appendCopilotPdfReferenceInputs(content, endpoint);
+        callCopilot._pdfAttachStatus = pdfAttachStatus;
+        if(pdfAttachStatus.skipped){
+          content.push({ type:'input_text', text:'PDF references were uploaded but not attached because the current endpoint is not the default OpenAI Responses endpoint. Use pasted text or the default OpenAI endpoint for direct PDF input.' });
+        }
         return content;
       })() }
     ],
     text:{ format:{ type:'json_schema', name:'presentation_deck', schema:copilotDeckSchema(), strict:true } },
     store:false
   };
+  const referenceMaterialForSearch = getCopilotReferenceMaterial();
+  const shouldUseRefsWebSearch = !!(copilotEls.webSearch && copilotEls.webSearch.checked && isDefaultOpenAiEndpoint(endpoint) && referenceMaterialForSearch.urls.length && (kind === 'deck' || kind === 'deck-spec'));
+  if(shouldUseRefsWebSearch){
+    body.tools = [{ type:'web_search' }];
+    body.tool_choice = 'auto';
+  }
+  updateCopilotRuntime({ referenceUrlCount: referenceMaterialForSearch.urls.length, referencePdfUrlCount: referenceMaterialForSearch.pdfUrls.length, referencePdfFileCount: referenceMaterialForSearch.pdfFiles.length, referencePdfBytes: referenceMaterialForSearch.pdfBytes, referencePdfInputsAttached: callCopilot._pdfAttachStatus ? callCopilot._pdfAttachStatus.attached : 0, referencePdfInputsSkipped: callCopilot._pdfAttachStatus ? callCopilot._pdfAttachStatus.skipped : 0, referenceTextChars: referenceMaterialForSearch.originalTextLength, referenceTextTruncated: !!referenceMaterialForSearch.truncated, webSearchEnabled: shouldUseRefsWebSearch, webSearchStatus: shouldUseRefsWebSearch ? 'enabled-reference-urls' : (referenceMaterialForSearch.urls.length ? 'reference-urls-without-web-search' : 'no-reference-urls') });
   setCopilotStatus(kind === 'deck' ? 'Generating deck…' : 'Generating slide…');
   updateCopilotRuntime({ requestInFlight:true, requestCount: copilotRuntimeStatus.requestCount + 1, lastError:'' });
   const res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
@@ -1578,6 +1681,14 @@ window.LuminaCopilotCore = {
   getCopilotDeckSpecText,
   setCopilotDeckSpecText,
   summarizeCopilotDeckSpec,
+  getCopilotReferenceText,
+  setCopilotReferenceText,
+  getCopilotReferenceUrls,
+  setCopilotReferenceUrls,
+  setCopilotReferencePdfFiles,
+  getCopilotReferencePdfFiles,
+  getCopilotReferenceMaterial,
+  summarizeCopilotReferences,
   extractResponsesOutputText,
   callCopilot,
   normalizeCopilotDeck,
