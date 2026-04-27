@@ -932,7 +932,11 @@ function copilotSystemPrompt(){
     'Set inheritTheme to true unless the user explicitly asks for custom colors.',
     'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
     'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
-    'Do not invent citations, URLs, or image files. Use placeholder blocks when a figure is needed.'
+    'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
+    'Do not invent citations or external image-file URLs. When a figure is needed, prefer mode image with a concrete assetPrompt; the app will generate the image.',
+    'For image blocks, set mode to image, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize.',
+    'When several small related visuals are needed on one slide, ask for one composite image/mosaic in a single image block instead of many separate image blocks.',
+    'For demos, animations, simulations, calculators, or arbitrary HTML, use mode custom and put complete self-contained HTML/CSS/JS in content.'
   ].join('\n');
 }
 function compactDeckForCopilot(){
@@ -1009,6 +1013,7 @@ async function buildCopilotUserPrompt(kind){
   parts.push(
     'User request: ' + prompt,
     'Target slide count: ' + (kind === 'deck' ? count : 1),
+    'Do not exceed the target slide count. Do not append a second alternative deck after the first deck.',
     'Tone/style: ' + tone,
     collectCopilotStyleContext(),
     'Current deck context JSON:',
@@ -1161,8 +1166,7 @@ async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
       slide && slide.title ? ('Slide title: ' + slide.title) : '',
       'Image request: ' + prompt
     ].filter(Boolean).join('\n'),
-    size: copilotImageSizeHint(block.assetSize || (slide && slide.slideType === 'two-col' ? 'square' : 'wide')),
-    response_format:'b64_json'
+    size: copilotImageSizeHint(block.assetSize || (slide && slide.slideType === 'two-col' ? 'square' : 'wide'))
   };
   const res = await imageFetch(deriveCopilotImagesEndpoint(endpoint), { method:'POST', headers, body:JSON.stringify(body) });
   const raw = await res.text();
@@ -1173,8 +1177,14 @@ async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
     throw new Error(friendlyCopilotHttpError(res.status, message));
   }
   const first = data && Array.isArray(data.data) ? data.data[0] : null;
-  const b64 = first && (first.b64_json || first.base64 || first.image_base64);
-  const url = first && first.url;
+  const firstOutput = data && Array.isArray(data.output) ? data.output[0] : null;
+  const imagePayload = firstOutput && Array.isArray(firstOutput.content)
+    ? firstOutput.content.find(item => item && (item.type === 'output_image' || item.b64_json || item.image_base64 || item.base64 || item.url))
+    : null;
+  const b64 = (first && (first.b64_json || first.base64 || first.image_base64))
+    || (imagePayload && (imagePayload.b64_json || imagePayload.base64 || imagePayload.image_base64))
+    || (firstOutput && (firstOutput.b64_json || firstOutput.base64 || firstOutput.image_base64));
+  const url = (first && first.url) || (imagePayload && imagePayload.url) || (firstOutput && firstOutput.url);
   if(b64) return 'data:image/png;base64,' + b64;
   if(url) return safeString(url);
   throw new Error('Image generation returned no usable image payload.');
@@ -1201,15 +1211,11 @@ async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
     });
   });
   if(!pending.length) return deck;
-  const limit = Math.min(pending.length, 6);
-  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:limit });
+  const totalImages = pending.length;
+  updateCopilotRuntime({ requestedGeneratedImages:pending.length, generatedImagesPlanned:totalImages });
   for(let i=0; i<pending.length; i+=1){
     const item = pending[i];
-    if(i >= limit){
-      item.slide[item.column][item.blockIndex] = materializeCopilotImageFallback(item.block, 'Skipped because more than 6 images were requested in one generation.');
-      continue;
-    }
-    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + limit + '…');
+    setCopilotStatus('Generating image ' + (i + 1) + ' of ' + totalImages + '…');
     try{
       const src = await generateCopilotImageAsset(item.block, endpoint, apiKey, item.slide);
       item.slide[item.column][item.blockIndex] = materializeCopilotImageBlock(item.block, src);
@@ -1274,10 +1280,15 @@ function normalizeCopilotDeck(deck, kind='deck'){
   const rawSlides = Array.isArray(deck?.slides) ? deck.slides : [];
   if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
   const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
+  const requestedCount = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+  const deckSlides = normalizedSlides.slice(0, requestedCount);
+  if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
+    updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
+  }
   return {
     deckTitle: String(deck?.deckTitle || fields.deckTitle.value || 'Generated presentation'),
     summary: String(deck?.summary || ''),
-    slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : normalizedSlides
+    slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : deckSlides
   };
 }
 function normalizeCopilotSlide(slide){
@@ -1343,29 +1354,59 @@ function replaceDeckWithCopilot(deck){
   persistAutosaveNow('Autosaved after replacing deck with Copilot result.');
   showToast('Replaced deck with Copilot result.');
 }
-async function generateCopilotSlide(applyMode){
+let copilotGenerationInFlight = false;
+function setCopilotGenerationButtonsBusy(isBusy){
+  ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    btn.dataset.copilotBusy = isBusy ? '1' : '0';
+    btn.disabled = !!isBusy;
+    btn.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+  });
+}
+async function withCopilotGenerationLock(label, task){
+  if(copilotGenerationInFlight || copilotRuntimeStatus.requestInFlight){
+    setCopilotStatus('Copilot is already generating. Wait for the current request to finish before starting another.', true);
+    return null;
+  }
+  copilotGenerationInFlight = true;
+  setCopilotGenerationButtonsBusy(true);
+  updateCopilotRuntime({ activeGenerationAction: label || 'generation', requestInFlight:true });
   try{
-    const deck = await callCopilot('slide');
-    if(applyMode === 'append') appendCopilotSlides(deck);
-    else applyCopilotFirstSlide(deck);
-  }catch(err){
-    console.error(err);
-    const msg = recordCopilotError(err);
-    setCopilotStatus(msg, true);
-    alert(msg);
+    return await task();
+  }finally{
+    copilotGenerationInFlight = false;
+    setCopilotGenerationButtonsBusy(false);
+    updateCopilotRuntime({ activeGenerationAction:'', requestInFlight:false });
   }
 }
+async function generateCopilotSlide(applyMode){
+  return withCopilotGenerationLock('slide', async ()=>{
+    try{
+      const deck = await callCopilot('slide');
+      if(applyMode === 'append') appendCopilotSlides(deck);
+      else applyCopilotFirstSlide(deck);
+    }catch(err){
+      console.error(err);
+      const msg = recordCopilotError(err);
+      setCopilotStatus(msg, true);
+      alert(msg);
+    }
+  });
+}
 async function generateCopilotDeck(){
-  try{
-    const deck = await callCopilot('deck');
-    if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
-    else appendCopilotSlides(deck);
-  }catch(err){
-    console.error(err);
-    const msg = recordCopilotError(err);
-    setCopilotStatus(msg, true);
-    alert(msg);
-  }
+  return withCopilotGenerationLock('deck', async ()=>{
+    try{
+      const deck = await callCopilot('deck');
+      if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
+      else appendCopilotSlides(deck);
+    }catch(err){
+      console.error(err);
+      const msg = recordCopilotError(err);
+      setCopilotStatus(msg, true);
+      alert(msg);
+    }
+  });
 }
 
 // Stage 34K: expose the narrow dependency bridge needed by the guarded ESM Copilot core.
