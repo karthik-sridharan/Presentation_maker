@@ -1,0 +1,32 @@
+{
+  "stage": "stage39b-20260427-1",
+  "checkedAt": "2026-04-27T23:05:37.947Z",
+  "fileBytes": 690620,
+  "stageSignaturePresent": true,
+  "topStagePresent": true,
+  "cssPresent": true,
+  "scriptPresent": true,
+  "previousStage39APreserved": true,
+  "stage38QPreserved": true,
+  "diagnosticsPatchPresent": true,
+  "apiPresent": true,
+  "applyGatePresent": true,
+  "filePanelsPresent": true,
+  "referenceSummaryPresent": true,
+  "expectedWorkflowTabs": true,
+  "applyGatingTerms": true,
+  "loadedScriptCount": 79,
+  "styleCount": 35,
+  "missingAssets": [],
+  "tests": {
+    "stage": true,
+    "inserted": true,
+    "preserves39A": true,
+    "preserves38Q": true,
+    "diagnostics": true,
+    "usability": true,
+    "workflow": true,
+    "gating": true
+  },
+  "pass": true
+}

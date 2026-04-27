@@ -1,0 +1,18 @@
+{
+  "stage": "stage39b-20260427-1",
+  "signature": "index-inline-stage39b-ai-drawer-usability-reference-gating-20260427-1",
+  "files": [
+    "index.html",
+    "INTERNAL_DIAGNOSTIC_STAGE39B.json",
+    "RELEASE_NOTES_STAGE39B.md",
+    "README_DEPLOY_STAGE39B.md",
+    "DEPLOY_CHECK_STAGE39B.md",
+    "NEXT_STAGE_CONTEXT_STAGE39B.md"
+  ],
+  "preserves": [
+    "Stage 39A AI drawer workflow polish",
+    "Stage 38Q AI/Advanced drawer split",
+    "Stage 38R diagnostics alignment",
+    "Guarded ESM runtime"
+  ]
+}
