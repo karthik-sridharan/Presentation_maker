@@ -1,0 +1,12 @@
+{
+  "stage": "stage38n-20260427-1",
+  "indexStageSignature": "index-inline-stage38n-independent-panel-heights-preview-lift-20260427-1",
+  "focus": "Independent left/center/right panel heights; fixed tiny preview quick dock; slightly larger preview.",
+  "expected": {
+    "stage38NIndependentPanelHeightsStatus.tests.pass": true,
+    "stage38NIndependentPanelHeightsStatus.tests.panelSpreadFixed": true,
+    "stage38NIndependentPanelHeightsStatus.tests.quickDockTiny": true,
+    "stage38NIndependentPanelHeightsStatus.tests.internalScrollIsolation": true
+  },
+  "behaviorChanged": false
+}

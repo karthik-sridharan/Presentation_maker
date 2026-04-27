@@ -1,0 +1,12 @@
+{
+  "stage": "stage38n-20260427-1",
+  "filesChanged": [
+    "index.html",
+    "RELEASE_NOTES_STAGE38N.md",
+    "README_DEPLOY_STAGE38N.md",
+    "DEPLOY_CHECK_STAGE38N.md",
+    "INTERNAL_DIAGNOSTIC_STAGE38N.json",
+    "NEXT_STAGE_CONTEXT_STAGE38N.md",
+    "RELEASE_FILES_STAGE38N.json"
+  ]
+}
