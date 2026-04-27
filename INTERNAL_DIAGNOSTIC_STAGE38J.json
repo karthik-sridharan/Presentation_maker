@@ -1,0 +1,14 @@
+{
+  "stage": "stage38j-20260427-1",
+  "base": "stage38i-20260427-1",
+  "patch": "rail declutter and compact thumbnails",
+  "expectedDiagnosticKeys": [
+    "stage38JRailDeclutterStatus",
+    "stage38JRailDeclutterDiagnostics"
+  ],
+  "safety": [
+    "outline DOM preserved but hidden",
+    "safe command deck sync unchanged",
+    "no new MutationObserver sync"
+  ]
+}
