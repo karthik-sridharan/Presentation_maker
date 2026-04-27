@@ -465,9 +465,23 @@ async function downloadAnnotatedSlides(){
 }
 function hideLaserPointer(){if(laserPointer)laserPointer.style.display='none';slideEls.forEach(el=>el.classList.remove('laser-active'));}
 function updateLaserPointer(evt){if(!laserPointer || !slideEls[active] || laserPointerMode==='none'){ hideLaserPointer(); return; }const slide = slideEls[active];const mapOpen = !!(slideMap && slideMap.classList.contains('open'));if(drawingMode || mapOpen){ hideLaserPointer(); return; }const r = slide.getBoundingClientRect();const inside = evt.clientX >= r.left && evt.clientX <= r.right && evt.clientY >= r.top && evt.clientY <= r.bottom;if(!inside){ hideLaserPointer(); return; }slide.classList.add('laser-active');laserPointer.style.display='block';laserPointer.style.transform='translate('+evt.clientX+'px,'+evt.clientY+'px)';}
-function render(){slideEls.forEach((el,i)=>{el.classList.toggle('active',i===active);if(i!==active) el.classList.remove('laser-active');});renderLiveDrawAnnotations();const initActive=()=>{initializeSlideAnimations(slideEls[active]);hideLaserPointer();fitFiguresIn(document);};if(window.MathJax&&typeof window.MathJax.typesetPromise==='function'){if(typeof window.MathJax.typesetClear==='function')window.MathJax.typesetClear(slideEls);window.MathJax.typesetPromise(slideEls.filter(el=>el.classList.contains('active'))).then(initActive).catch(initActive);}else{initActive();}}
-function go(i){if(i<0||i>=slideEls.length)return;active=i;if(drawingMode) drawingSlideIndex=active;render();slideMap.classList.remove('open');}
+function setVisibleSlideState(){
+  if(!slideEls.length) return;
+  active=Math.max(0,Math.min(slideEls.length-1,Number(active)||0));
+  slideEls.forEach((el,i)=>{
+    const isActive=i===active;
+    el.classList.toggle('active',isActive);
+    el.hidden=!isActive;
+    el.setAttribute('aria-hidden',isActive?'false':'true');
+    el.style.display=isActive?'block':'none';
+    if(!isActive) el.classList.remove('laser-active');
+  });
+  document.querySelectorAll('[data-go]').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.go)===active));
+}
+function render(){setVisibleSlideState();renderLiveDrawAnnotations();const initActive=()=>{initializeSlideAnimations(slideEls[active]);hideLaserPointer();fitFiguresIn(slideEls[active]||document);};if(window.MathJax&&typeof window.MathJax.typesetPromise==='function'){if(typeof window.MathJax.typesetClear==='function')window.MathJax.typesetClear(slideEls);window.MathJax.typesetPromise(slideEls.filter(el=>el.classList.contains('active'))).then(initActive).catch(initActive);}else{initActive();}}
+function go(i){const target=Number(i);if(!Number.isFinite(target)||target<0||target>=slideEls.length)return;active=target;if(drawingMode) drawingSlideIndex=active;render();if(slideEls[active]){try{slideEls[active].scrollTop=0;}catch(_){}}if(slideMap)slideMap.classList.remove('open');}
 function advanceOrGoNext(){ if(activeSlideHasPendingAnimations()){ advanceSlideAnimation(slideEls[active]); return; } go(active+1); }
+window.LuminaStandaloneDeckGo=go;
 document.getElementById('prevBtn').addEventListener('click',()=>go(active-1));
 document.getElementById('nextBtn').addEventListener('click',()=>advanceOrGoNext());
 document.getElementById('fullscreenBtn').addEventListener('click',()=>{schedulePresentationControlsFade();togglePresentationFullscreen();});
@@ -483,6 +497,7 @@ document.querySelectorAll('.pdf-button').forEach(btn=>btn.addEventListener('clic
 if(pdfCancelBtn) pdfCancelBtn.addEventListener('click',closePdfModal);
 if(pdfGenerateBtn) pdfGenerateBtn.addEventListener('click',()=>generatePdfFromSlides(Number(pdfSlidesPerPage && pdfSlidesPerPage.value || 4)));
 document.querySelectorAll('[data-go]').forEach(btn=>btn.addEventListener('click',()=>go(Number(btn.dataset.go))));
+if(slideMapList){slideMapList.addEventListener('click',evt=>{const btn=evt.target&&evt.target.closest?evt.target.closest('[data-go]'):null;if(btn){evt.preventDefault();go(Number(btn.dataset.go));}});}
 if(drawClearBtn) drawClearBtn.addEventListener('click',()=>{ const svg=getDrawSurface(active); if(svg){ svg.innerHTML=''; saveSurface(active); } });
 if(drawExitBtn) drawExitBtn.addEventListener('click',()=>exitDrawingMode());
 const touchAdvanceTap={time:0,x:0,y:0,slide:-1};
