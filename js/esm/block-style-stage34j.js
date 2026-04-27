@@ -19,6 +19,15 @@ function contains(list, value){
   return list.indexOf(value) >= 0;
 }
 
+function normalizeFontSize(value){
+  if(value === undefined || value === null || value === '') return '';
+  var raw = String(value).trim();
+  var n = Number(raw.replace(/px$/i, ''));
+  if(isFinite(n)) return Math.max(8, Math.min(120, n)) + 'px';
+  if(/^\d+(?:\.\d+)?(?:px|rem|em|pt)$/i.test(raw)) return raw;
+  return '';
+}
+
 export function createApi(deps){
   deps = deps || {};
   var escapeAttr = deps.escapeAttr || fallbackEscapeAttr;
@@ -28,6 +37,7 @@ export function createApi(deps){
     var fontScale = finiteNumber(s.fontScale, 1);
     return {
       fontScale: Math.max(0.6, Math.min(2.5, fontScale)),
+      fontSize: normalizeFontSize(s.fontSize),
       fontFamily: s.fontFamily || 'inherit',
       fontColor: s.fontColor || '#111111',
       bulletType: s.bulletType || 'disc'
@@ -50,13 +60,13 @@ export function createApi(deps){
 
   function blockWrapperStyle(block){
     var s = normalizeBlockStyle((block && block.style) || {});
-    return '--block-font-scale:' + s.fontScale + ';--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--block-bullet-type:' + s.bulletType + ';';
+    return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--block-bullet-type:' + s.bulletType + ';';
   }
 
   function titleWrapperStyle(style, heading){
     var s = normalizeBlockStyle(style || {});
     var baseMap = { h1:'5.6rem', h2:'3.1rem', h3:'2.45rem', h4:'2.1rem', h5:'1.8rem', h6:'1.55rem' };
-    return '--block-font-scale:' + s.fontScale + ';--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--title-base-size:' + (baseMap[String(heading || 'h2').toLowerCase()] || '3.1rem') + ';';
+    return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--title-base-size:' + (baseMap[String(heading || 'h2').toLowerCase()] || '3.1rem') + ';';
   }
 
   return {
