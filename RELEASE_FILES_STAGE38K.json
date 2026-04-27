@@ -1,0 +1,14 @@
+{
+  "stage": "stage38k-20260427-1",
+  "signature": "index-inline-stage38k-compact-toolbar-preview-lift-20260427-1",
+  "base": "stage38j-20260427-1",
+  "files": [
+    "index.html",
+    "README_DEPLOY_STAGE38K.md",
+    "RELEASE_NOTES_STAGE38K.md",
+    "DEPLOY_CHECK_STAGE38K.md",
+    "NEXT_STAGE_CONTEXT_STAGE38K.md",
+    "RELEASE_FILES_STAGE38K.json"
+  ],
+  "changeType": "visual-only toolbar compacting"
+}

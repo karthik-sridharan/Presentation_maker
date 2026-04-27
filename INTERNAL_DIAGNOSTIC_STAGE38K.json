@@ -1,0 +1,36 @@
+{
+  "stage": "stage38k-20260427-1",
+  "signature": "index-inline-stage38k-compact-toolbar-preview-lift-20260427-1",
+  "base": "stage38j-20260427-1",
+  "checkedAt": "2026-04-27T19:28:36.691618Z",
+  "changeSummary": "Compact top preview toolbar and reclaim vertical preview space; visual-only CSS/diagnostics patch.",
+  "checks": {
+    "indexStageString": true,
+    "indexSignature": true,
+    "oldStage38JExactStageRemovedFromIndex": true,
+    "oldStage38JSignatureRemovedFromIndex": true,
+    "compactCssPresent": true,
+    "compactScriptPresent": true,
+    "diagnosticsStatusPresent": true,
+    "noMutationObserverInStage38KScript": true,
+    "noReloadHooksInStage38KScript": true,
+    "compactToolbarClassApplied": true,
+    "visualOnlyFlagPresent": true,
+    "stage38KInlineScriptSyntaxOk": true,
+    "externalJsSyntaxOk": true
+  },
+  "pass": true,
+  "externalJsCount": 23,
+  "externalJsFailures": [],
+  "browserProbe": "not run: container Chromium blocks local file/http navigation with net::ERR_BLOCKED_BY_ADMINISTRATOR",
+  "expectedRuntimeDiagnostics": {
+    "stage38KCompactToolbarStatus.pass": true,
+    "stage38KCompactToolbarStatus.tests.toolbarCompact": true,
+    "stage38KCompactToolbarStatus.tests.buttonsCompact": true,
+    "stage38KCompactToolbarStatus.noCommandHooks": true,
+    "stage38KCompactToolbarStatus.visualOnly": true,
+    "stage38FCanvasFitStatus.pass": true,
+    "stage38ISafeDeckSyncStatus.tests.pass": true
+  },
+  "indexSha256": "4b90ecf1672980119b352521a100f76d0f69d6d893d562e0ce5ab7a01b44456d"
+}
