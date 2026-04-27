@@ -47,12 +47,12 @@
     }
     function blockWrapperStyle(block){
       const s = normalizeBlockStyle((block && block.style) || {});
-      return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--block-bullet-type:' + s.bulletType + ';';
+      return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--block-bullet-type:' + s.bulletType + ';';
     }
     function titleWrapperStyle(style, heading){
       const s = normalizeBlockStyle(style || {});
       const baseMap = { h1:'5.6rem', h2:'3.1rem', h3:'2.45rem', h4:'2.1rem', h5:'1.8rem', h6:'1.55rem' };
-      return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--title-base-size:' + (baseMap[String(heading || 'h2').toLowerCase()] || '3.1rem') + ';';
+      return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--title-base-size:' + (baseMap[String(heading || 'h2').toLowerCase()] || '3.1rem') + ';';
     }
     return { normalizeBlockStyle, normalizeAnimation, animationDataAttrs, blockWrapperStyle, titleWrapperStyle };
   }
