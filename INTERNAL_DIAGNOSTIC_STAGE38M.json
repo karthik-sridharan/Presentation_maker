@@ -1,0 +1,28 @@
+{
+  "stage": "stage38m-20260427-1",
+  "scope": "visual-only top toolbar button sizing",
+  "expectedSignature": "index-inline-stage38m-rail-sized-top-toolbar-20260427-1",
+  "preserves": [
+    "stage38k compact toolbar preview lift",
+    "stage38l fresh deck seed",
+    "stage38i safe command-only deck sync"
+  ],
+  "newDiagnostics": [
+    "stage38MRailSizedTopToolbarStatus",
+    "stage38MRailSizedTopToolbarDiagnostics"
+  ],
+  "expected": {
+    "stage38MRailSizedTopToolbarStatus.tests.pass": true,
+    "stage38MRailSizedTopToolbarStatus.topButtonCount": ">=10",
+    "stage38MRailSizedTopToolbarStatus.tests.buttonsNoTallerThanRail": true,
+    "stage38MRailSizedTopToolbarStatus.tests.toolbarSlim": true,
+    "bootErrors": [],
+    "capturedErrors": []
+  },
+  "manualSmoke": [
+    "Open with clearLuminaStorage=1.",
+    "Compare top toolbar buttons to Deck / Slides left rail buttons.",
+    "Confirm Create/Edit/Present/Advanced are also compact.",
+    "Confirm preview remains high and the deck rail is non-empty."
+  ]
+}

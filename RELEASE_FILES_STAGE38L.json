@@ -1,0 +1,13 @@
+{
+  "stage": "stage38l-20260427-1",
+  "entry": "index.html?v=stage38l-20260427-1&clearLuminaStorage=1",
+  "files": [
+    "index.html",
+    "js/legacy-app-stage24c.js",
+    "RELEASE_NOTES_STAGE38L.md",
+    "README_DEPLOY_STAGE38L.md",
+    "DEPLOY_CHECK_STAGE38L.md",
+    "NEXT_STAGE_CONTEXT_STAGE38L.md",
+    "RELEASE_FILES_STAGE38L.json"
+  ]
+}

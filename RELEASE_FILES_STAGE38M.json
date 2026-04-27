@@ -1,0 +1,16 @@
+{
+  "stage": "stage38m-20260427-1",
+  "root": "lumina-presenter-stage38m-clean-deploy",
+  "entry": "index.html",
+  "added": [
+    "RELEASE_NOTES_STAGE38M.md",
+    "DEPLOY_CHECK_STAGE38M.md",
+    "README_DEPLOY_STAGE38M.md",
+    "NEXT_STAGE_CONTEXT_STAGE38M.md",
+    "INTERNAL_DIAGNOSTIC_STAGE38M.json",
+    "RELEASE_FILES_STAGE38M.json"
+  ],
+  "modified": [
+    "index.html"
+  ]
+}
