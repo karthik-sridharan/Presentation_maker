@@ -1,0 +1,11 @@
+{
+  "stage": "stage36ac-20260427-1",
+  "bundle": "lumina-presenter-stage36ac-clean-deploy.zip",
+  "requiredRootFiles": [
+    "index.html",
+    "css/styles-stage24c.css",
+    "js/",
+    "prompts/"
+  ],
+  "notes": "Clean deploy bundle with Copilot Deck Spec / Outline generation."
+}
