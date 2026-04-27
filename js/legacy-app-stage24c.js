@@ -1161,8 +1161,7 @@ async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
       slide && slide.title ? ('Slide title: ' + slide.title) : '',
       'Image request: ' + prompt
     ].filter(Boolean).join('\n'),
-    size: copilotImageSizeHint(block.assetSize || (slide && slide.slideType === 'two-col' ? 'square' : 'wide')),
-    response_format:'b64_json'
+    size: copilotImageSizeHint(block.assetSize || (slide && slide.slideType === 'two-col' ? 'square' : 'wide'))
   };
   const res = await imageFetch(deriveCopilotImagesEndpoint(endpoint), { method:'POST', headers, body:JSON.stringify(body) });
   const raw = await res.text();
@@ -1173,8 +1172,14 @@ async function generateCopilotImageAsset(block, endpoint, apiKey, slide){
     throw new Error(friendlyCopilotHttpError(res.status, message));
   }
   const first = data && Array.isArray(data.data) ? data.data[0] : null;
-  const b64 = first && (first.b64_json || first.base64 || first.image_base64);
-  const url = first && first.url;
+  const firstOutput = data && Array.isArray(data.output) ? data.output[0] : null;
+  const imagePayload = firstOutput && Array.isArray(firstOutput.content)
+    ? firstOutput.content.find(item => item && (item.type === 'output_image' || item.b64_json || item.image_base64 || item.base64 || item.url))
+    : null;
+  const b64 = (first && (first.b64_json || first.base64 || first.image_base64))
+    || (imagePayload && (imagePayload.b64_json || imagePayload.base64 || imagePayload.image_base64))
+    || (firstOutput && (firstOutput.b64_json || firstOutput.base64 || firstOutput.image_base64));
+  const url = (first && first.url) || (imagePayload && imagePayload.url) || (firstOutput && firstOutput.url);
   if(b64) return 'data:image/png;base64,' + b64;
   if(url) return safeString(url);
   throw new Error('Image generation returned no usable image payload.');
