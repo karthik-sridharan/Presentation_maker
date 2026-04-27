@@ -1,0 +1,11 @@
+{
+  "stage": "stage40a-20260427-1",
+  "files": [
+    "index.html",
+    "INTERNAL_DIAGNOSTIC_STAGE40A.json",
+    "RELEASE_NOTES_STAGE40A.md",
+    "README_DEPLOY_STAGE40A.md",
+    "DEPLOY_CHECK_STAGE40A.md",
+    "NEXT_STAGE_CONTEXT_STAGE40A.md"
+  ]
+}

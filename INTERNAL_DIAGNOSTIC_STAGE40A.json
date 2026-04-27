@@ -1,0 +1,63 @@
+{
+  "stage": "stage40a-20260427-1",
+  "diagnosticScriptStage": "stage40a-20260427-1",
+  "indexStageSignature": "index-inline-stage40a-real-deck-planning-mode-20260427-1",
+  "checkedAt": "2026-04-27T23:30:00-04:00",
+  "internalCheckType": "static package and inline-script syntax validation",
+  "checks": {
+    "stageTopConstant": true,
+    "stageSignature": true,
+    "stage40CssPresent": true,
+    "stage40ScriptPresent": true,
+    "sixStepWorkflowLiteral": true,
+    "planTabPresentInScript": true,
+    "editablePlanTextarea": true,
+    "structuredPlanEditor": true,
+    "aiPlanButton": true,
+    "localPlanButton": true,
+    "generateFromPlanButton": true,
+    "planToDeckSpecFunction": true,
+    "generateFromPlanFunction": true,
+    "diagnosticsPatch": true,
+    "previousDiagnosticsAligned": true,
+    "inlineClassicSyntaxPass": true
+  },
+  "pass": true,
+  "classicInlineScriptCheck": {
+    "classicInlineScriptCount": 50,
+    "skippedModules": 2,
+    "badCount": 0,
+    "bad": []
+  },
+  "stage40ADeckPlanningStatus": {
+    "stage": "stage40a-20260427-1",
+    "realDeckPlanningMode": true,
+    "workflow": [
+      "Outline",
+      "References",
+      "Prompt",
+      "Plan",
+      "Preview",
+      "Apply"
+    ],
+    "planBeforeDeckGeneration": true,
+    "editableSlideBySlidePlan": true,
+    "previewOnlyGenerationPreserved": true,
+    "applyOnlyMutationPreserved": true,
+    "expectedRuntimeDiagnosticKey": "stage40ADeckPlanningStatus"
+  },
+  "files": {
+    "indexBytes": 721771,
+    "indexSha256": "98ffd0c29afdf30a7ccd16eb0fef6e1024390d44cb0cc80b4c62622487f31915",
+    "stage40ScriptBytes": 26295
+  },
+  "manualSmokeChecklist": [
+    "Open index.html?v=stage40a-20260427-1&clearLuminaStorage=1.",
+    "Open AI drawer and confirm tabs: Outline, References, Prompt, Plan, Preview, Apply.",
+    "Enter a deck prompt or outline, then click Create editable deck plan.",
+    "Edit slide titles, layouts, key points, visual requests, and notes in the Plan tab.",
+    "Click Validate plan, then Generate preview from plan; confirm Preview renders but deck is unchanged.",
+    "Confirm Apply buttons remain the only deck mutation path and are gated until valid preview JSON exists.",
+    "Collect diagnostics and confirm stage40ADeckPlanningStatus.pass === true, bootErrors/capturedErrors are empty."
+  ]
+}
