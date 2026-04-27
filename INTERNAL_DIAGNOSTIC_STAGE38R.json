@@ -1,0 +1,13 @@
+{
+  "stage": "stage38r-20260427-1",
+  "purpose": "Diagnostic-only alignment after Stage 38Q renamed the center Copilot button to AI drawer.",
+  "expected": {
+    "stage38RDiagnosticsAlignmentStatus.pass": true,
+    "stage38OCenterActionsStatus.pass": true,
+    "stage38OCenterActionsStatus.tests.copilotPresent": true,
+    "stage38OCenterActionsStatus.tests.aiDrawerAcceptedAsCopilot": true,
+    "stage38QAiDrawerAdvancedStatus.pass": true
+  },
+  "behaviorChanged": false,
+  "commandHooksAdded": false
+}

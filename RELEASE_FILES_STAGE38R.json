@@ -1,0 +1,26 @@
+{
+  "stage": "stage38r-20260427-1",
+  "createdAt": "2026-04-27T22:15:41.176Z",
+  "files": [
+    {
+      "file": "index.html",
+      "sha256": "467f434a8b30ceaee9fc413ebad9c955e69d68eb4c4ce58b00807bbfc5ffd4b4"
+    },
+    {
+      "file": "RELEASE_NOTES_STAGE38R.md",
+      "sha256": "64fd7e10ba230a1fe599a35a2347d88bcfa81115b13f2f8976dd0156e98274f6"
+    },
+    {
+      "file": "DEPLOY_CHECK_STAGE38R.md",
+      "sha256": "23ff5046b3371ba8d1941a0ae2a278cfb4bfa4a4b43c90eb6ba58266040df55c"
+    },
+    {
+      "file": "README_DEPLOY_STAGE38R.md",
+      "sha256": "97f34ea5e2402b508b4e97fb215a29098087727d6586e5c61d8d3d0d367b5299"
+    },
+    {
+      "file": "NEXT_STAGE_CONTEXT_STAGE38R.md",
+      "sha256": "7e7b1747ee7aac6135d80f1775745c117545924f6971d7e6c8d88e3befebf956"
+    }
+  ]
+}

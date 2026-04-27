@@ -1,0 +1,34 @@
+{
+  "stage": "stage39a-20260427-1",
+  "diagnosticType": "static-package-check",
+  "checkedAt": "2026-04-27T22:29:14Z",
+  "indexStageSignature": "index-inline-stage39a-ai-drawer-workflow-polish-20260427-1",
+  "checks": {
+    "stage_literal": true,
+    "stage_signature": true,
+    "stage39a_css_present": true,
+    "stage39a_script_present": true,
+    "five_step_workflow": true,
+    "preview_only_buttons": true,
+    "uses_callCopilot_preview": true,
+    "legacy_auto_apply_hidden_css": true,
+    "clear_apply_labels": true,
+    "rendered_preview_card": true,
+    "diagnostics_patch": true,
+    "stage38q_preserved": true,
+    "stage38r_preserved": true,
+    "stage39a_js_syntax_node_check": true
+  },
+  "pass": true,
+  "nodeCheckStderr": "",
+  "notes": [
+    "Static/package checks confirm the Stage 39A script, CSS, diagnostics hook, preview-only Copilot buttons, and clear apply labels are present.",
+    "A browser runtime diagnostic is still recommended after deploy because this environment did not execute Safari/DOM interactions."
+  ],
+  "expectedBrowserReportFields": [
+    "stage39AAiDrawerWorkflowStatus.pass === true",
+    "stage38QAiDrawerAdvancedStatus.pass === true",
+    "stage38RDiagnosticsAlignmentStatus.pass === true",
+    "stage38OCenterActionsStatus.pass === true"
+  ]
+}
