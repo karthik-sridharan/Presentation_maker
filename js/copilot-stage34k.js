@@ -4,7 +4,7 @@
 (function(global){
   'use strict';
   var status = global.LuminaCopilotGuardStatus = {
-    stage: 'stage36ab-20260427-1',
+    stage: 'stage36ac-20260427-1',
     bound: false,
     validationBound: false,
     lastAction: '',
@@ -21,7 +21,7 @@
   }
   function byId(id){ return document.getElementById(id); }
   function currentCore(){ return global.LuminaCopilotCore; }
-  var generationButtonIds = ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'];
+  var generationButtonIds = ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn','copilotGenerateSpecDeckBtn'];
   function setGenerationButtonsBusy(isBusy){
     generationButtonIds.forEach(function(id){
       var btn = byId(id);
@@ -83,6 +83,33 @@
     if(!core || typeof core[method] !== 'function') throw new Error('Copilot core is not ready: ' + method);
     return core[method].apply(core, Array.prototype.slice.call(arguments, 1));
   }
+
+  function readSpecFileInput(evt){
+    var input = evt && evt.target ? evt.target : byId('copilotSpecFile');
+    var file = input && input.files && input.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var text = String(reader.result || '');
+      var core = currentCore();
+      if(core && typeof core.setCopilotDeckSpecText === 'function') core.setCopilotDeckSpecText(text);
+      else { var box = byId('copilotSpecText'); if(box) box.value = text; }
+      if(core && typeof core.setCopilotStatus === 'function') core.setCopilotStatus('Loaded deck spec file: ' + file.name);
+    };
+    reader.onerror = function(){ record('Could not read deck spec file', reader.error || new Error(file.name)); };
+    reader.readAsText(file);
+  }
+  function parseSpecOnly(){
+    var core = currentCore();
+    if(!core || typeof core.parseCopilotDeckSpecText !== 'function') throw new Error('Copilot spec parser is not ready.');
+    var box = byId('copilotSpecText');
+    var plan = core.parseCopilotDeckSpecText(box ? box.value : '');
+    if(core && typeof core.summarizeCopilotDeckSpec === 'function' && typeof core.setCopilotStatus === 'function'){
+      core.setCopilotStatus(core.summarizeCopilotDeckSpec(plan));
+    }
+    if(core && core.copilotRuntimeStatus) core.copilotRuntimeStatus.lastDeckSpecPreview = plan;
+    return plan;
+  }
   function runGeneration(label, method){
     var args = Array.prototype.slice.call(arguments, 2);
     if(status.generationInFlight){
@@ -123,6 +150,9 @@
       var model = byId('copilotModel'); if(model) model.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot model setting', err); } });
       var endpoint = byId('copilotEndpoint'); if(endpoint) endpoint.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot endpoint setting', err); } });
       var tone = byId('copilotTone'); if(tone) tone.addEventListener('change', function(){ try{ callCore('saveCopilotSettings', false); }catch(err){ record('Could not save Copilot tone setting', err); } });
+      var specFile = byId('copilotSpecFile'); if(specFile && !specFile.__luminaCopilotSpecFileBound){ specFile.__luminaCopilotSpecFileBound = true; specFile.addEventListener('change', readSpecFileInput); }
+      add('copilotParseSpecBtn', 'click', function(){ status.lastAction = 'parse deck spec'; return parseSpecOnly(); });
+      add('copilotGenerateSpecDeckBtn', 'click', function(){ status.lastAction = 'generate deck from spec'; return runGeneration('generate deck from spec', 'generateCopilotDeckFromSpec'); });
       add('copilotDraftSlideBtn', 'click', function(){ status.lastAction = 'draft current slide'; return runGeneration('draft current slide', 'generateCopilotSlide', 'replace'); });
       add('copilotAddSlideBtn', 'click', function(){ status.lastAction = 'append generated slide'; return runGeneration('append generated slide', 'generateCopilotSlide', 'append'); });
       add('copilotGenerateDeckBtn', 'click', function(){ status.lastAction = 'generate deck'; return runGeneration('generate deck', 'generateCopilotDeck'); });

@@ -181,6 +181,7 @@ const copilotEls = {
   model: document.getElementById('copilotModel'),
   endpoint: document.getElementById('copilotEndpoint'),
   apiKey: document.getElementById('copilotApiKey'),
+  specText: document.getElementById('copilotSpecText'),
   status: document.getElementById('copilotStatus'),
   resultJson: document.getElementById('copilotResultJson'),
   keyWarning: document.getElementById('copilotKeyWarning')
@@ -998,22 +999,114 @@ async function loadDeckPromptPrefix(){
   });
   return deckPromptPrefixCache;
 }
-async function buildCopilotUserPrompt(kind){
-  const prompt = (copilotEls.prompt?.value || '').trim();
-  if(!prompt) throw new Error('Tell Copilot what to create first.');
-  const count = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || 1)));
-  const tone = copilotEls.tone?.value || 'clear and concise';
-  const mode = kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.';
-  const parts = [mode];
-  if(kind === 'deck'){
-    const deckPromptPrefix = await loadDeckPromptPrefix();
-    if(deckPromptPrefix){
-      parts.push('Deck prompt file instructions (from prompts/deck.txt, or built-in fallback if missing/blank):\n' + deckPromptPrefix);
+
+function parseCopilotDeckSpecText(rawText){
+  const text = safeString(rawText || '').trim();
+  if(!text) throw new Error('Paste or upload a deck spec/outline first.');
+  try{
+    const parsed = JSON.parse(text);
+    if(parsed && typeof parsed === 'object'){
+      const rawSlides = Array.isArray(parsed.slides) ? parsed.slides : [];
+      const targetFromJson = Number(parsed.targetSlideCount || parsed.slideCount || parsed.slidesCount || rawSlides.length || 0);
+      const jsonPlan = {
+        mode:'deck-spec', sourceFormat:'json', deckTitle:safeString(parsed.deckTitle || parsed.title || ''),
+        targetSlideCount:Number.isFinite(targetFromJson) && targetFromJson > 0 ? Math.min(30, Math.max(1, targetFromJson)) : (rawSlides.length || null),
+        themeHint:safeString(parsed.themeHint || parsed.theme || parsed.style || ''), operation:safeString(parsed.operation || 'generateDeck'),
+        rawText:text, slides:rawSlides, globalInstructions:Array.isArray(parsed.globalInstructions) ? parsed.globalInstructions : []
+      };
+      updateCopilotRuntime({ lastDeckSpecStatus:'parsed-json', lastDeckSpecSlideCount:jsonPlan.targetSlideCount || 0 });
+      return jsonPlan;
     }
+  }catch(_){ }
+  const plan = { mode:'deck-spec', sourceFormat:'text/markdown', deckTitle:'', targetSlideCount:null, themeHint:'', operation:'generateDeck', rawText:text, slides:[], globalInstructions:[], warnings:[] };
+  const lines = text.replace(/\r\n?/g,'\n').split('\n');
+  let current = null;
+  let activeRequirement = null;
+  let activeField = '';
+  function clean(s){ return safeString(s).replace(/^[-*•]\s*/, '').trim(); }
+  function ensureSlide(title){
+    if(!current){ current = { rangeStart:plan.slides.length + 1, rangeEnd:plan.slides.length + 1, title:title || '', content:[], figures:[], demos:[], instructions:[], topics:[] }; plan.slides.push(current); }
+    return current;
+  }
+  function addRequirement(kind, value){
+    const s = ensureSlide('');
+    const req = kind === 'demo'
+      ? { kind:'customHtmlDemo', prompt:clean(value || ''), requirement:'Create a self-contained HTML/CSS/JS custom block for this demo or animation.' }
+      : { kind:'image', prompt:clean(value || ''), size:'wide', requirement:'Create a generated-image block with assetPrompt and alt text.' };
+    if(kind === 'demo') s.demos.push(req); else s.figures.push(req);
+    activeRequirement = req; activeField = kind; return req;
+  }
+  function expandNextSlides(count, topic){
+    const start = plan.slides.reduce((m,s)=>Math.max(m, Number(s.rangeEnd || s.rangeStart || 0)), 0) + 1;
+    const s = { rangeStart:start, rangeEnd:start + count - 1, title:topic || 'Additional topic slides', content:[], figures:[], demos:[], instructions:['Expand this range into ' + count + ' individual slides.'], topics: topic ? [topic] : [] };
+    plan.slides.push(s); current=s; activeRequirement=null; activeField='instructions';
+  }
+  lines.forEach(rawLine=>{
+    const line = safeString(rawLine).trim(); if(!line) return;
+    let m;
+    if((m=line.match(/^#\s*Deck\s*:\s*(.+)$/i)) || (m=line.match(/^Deck\s*:\s*(.+)$/i))){ plan.deckTitle=clean(m[1]); activeField=''; return; }
+    if((m=line.match(/^Slides?\s*:\s*(\d+)\s*$/i))){ plan.targetSlideCount=Math.max(1, Math.min(30, Number(m[1]))); activeField=''; return; }
+    if((m=line.match(/^(?:Style|Theme)\s*:\s*(.+)$/i))){ plan.themeHint=clean(m[1]); activeField=''; return; }
+    if((m=line.match(/^(?:Operation|Mode)\s*:\s*(.+)$/i))){ plan.operation=clean(m[1]) || plan.operation; activeField=''; return; }
+    if((m=line.match(/add\s+(?:the\s+)?next\s+(\d+)\s+slides?\s+(?:on|about)\s+(.+)$/i))){ expandNextSlides(Math.max(1, Math.min(12, Number(m[1]))), clean(m[2])); return; }
+    if((m=line.match(/^#{1,4}\s*Slide\s+(\d+)\s*(?:[-–]\s*(\d+))?\s*:?\s*(.*)$/i)) || (m=line.match(/^Slide\s+(\d+)\s*(?:[-–]\s*(\d+))?\s*:?\s*(.*)$/i))){
+      current = { rangeStart:Number(m[1]), rangeEnd:Number(m[2] || m[1]), title:clean(m[3] || ''), content:[], figures:[], demos:[], instructions:[], topics:[] };
+      plan.slides.push(current); activeRequirement=null; activeField='content'; return;
+    }
+    if((m=line.match(/^#{2,4}\s*(.+)$/)) && !/^#{1,4}\s*Slide\s+/i.test(line)){ current={ rangeStart:plan.slides.length + 1, rangeEnd:plan.slides.length + 1, title:clean(m[1]), content:[], figures:[], demos:[], instructions:[], topics:[] }; plan.slides.push(current); activeRequirement=null; activeField='content'; return; }
+    if((m=line.match(/^Content\s*:\s*(.*)$/i))){ ensureSlide(''); activeField='content'; if(clean(m[1])) current.content.push(clean(m[1])); return; }
+    if((m=line.match(/^Instruction\s*:\s*(.*)$/i))){ ensureSlide(''); activeField='instructions'; if(clean(m[1])) current.instructions.push(clean(m[1])); activeRequirement=null; return; }
+    if((m=line.match(/^Topics?\s*:\s*(.*)$/i))){ ensureSlide(''); activeField='topics'; if(clean(m[1])) current.topics.push(clean(m[1])); activeRequirement=null; return; }
+    if((m=line.match(/^Figure\s*:\s*(.*)$/i)) || (m=line.match(/^Image\s*:\s*(.*)$/i))){ addRequirement('figure', m[1] || ''); return; }
+    if((m=line.match(/^Demo\s*:\s*(.*)$/i)) || (m=line.match(/^HTML\s*Demo\s*:\s*(.*)$/i))){ addRequirement('demo', m[1] || ''); return; }
+    if((m=line.match(/^Prompt\s*:\s*(.*)$/i))){ if(activeRequirement) activeRequirement.prompt=[activeRequirement.prompt, clean(m[1])].filter(Boolean).join(' '); else ensureSlide('').instructions.push('Prompt: ' + clean(m[1])); return; }
+    if((m=line.match(/^Size\s*:\s*(.*)$/i))){ if(activeRequirement && activeRequirement.kind === 'image') activeRequirement.size=clean(m[1]) || 'wide'; return; }
+    if((m=line.match(/^Type\s*:\s*(.*)$/i))){ ensureSlide('').slideTypeHint=clean(m[1]); return; }
+    const item = clean(line); if(!item) return; ensureSlide('');
+    if(activeRequirement && (activeField === 'figure' || activeField === 'demo')) activeRequirement.prompt=[activeRequirement.prompt, item].filter(Boolean).join(' ');
+    else if(activeField === 'topics') current.topics.push(item);
+    else if(activeField === 'instructions') current.instructions.push(item);
+    else current.content.push(item);
+  });
+  plan.slides = plan.slides.map((s, idx)=>{ const start=Number(s.rangeStart || idx + 1); const end=Math.max(start, Number(s.rangeEnd || start)); return Object.assign({}, s, { rangeStart:start, rangeEnd:end, requiredBlocks:[].concat(s.figures || [], s.demos || []) }); });
+  const maxSlide = plan.slides.reduce((m,s)=>Math.max(m, Number(s.rangeEnd || s.rangeStart || 0)), 0);
+  if(!plan.targetSlideCount) plan.targetSlideCount = maxSlide || Math.max(1, Math.min(30, plan.slides.length || 6));
+  if(!plan.deckTitle){ const titleLine=lines.map(l=>l.trim()).find(l=>/^#\s+/.test(l) && !/^#\s*Slide/i.test(l)); plan.deckTitle = titleLine ? clean(titleLine.replace(/^#+\s*/,'')) : ''; }
+  if(!plan.slides.length) plan.globalInstructions.push('Treat the raw text as a complete deck outline/specification. Preserve slide order and all requested figures/demos.');
+  updateCopilotRuntime({ lastDeckSpecStatus:'parsed-text', lastDeckSpecSlideCount:plan.targetSlideCount || 0, lastDeckSpecParsedSlides:plan.slides.length });
+  return plan;
+}
+function getCopilotDeckSpecText(){ return safeString(copilotEls.specText && copilotEls.specText.value || '').trim(); }
+function setCopilotDeckSpecText(text){ if(copilotEls.specText) copilotEls.specText.value = safeString(text || ''); }
+function summarizeCopilotDeckSpec(plan){ const slideSpecs=Array.isArray(plan && plan.slides) ? plan.slides : []; const figures=slideSpecs.reduce((n,s)=>n + ((s.figures || []).length), 0); const demos=slideSpecs.reduce((n,s)=>n + ((s.demos || []).length), 0); return 'Deck spec parsed: ' + (plan.targetSlideCount || slideSpecs.length || '?') + ' target slides, ' + slideSpecs.length + ' slide specs, ' + figures + ' figures, ' + demos + ' demos.'; }
+async function buildCopilotUserPrompt(kind, deckSpecPlan){
+  const prompt = (copilotEls.prompt?.value || '').trim();
+  const isSpecMode = kind === 'deck-spec';
+  if(!prompt && !isSpecMode) throw new Error('Tell Copilot what to create first.');
+  const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
+  const count = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || 1)));
+  const tone = copilotEls.tone?.value || 'clear and concise';
+  const mode = isSpecMode ? 'Create a complete deck from the parsed DeckPlan specification.' : (kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.');
+  const parts = [mode];
+  if(kind === 'deck' || isSpecMode){
+    const deckPromptPrefix = await loadDeckPromptPrefix();
+    if(deckPromptPrefix) parts.push('Deck prompt file instructions (from prompts/deck.txt, or built-in fallback if missing/blank):\n' + deckPromptPrefix);
+  }
+  if(isSpecMode && deckSpecPlan){
+    parts.push(
+      'Parsed DeckPlan JSON. This is the source of truth for the requested deck. Satisfy every slide range, topic, figure requirement, and demo requirement:',
+      JSON.stringify(deckSpecPlan, null, 2),
+      'Hard DeckPlan rules:',
+      '- Expand slide ranges such as Slide 4-6 into separate slides while staying at the target slide count.',
+      '- Every requiredBlocks item with kind=image must become a mode image block with assetPrompt, assetAlt, and assetSize.',
+      '- Every requiredBlocks item with kind=customHtmlDemo must become a mode custom block with self-contained HTML/CSS/JS in content.',
+      '- Do not replace required demos or figures with placeholders unless the spec explicitly says placeholder.',
+      '- Preserve the requested order of slides and topics. Do not add a second alternate deck.'
+    );
   }
   parts.push(
-    'User request: ' + prompt,
-    'Target slide count: ' + (kind === 'deck' ? count : 1),
+    'User request: ' + (prompt || '(Follow the uploaded/pasted DeckPlan exactly.)'),
+    'Target slide count: ' + (kind === 'slide' ? 1 : count),
     'Do not exceed the target slide count. Do not append a second alternative deck after the first deck.',
     'Tone/style: ' + tone,
     collectCopilotStyleContext(),
@@ -1023,6 +1116,7 @@ async function buildCopilotUserPrompt(kind){
   );
   return parts.join('\n\n');
 }
+
 function extractResponsesOutputText(data){
   if(data && typeof data.output_text === 'string') return data.output_text;
   const parts = [];
@@ -1227,7 +1321,7 @@ async function enrichCopilotDeckAssets(rawDeck, endpoint, apiKey){
   return deck;
 }
 
-async function callCopilot(kind){
+async function callCopilot(kind, deckSpecPlan){
   saveCopilotSettings(false);
   const endpoint = (copilotEls.endpoint?.value || '').trim() || COPILOT_DEFAULT_ENDPOINT;
   const apiKey = (copilotEls.apiKey?.value || '').trim();
@@ -1236,7 +1330,7 @@ async function callCopilot(kind){
   updateCopilotKeyWarning();
   const headers = { 'Content-Type':'application/json' };
   if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
-  const userPrompt = await buildCopilotUserPrompt(kind);
+  const userPrompt = await buildCopilotUserPrompt(kind, deckSpecPlan);
   callCopilot._styleScreenshot = await captureCopilotStyleScreenshot();
   const body = {
     model,
@@ -1270,25 +1364,26 @@ async function callCopilot(kind){
   try{ parsed = JSON.parse(output); }
   catch(err){ throw new Error('Copilot returned text that was not valid JSON: ' + output.slice(0, 300)); }
   const enriched = await enrichCopilotDeckAssets(parsed, endpoint, apiKey);
-  const normalized = normalizeCopilotDeck(enriched, kind);
+  const normalized = normalizeCopilotDeck(enriched, kind, deckSpecPlan);
   copilotEls.resultJson.value = JSON.stringify(normalized, null, 2);
   const successMessage = (normalized.summary || 'Copilot generated slides.') + ' Ready to apply.';
   setCopilotStatus(successMessage);
   recordCopilotSuccess(successMessage);
   return normalized;
 }
-function normalizeCopilotDeck(deck, kind='deck'){
+function normalizeCopilotDeck(deck, kind='deck', deckSpecPlan=null){
   const rawSlides = Array.isArray(deck?.slides) ? deck.slides : [];
   if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
   const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
-  const requestedCount = Math.max(1, Math.min(30, Number(copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+  const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
+  const requestedCount = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
   const deckSlides = normalizedSlides.slice(0, requestedCount);
-  if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
+  if((kind === 'deck' || kind === 'deck-spec') && normalizedSlides.length > deckSlides.length){
     updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
   }
   return {
-    deckTitle: String(deck?.deckTitle || fields.deckTitle.value || 'Generated presentation'),
-    summary: String(deck?.summary || ''),
+    deckTitle: String(deck?.deckTitle || (deckSpecPlan && deckSpecPlan.deckTitle) || fields.deckTitle.value || 'Generated presentation'),
+    summary: String(deck?.summary || (deckSpecPlan ? 'Generated from deck specification.' : '')),
     slides: kind === 'slide' ? normalizedSlides.slice(0, 1) : deckSlides
   };
 }
@@ -1357,7 +1452,7 @@ function replaceDeckWithCopilot(deck){
 }
 let copilotGenerationInFlight = false;
 function setCopilotGenerationButtonsBusy(isBusy){
-  ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn'].forEach(id=>{
+  ['copilotDraftSlideBtn','copilotAddSlideBtn','copilotGenerateDeckBtn','copilotGenerateSpecDeckBtn'].forEach(id=>{
     const btn = document.getElementById(id);
     if(!btn) return;
     btn.dataset.copilotBusy = isBusy ? '1' : '0';
@@ -1399,6 +1494,25 @@ async function generateCopilotDeck(){
   return withCopilotGenerationLock('deck', async ()=>{
     try{
       const deck = await callCopilot('deck');
+      if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
+      else appendCopilotSlides(deck);
+    }catch(err){
+      console.error(err);
+      const msg = recordCopilotError(err);
+      setCopilotStatus(msg, true);
+      alert(msg);
+    }
+  });
+}
+
+async function generateCopilotDeckFromSpec(){
+  return withCopilotGenerationLock('deck-spec', async ()=>{
+    try{
+      const plan = parseCopilotDeckSpecText(getCopilotDeckSpecText());
+      if(plan.targetSlideCount && copilotEls.slideCount) copilotEls.slideCount.value = String(plan.targetSlideCount);
+      setCopilotStatus(summarizeCopilotDeckSpec(plan) + ' Generating…');
+      updateCopilotRuntime({ lastDeckSpecPlan: plan, lastDeckSpecGeneratedAt: new Date().toISOString() });
+      const deck = await callCopilot('deck-spec', plan);
       if((copilotEls.mode?.value || 'append') === 'replace') replaceDeckWithCopilot(deck);
       else appendCopilotSlides(deck);
     }catch(err){
@@ -1460,6 +1574,10 @@ window.LuminaCopilotCore = {
   compactDeckForCopilot,
   buildCopilotUserPrompt,
   loadDeckPromptPrefix,
+  parseCopilotDeckSpecText,
+  getCopilotDeckSpecText,
+  setCopilotDeckSpecText,
+  summarizeCopilotDeckSpec,
   extractResponsesOutputText,
   callCopilot,
   normalizeCopilotDeck,
@@ -1469,7 +1587,8 @@ window.LuminaCopilotCore = {
   appendCopilotSlides,
   replaceDeckWithCopilot,
   generateCopilotSlide,
-  generateCopilotDeck
+  generateCopilotDeck,
+  generateCopilotDeckFromSpec
 };
 
 const LuminaDeck = window.LuminaDeck;
