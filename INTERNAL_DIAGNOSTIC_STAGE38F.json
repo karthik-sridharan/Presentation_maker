@@ -1,0 +1,35 @@
+{
+  "stage": "stage38f-20260427-1",
+  "diagnosticType": "static-plus-targeted-source-check",
+  "checkedAt": "2026-04-27T18:28:08Z",
+  "checks": {
+    "stage_marker": true,
+    "stage_signature": true,
+    "stage38f_css": true,
+    "stage38f_script": true,
+    "preview_stage_height_auto_override": true,
+    "canvas_fit_diagnostics_key": true,
+    "right_panel_fit_status_patch": true,
+    "stage38e_structure_preserved": true,
+    "stage38d_gallery_preserved": true,
+    "stage38c_inspector_preserved": true,
+    "stage38f_script_syntax": "passed_node_check"
+  },
+  "pass": true,
+  "notes": [
+    "Stage 38F is a focused inline canvas-fit patch on top of Stage 38E.",
+    "The patch overrides the canvas-first preview-stage stretch to height:auto so the right-panel dead-space diagnostic measures the actual 16:9 frame instead of the full spare viewport height.",
+    "Runtime diagnostics are patched to expose stage38FCanvasFitStatus and to overwrite rightPanelFitStatus.previewDeadSpace after the fit measurement runs.",
+    "Stage 38E slide structure controls and Stage 38D gallery diagnostics are preserved."
+  ],
+  "manualExpectedRuntimeSignals": {
+    "stage": "stage38f-20260427-1",
+    "indexStageSignature": "index-inline-stage38f-canvas-fit-regression-cleanup-20260427-1",
+    "stage38FCanvasFitStatus.pass": true,
+    "stage38FCanvasFitStatus.previewDeadSpaceApprox": "<= 24 px target",
+    "stage38ESlideStructureStatus.pass": true,
+    "stage38DVisualGalleryStatus.pass": true,
+    "stage38CSelectionAwareInspectorStatus.pass": true,
+    "visualContrastAudit.failureCount": 0
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "stage": "stage38f-20260427-1",
+  "entrypoint": "index.html",
+  "notes": [
+    "Stage 38F is an inline canvas-fit cleanup over Stage 38E.",
+    "No new external JS/CSS asset is required.",
+    "Existing optional ESM assets remain unchanged."
+  ],
+  "primaryFilesChanged": [
+    "index.html",
+    "RELEASE_NOTES_STAGE38F.md",
+    "README_DEPLOY_STAGE38F.md",
+    "DEPLOY_CHECK_STAGE38F.md",
+    "NEXT_STAGE_CONTEXT_STAGE38F.md",
+    "INTERNAL_DIAGNOSTIC_STAGE38F.json"
+  ]
+}
