@@ -798,6 +798,7 @@ const editorSelectionApi = LuminaEditorSelection.createApi({
 const {
   selectedPreviewBlock,
   selectedPreviewTitleStyle,
+  selectedPreviewTarget,
   populatePreviewBlockStyleEditor,
   populatePreviewTitleStyleEditor,
   updatePreviewBlockSelectionUI,
@@ -1796,6 +1797,27 @@ document.getElementById('importFilesBtn')?.addEventListener('click', async ()=>{
 
 // Stage 15: UI layout and tab helpers moved to js/ui-stage15.js.
 
+
+function applySelectedInspectorStylePatch(patch){
+  const target = typeof selectedPreviewTarget === 'function' ? selectedPreviewTarget() : null;
+  if(target){
+    applySelectedPreviewBlockStyle(patch);
+    return;
+  }
+  saveCurrentBlockToDraft();
+  const column = blockFields.column.value === 'right' ? 'right' : 'left';
+  const idx = selectedBlock && Number.isFinite(Number(selectedBlock[column])) ? Number(selectedBlock[column]) : -1;
+  const block = getDraftBlock(column, idx);
+  if(!block){
+    showToast('Select a slide title or block first.');
+    return;
+  }
+  block.style = normalizeBlockStyle({ ...(block.style || {}), ...(patch || {}) });
+  snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2);
+  buildPreview();
+  scheduleAutosave('Autosaved after block style change.');
+}
+
 document.querySelectorAll('[data-preset]').forEach(btn=>btn.addEventListener('click', ()=>applyPreset(btn.dataset.preset)));
 document.querySelectorAll('[data-style-preset]').forEach(btn=>btn.addEventListener('click', ()=>applyStylePreset(btn.dataset.stylePreset)));
 document.getElementById('applyStyleBuilderBtn')?.addEventListener('click', applyStyleBuilder);
@@ -1803,11 +1825,11 @@ document.getElementById('randomizeStyleBtn')?.addEventListener('click', randomiz
 previewBlockFontScale?.addEventListener('input', ()=>{
   const px = Number(previewBlockFontScale.value || 20);
   const fontSize = Number.isFinite(px) ? (Math.max(8, Math.min(120, px)) + 'px') : '';
-  applySelectedPreviewBlockStyle({ fontSize });
+  applySelectedInspectorStylePatch({ fontSize });
 });
-previewBlockFontFamily?.addEventListener('change', ()=>applySelectedPreviewBlockStyle({ fontFamily: previewBlockFontFamily.value || 'inherit' }));
-previewBlockFontColor?.addEventListener('input', ()=>applySelectedPreviewBlockStyle({ fontColor: previewBlockFontColor.value || '#111111' }));
-previewBlockBulletType?.addEventListener('change', ()=>applySelectedPreviewBlockStyle({ bulletType: previewBlockBulletType.value || 'disc' }));
+previewBlockFontFamily?.addEventListener('change', ()=>applySelectedInspectorStylePatch({ fontFamily: previewBlockFontFamily.value || 'inherit' }));
+previewBlockFontColor?.addEventListener('input', ()=>applySelectedInspectorStylePatch({ fontColor: previewBlockFontColor.value || '#111111' }));
+previewBlockBulletType?.addEventListener('change', ()=>applySelectedInspectorStylePatch({ bulletType: previewBlockBulletType.value || 'disc' }));
 document.getElementById('resetPreviewBlockStyleBtn')?.addEventListener('click', resetSelectedPreviewBlockStyle);
 document.getElementById('applyAnimationBtn')?.addEventListener('click', applySelectedAnimation);
 document.getElementById('clearAnimationBtn')?.addEventListener('click', clearSelectedAnimation);

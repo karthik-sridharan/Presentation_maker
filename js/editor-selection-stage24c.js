@@ -78,6 +78,9 @@
     function selectedPreviewTitleStyle(){
       return normalizeBlockStyle(getDraftTitleStyle && getDraftTitleStyle());
     }
+    function selectedPreviewTarget(){
+      return selectedPreviewBlockRef ? { ...selectedPreviewBlockRef } : null;
+    }
     function populatePreviewBlockStyleEditor(block){
       const style = normalizeBlockStyle(block && block.style);
       if(previewBlockFontScale) previewBlockFontScale.value = fontSizeToPx(style, 20);
@@ -266,6 +269,7 @@
     return {
       selectedPreviewBlock,
       selectedPreviewTitleStyle,
+      selectedPreviewTarget,
       populatePreviewBlockStyleEditor,
       populatePreviewTitleStyleEditor,
       updatePreviewBlockSelectionUI,
