@@ -1,0 +1,23 @@
+{
+  "stage": "stage40a-20260427-2",
+  "basePackage": "lumina-presenter-stage40a-clean-deploy.zip",
+  "indexStageSignature": "index-inline-stage40a-real-deck-planning-mode-prompt-entry-hotfix-20260427-2",
+  "implemented": [
+    "Fixed Stage 40A prompt-plan entry by using the actual Stage 39A prompt action class fallback.",
+    "Kept the six-step Outline / References / Prompt / Plan / Preview / Apply workflow.",
+    "Kept editable slide-by-slide deck plan generation before deck preview generation.",
+    "Kept preview-only generation and apply-only deck mutation gates."
+  ],
+  "staticChecks": {
+    "stageMarker": true,
+    "signaturePresent": true,
+    "stage40aScriptPresent": true,
+    "promptPlanEntrySelectorFallback": true,
+    "diagnosticPromptPlanEntryRobust": true,
+    "nodeSyntaxCheck": "passed: node --check /mnt/data/stage40a_v2_script.js"
+  },
+  "browserSmoke": {
+    "attempted": false,
+    "note": "Use deployed GitHub Pages diagnostics to confirm stage40ADeckPlanningStatus.pass === true."
+  }
+}
