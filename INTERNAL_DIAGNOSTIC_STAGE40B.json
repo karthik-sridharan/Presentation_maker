@@ -1,0 +1,45 @@
+{
+  "stage": "stage40b-20260427-1",
+  "checkedAt": "2026-04-28T00:37:19.061Z",
+  "fileBytes": 743886,
+  "stageSignaturePresent": true,
+  "topStagePresent": true,
+  "cssPresent": true,
+  "scriptPresent": true,
+  "previousStage40APreserved": true,
+  "previousStage39BPreserved": true,
+  "previousStage39APreserved": true,
+  "diagnosticsPatchPresent": true,
+  "clearPlanCtas": true,
+  "friendlyValidation": true,
+  "deckFields": true,
+  "slideQuickTools": true,
+  "jsonToggle": true,
+  "safePlanFlow": true,
+  "loadedScriptCount": 81,
+  "styleCount": 37,
+  "tests": {
+    "stage": true,
+    "inserted": true,
+    "preserves40A": true,
+    "preserves39B": true,
+    "diagnostics": true,
+    "planCtas": true,
+    "validation": true,
+    "deckFields": true,
+    "slideQuickTools": true,
+    "jsonToggle": true,
+    "safePlanFlow": true
+  },
+  "pass": true,
+  "inlineSyntax": {
+    "classicInlineScriptCount": 51,
+    "skippedModules": 2,
+    "badCount": 0,
+    "bad": []
+  },
+  "notes": [
+    "Static deploy diagnostic confirms Stage 40B markers, preserved Stage 40A/39B/39A layers, diagnostics patch, clear plan CTAs, friendly validation, deck-level quick fields, slide quick tools, JSON toggle, and preview/apply safety terms.",
+    "Classic inline JavaScript parse check passed with no syntax errors."
+  ]
+}
