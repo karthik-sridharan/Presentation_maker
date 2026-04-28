@@ -2157,7 +2157,14 @@ window.LuminaAppCommands = {
     return true;
   },
   nextSlide: () => window.LuminaAppCommands.goToSlide(activeIndex + 1),
-  previousSlide: () => window.LuminaAppCommands.goToSlide(activeIndex - 1)
+  previousSlide: () => window.LuminaAppCommands.goToSlide(activeIndex - 1),
+  // Stage 41a: exposed for Copilot Review feature.
+  getSlides: () => slides.slice(),
+  setSlides: (next) => {
+    slides = Array.isArray(next) ? next.map(normalizeSlide) : [];
+    if (activeIndex >= slides.length) activeIndex = slides.length - 1;
+    if (activeIndex < 0 && slides.length) activeIndex = 0;
+  }
 };
 
 window.addEventListener('beforeunload', ()=>{ try{ persistAutosaveNow('Autosaved.'); }catch(e){} });
