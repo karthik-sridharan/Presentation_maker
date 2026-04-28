@@ -1,0 +1,31 @@
+{
+  "stage": "stage40b-20260427-1",
+  "signature": "index-inline-stage40b-plan-workflow-hardening-20260427-1",
+  "createdAt": "2026-04-28T00:37:54.138Z",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 743886
+    },
+    {
+      "path": "INTERNAL_DIAGNOSTIC_STAGE40B.json",
+      "bytes": 1305
+    },
+    {
+      "path": "RELEASE_NOTES_STAGE40B.md",
+      "bytes": 1169
+    },
+    {
+      "path": "README_DEPLOY_STAGE40B.md",
+      "bytes": 1101
+    },
+    {
+      "path": "DEPLOY_CHECK_STAGE40B.md",
+      "bytes": 988
+    },
+    {
+      "path": "NEXT_STAGE_CONTEXT_STAGE40B.md",
+      "bytes": 904
+    }
+  ]
+}

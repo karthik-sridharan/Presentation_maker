@@ -35,17 +35,17 @@
     if(!data.first || now-data.first>8000){ data={count:0,first:now}; }
     data.count=(Number(data.count)||0)+1;
     sessionStorage.setItem(key, JSON.stringify(data));
-    window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage40b-20260427-1',loadCount:data.count,windowMs:now-data.first,guarded:data.count>=4};
+    window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage40c-20260427-1',loadCount:data.count,windowMs:now-data.first,guarded:data.count>=4};
     if(data.count>=4){
       window.__LUMINA_DISABLE_STAGE38G_LIVE_DECK_SYNC=true;
       try{ localStorage.removeItem('lumina-stage38g-live-deck-sync'); }catch(_e){}
     }
-  }catch(e){ window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage40b-20260427-1',error:String(e&&e.message||e)}; }
+  }catch(e){ window.__LUMINA_STAGE38H_BOOT_GUARD={stage:'stage40c-20260427-1',error:String(e&&e.message||e)}; }
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage40b-20260427-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage40b-plan-workflow-hardening-20260427-1';
+window.LUMINA_STAGE = 'stage40c-20260427-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage40c-prompt-action-dedup-hotfix-20260427-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -9867,7 +9867,7 @@ setTimeout(function(){
     var obj=JSON.parse(raw);var slides=Array.isArray(obj&&obj.slides)?obj.slides:(Array.isArray(obj)?obj:(obj&&obj.slide?[obj.slide]:[]));if(!slides.length)throw new Error('No slides found in AI result JSON.');return {deckTitle:String((obj&&obj.deckTitle)||'AI preview'),summary:String((obj&&obj.summary)||''),slides:slides};}
   function renderPreview(index){var summary=byId('stage39aPreviewSummary'),host=byId('stage39aGeneratedPreview'),list=byId('stage39aPreviewList');if(!summary||!host||!list)return false;try{var payload=parseResult();var slides=payload.slides||[];var idx=Math.max(0,Math.min(slides.length-1,Number(index!=null?index:(host.dataset.index||0))||0));var slide=slides[idx];host.dataset.index=String(idx);lastPreviewOk=true;lastPreviewCount=slides.length;lastPreviewTitle=slide&&slide.title?slide.title:'';summary.innerHTML='<span class="stage39a-status-chip" id="stage39aStatusChip">Preview ready</span> <b>'+h(payload.deckTitle||'Generated deck')+'</b> · '+slides.length+' slide'+(slides.length===1?'':'s')+' · showing '+h(slide&&slide.title?slide.title:'Untitled slide');list.innerHTML=slides.map(function(s,i){return '<button type="button" data-preview-index="'+i+'" class="'+(i===idx?'active':'')+'">'+h((i+1)+'. '+(s.title||'Untitled slide'))+'<small>'+h(s.slideType||'single')+'</small></button>'}).join('');qsa('[data-preview-index]',list).forEach(function(b){b.addEventListener('click',function(){renderPreview(Number(b.getAttribute('data-preview-index')||0))},true)});var R=W.LuminaRendererApi;if(R&&typeof R.buildSlideMarkup==='function')host.innerHTML='<div class="stage39a-render-shell">'+R.buildSlideMarkup(slide)+'</div>';else host.innerHTML='<div class="stage39a-preview-empty"><div><b>'+h(slide&&slide.title?slide.title:'Untitled slide')+'</b><br>'+h((slide&&slide.lede)||'Preview renderer not ready.')+'</div></div>';try{if(W.MathJax&&W.MathJax.typesetPromise)W.MathJax.typesetPromise([host]);}catch(_m){}return true}catch(err){lastPreviewOk=false;lastPreviewCount=0;host.innerHTML='<div class="stage39a-preview-empty"><div>Generate a preview to see the first slide here.</div></div>';list.innerHTML='';summary.innerHTML='<span class="stage39a-status-chip" id="stage39aStatusChip">No preview</span> '+h(friendlyError(err));return false}}
   async function generatePreview(kind){if(busy){setStatus('AI generation is already running.',true);return null}var c=core();if(!c||typeof c.callCopilot!=='function'){setStatus('AI core is not ready yet.',true);return null}setBusy(true);lastError='';try{var deck,plan=null;if(kind==='deck-spec'){if(typeof c.parseCopilotDeckSpecText!=='function')throw new Error('Deck spec parser is not ready.');var spec=byId('copilotSpecText');plan=c.parseCopilotDeckSpecText(spec?spec.value:'');var cnt=byId('copilotSlideCount');if(plan&&plan.targetSlideCount&&cnt)cnt.value=String(plan.targetSlideCount);if(typeof c.summarizeCopilotDeckSpec==='function')setStatus(c.summarizeCopilotDeckSpec(plan)+' Generating preview…');else setStatus('Generating preview from outline…');deck=await c.callCopilot('deck-spec',plan)}else{setStatus(kind==='slide'?'Generating slide preview…':'Generating deck preview…');deck=await c.callCopilot(kind)}var box=byId('copilotResultJson');if(box&&deck)box.value=JSON.stringify(deck,null,2);renderPreview(0);setAiSection('preview');setStatus('Preview ready. Review the generated slide(s), then use Apply when ready.');showToast('AI preview ready.');return deck}catch(err){var msg=friendlyError(err);lastError=msg;setStatus(msg,true);return null}finally{setBusy(false)}}
-  function ensurePromptActions(){var panel=qs('#stage38qAiDrawer .copilot-panel');if(!panel||byId('stage39aPromptActions'))return;var html='<div class="stage39a-ai-card full" data-ai-section="prompt"><h3>Generate without changing the deck</h3><p>These buttons write to the preview JSON only. Nothing changes until you use the Apply step.</p><div class="stage39a-prompt-actions"><button class="btn primary" type="button" id="stage39aPreviewSlideBtn">Generate slide preview</button><button class="btn primary" type="button" id="stage39aPreviewDeckBtn">Generate deck preview</button><button class="btn" type="button" id="stage39aGoPreviewBtn">Review latest preview</button></div></div>';var old=qs('.copilot-actions',panel);old?old.insertAdjacentHTML('beforebegin',html):panel.insertAdjacentHTML('beforeend',html);byId('stage39aPreviewSlideBtn').addEventListener('click',function(){generatePreview('slide')},true);byId('stage39aPreviewDeckBtn').addEventListener('click',function(){generatePreview('deck')},true);byId('stage39aGoPreviewBtn').addEventListener('click',function(){renderPreview();setAiSection('preview')},true)}
+  function ensurePromptActions(){var panel=qs('#stage38qAiDrawer .copilot-panel');if(!panel||byId('stage39aPromptActions'))return;var html='<div id="stage39aPromptActions" class="stage39a-ai-card full" data-ai-section="prompt"><h3>Generate without changing the deck</h3><p>These buttons write to the preview JSON only. Nothing changes until you use the Apply step.</p><div class="stage39a-prompt-actions"><button class="btn primary" type="button" id="stage39aPreviewSlideBtn">Generate slide preview</button><button class="btn primary" type="button" id="stage39aPreviewDeckBtn">Generate deck preview</button><button class="btn" type="button" id="stage39aGoPreviewBtn">Review latest preview</button></div></div>';var old=qs('.copilot-actions',panel);old?old.insertAdjacentHTML('beforebegin',html):panel.insertAdjacentHTML('beforeend',html);byId('stage39aPreviewSlideBtn').addEventListener('click',function(){generatePreview('slide')},true);byId('stage39aPreviewDeckBtn').addEventListener('click',function(){generatePreview('deck')},true);byId('stage39aGoPreviewBtn').addEventListener('click',function(){renderPreview();setAiSection('preview')},true)}
   function ensureOutlineAction(){var spec=field('copilotSpecText');if(!spec||byId('stage39aPreviewSpecBtn'))return;var card=mk('div',{class:'stage39a-ai-card','data-ai-section':'outline'},'<h3>Outline → preview</h3><p>Check the outline first, then generate a preview deck without applying it.</p><div class="row"><button class="btn primary mini" type="button" id="stage39aPreviewSpecBtn">Generate preview from outline</button></div>');spec.insertAdjacentElement('afterend',card);byId('stage39aPreviewSpecBtn').addEventListener('click',function(){generatePreview('deck-spec')},true)}
   function ensurePreviewCard(){var rf=field('copilotResultJson');if(!rf||byId('stage39aPreviewCard'))return;var card=mk('div',{class:'stage39a-ai-card',id:'stage39aPreviewCard','data-ai-section':'preview apply'},'<h3>Generated-slide preview</h3><p id="stage39aPreviewSummary"><span class="stage39a-status-chip" id="stage39aStatusChip">No preview</span> Generate a slide or deck to inspect it here.</p><div class="stage39a-preview-shell"><div class="stage39a-generated-preview" id="stage39aGeneratedPreview"><div class="stage39a-preview-empty"><div>Generate a preview to see the first slide here.</div></div></div><div class="stage39a-preview-list" id="stage39aPreviewList"></div></div><div class="row" style="margin-top:.62rem"><button class="btn mini" type="button" id="stage39aRefreshPreviewBtn">Refresh preview</button><button class="btn primary mini" type="button" id="stage39aOpenApplyBtn">Go to Apply</button></div>');rf.insertAdjacentElement('beforebegin',card);byId('stage39aRefreshPreviewBtn').addEventListener('click',function(){renderPreview()},true);byId('stage39aOpenApplyBtn').addEventListener('click',function(){renderPreview();setAiSection('apply')},true);renderPreview()}
   function ensureApplyLabels(){var row=byId('copilotApplyFirstSlideBtn')&&byId('copilotApplyFirstSlideBtn').closest('.row');if(!row)return;setSec(row,'apply');var b=byId('copilotApplyFirstSlideBtn');if(b)b.textContent='Apply to current slide';b=byId('copilotAppendResultBtn');if(b)b.textContent='Append as new slides';b=byId('copilotReplaceDeckBtn');if(b){b.textContent='Replace entire deck';b.title='This replaces the deck with the generated result.'}if(!byId('stage39aApplyBanner'))row.insertAdjacentElement('beforebegin',mk('div',{id:'stage39aApplyBanner',class:'stage39a-apply-banner','data-ai-section':'apply'},'<b>Apply step:</b> These buttons are the only place the AI result should change the current deck. Autosave runs after applying.'))}
@@ -10038,7 +10038,7 @@ setTimeout(function(){
 <script id="stage40b-plan-hardening-script">
 (function(){
   'use strict';
-  var W=window,D=document,STAGE='stage40b-20260427-1',SIG='index-inline-stage40b-plan-workflow-hardening-20260427-1';
+  var W=window,D=document,STAGE='stage40c-20260427-1',SIG='index-inline-stage40b-plan-workflow-hardening-20260427-1';
   var state={lastPlanCheck:null,lastFriendlyMessage:'',lastLocalPlanBuiltAt:'',lastAiPlanRequestedAt:'',lastGeneratedFromPlan:false,lastGeneratedAt:'',lastDeckFieldsEditedAt:'',lastSlideQuickEditAt:'',jsonHidden:true};
   function byId(id){return D.getElementById(id)}
   function qs(sel,root){return (root||D).querySelector(sel)}
@@ -10074,6 +10074,55 @@ setTimeout(function(){
   function patchDiagnostics(){var LD=W.LuminaDiagnostics;if(!LD||LD.__stage40bPatched)return false;var prev=(typeof LD.collectReport==='function'?LD.collectReport.bind(LD):(typeof LD.getReport==='function'?LD.getReport.bind(LD):null));if(!prev)return false;function wrap(){var r={};try{r=prev()||{}}catch(e){r={stage:STAGE,stage40bPreviousReportError:String(e&&(e.stack||e.message)||e)}}setup();var st=status(r);r.stage=STAGE;r.diagnosticScriptStage=STAGE;r.stageFromWindow=W.LUMINA_STAGE||STAGE;r.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||SIG;if(D.documentElement&&D.documentElement.dataset)r.indexDatasetStage=D.documentElement.dataset.luminaStage||STAGE;r.stage40BPlanHardeningStatus=st;r.stage40BPlanHardeningDiagnostics={currentSection:st.currentSection,lastPlanOk:st.lastPlanOk,lastPlanSlideCount:st.lastPlanSlideCount,lastValidationMessage:st.lastValidationMessage,lastGeneratedFromPlan:st.lastGeneratedFromPlan,tests:st.tests,previousStage40AStillPass:!!(r.stage40ADeckPlanningStatus&&r.stage40ADeckPlanningStatus.pass)};if(r.featurePolishSummary)r.featurePolishSummary=Object.assign({},r.featurePolishSummary,{planWorkflowHardening:true,clearPlanCtas:true,friendlyPlanValidation:true,deckLevelPlanFields:true,stage40BPlanHardening:true});return r}LD.collectReport=wrap;LD.getReport=wrap;LD.__stage40bPatched=true;return true}
   function refresh(){setup();patchDiagnostics();var st=status(null);W.__LUMINA_STAGE40B_PLAN_HARDENING_STATUS=st;return st}
   function init(){W.LUMINA_STAGE=STAGE;W.LUMINA_STAGE_SIGNATURE=SIG;try{D.documentElement.setAttribute('data-lumina-stage',STAGE);D.documentElement.setAttribute('data-lumina-stage-signature',SIG)}catch(_e){}refresh();[80,180,420,900,1800,3600].forEach(function(ms){setTimeout(refresh,ms)});W.LuminaStage40BPlanHardening={stage:STAGE,refresh:refresh,status:function(){return status(null)},validateFriendly:function(){return paintValidation()},openPlan:function(){setSection('plan');refresh();return true}}}
+  if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
+<style id="stage40c-prompt-action-dedup-css">
+  body.stage40c-prompt-dedup #stage39aPromptActions{outline:0}
+</style>
+<script id="stage40c-prompt-action-dedup-script">
+(function(){
+  'use strict';
+  var W=window,D=document,STAGE='stage40c-20260427-1',SIG='index-inline-stage40c-prompt-action-dedup-hotfix-20260427-1';
+  var state={lastRemoved:0,totalRemoved:0,lastBefore:0,lastAfter:0,lastDuplicateButtonIds:[],lastRunAt:'',patchedDiagnostics:false};
+  function byId(id){return D.getElementById(id)}
+  function qs(sel,root){return (root||D).querySelector(sel)}
+  function qsa(sel,root){return Array.prototype.slice.call((root||D).querySelectorAll(sel))}
+  function norm(s){return String(s||'').replace(/\s+/g,' ').trim()}
+  function isPromptActionCard(el){if(!el||!el.matches||!el.matches('.stage39a-ai-card'))return false;var head=qs('h3',el);return norm(head&&head.textContent)==='Generate without changing the deck'}
+  function duplicatePromptButtonIds(){var ids=['stage39aPreviewSlideBtn','stage39aPreviewDeckBtn','stage39aGoPreviewBtn'];return ids.filter(function(id){return qsa('[id="'+id+'"]').length>1})}
+  function dedupePromptActions(){
+    var panel=qs('#stage38qAiDrawer .copilot-panel');
+    if(!panel){state.lastRunAt=new Date().toISOString();state.lastBefore=0;state.lastAfter=0;state.lastDuplicateButtonIds=[];return 0}
+    var cards=qsa('.stage39a-ai-card',panel).filter(isPromptActionCard);
+    state.lastBefore=cards.length;
+    if(!cards.length){state.lastAfter=0;state.lastDuplicateButtonIds=duplicatePromptButtonIds();state.lastRunAt=new Date().toISOString();return 0}
+    var keep=cards.filter(function(c){return c.id==='stage39aPromptActions'})[0]||cards[0];
+    cards.forEach(function(c){if(c!==keep&&c.parentNode)c.parentNode.removeChild(c)});
+    keep.id='stage39aPromptActions';
+    keep.setAttribute('data-stage40c-dedup-keeper','1');
+    qsa('[id="stage39aPromptActions"]',panel).forEach(function(c){if(c!==keep&&isPromptActionCard(c)&&c.parentNode)c.parentNode.removeChild(c)});
+    var after=qsa('.stage39a-ai-card',panel).filter(isPromptActionCard).length;
+    var removed=Math.max(0,state.lastBefore-after);
+    state.lastRemoved=removed;state.totalRemoved+=removed;state.lastAfter=after;state.lastDuplicateButtonIds=duplicatePromptButtonIds();state.lastRunAt=new Date().toISOString();return removed
+  }
+  function status(report){
+    dedupePromptActions();
+    var panel=qs('#stage38qAiDrawer .copilot-panel');
+    var cards=panel?qsa('.stage39a-ai-card',panel).filter(isPromptActionCard):[];
+    var tests={aiDrawerPresent:!!byId('stage38qAiDrawer'),promptActionBlocksAtMostOne:cards.length<=1,promptActionStableId:cards.length===0||cards[0].id==='stage39aPromptActions',noDuplicatePromptButtonIds:duplicatePromptButtonIds().length===0,stage40BStillPass:report?!!(report.stage40BPlanHardeningStatus&&report.stage40BPlanHardeningStatus.pass):true,stage40AStillPass:report?!!(report.stage40ADeckPlanningStatus&&report.stage40ADeckPlanningStatus.pass):true,noCommandHooks:true,noMutationObserver:true};
+    tests.pass=Object.keys(tests).every(function(k){return k==='pass'||!!tests[k]});
+    return {stage:STAGE,promptActionDedup:true,sourceGuardFixed:true,promptActionBlockCount:cards.length,removedThisRun:state.lastRemoved,totalRemoved:state.totalRemoved,lastBefore:state.lastBefore,lastAfter:state.lastAfter,duplicatePromptButtonIds:duplicatePromptButtonIds(),lastRunAt:state.lastRunAt,tests:tests,pass:tests.pass}
+  }
+  function patchDiagnostics(){
+    var LD=W.LuminaDiagnostics;if(!LD||LD.__stage40cPatched)return false;
+    var prev=(typeof LD.collectReport==='function'?LD.collectReport.bind(LD):(typeof LD.getReport==='function'?LD.getReport.bind(LD):null));if(!prev)return false;
+    function wrap(){var r={};try{r=prev()||{}}catch(e){r={stage:STAGE,stage40cPreviousReportError:String(e&&(e.stack||e.message)||e)}}dedupePromptActions();var st=status(r);r.stage=STAGE;r.diagnosticScriptStage=STAGE;r.stageFromWindow=W.LUMINA_STAGE||STAGE;r.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||SIG;if(D.documentElement&&D.documentElement.dataset)r.indexDatasetStage=D.documentElement.dataset.luminaStage||STAGE;r.stage40CPromptDedupStatus=st;r.stage40CPromptDedupDiagnostics={promptActionBlockCount:st.promptActionBlockCount,removedThisRun:st.removedThisRun,totalRemoved:st.totalRemoved,duplicatePromptButtonIds:st.duplicatePromptButtonIds,tests:st.tests,previousStage40BStillPass:!!(r.stage40BPlanHardeningStatus&&r.stage40BPlanHardeningStatus.pass)};if(r.featurePolishSummary)r.featurePolishSummary=Object.assign({},r.featurePolishSummary,{promptActionDedup:true,stage40CPromptDedupHotfix:true});return r}
+    LD.collectReport=wrap;LD.getReport=wrap;LD.__stage40cPatched=true;state.patchedDiagnostics=true;return true
+  }
+  function refresh(){dedupePromptActions();patchDiagnostics();var st=status(null);W.__LUMINA_STAGE40C_PROMPT_DEDUP_STATUS=st;return st}
+  function init(){W.LUMINA_STAGE=STAGE;W.LUMINA_STAGE_SIGNATURE=SIG;try{D.documentElement.setAttribute('data-lumina-stage',STAGE);D.documentElement.setAttribute('data-lumina-stage-signature',SIG)}catch(_e){}if(D.body)D.body.classList.add('stage40c-prompt-dedup');refresh();[20,80,180,420,900,1800,3600,5200].forEach(function(ms){setTimeout(refresh,ms)});W.LuminaStage40CPromptDedup={stage:STAGE,refresh:refresh,status:function(){return status(null)},dedupe:dedupePromptActions}}
   if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
