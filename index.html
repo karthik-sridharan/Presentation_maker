@@ -133,6 +133,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 
 
 <link rel="stylesheet" href="css/styles-stage24c.css?v=stage38o-20260427-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
+<link rel="stylesheet" href="css/copilot-review.css?v=stage41a-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -2777,6 +2778,7 @@ https://example.com/lecture-notes.html"></textarea>
           <button class="btn primary" type="button" id="copilotDraftSlideBtn">Draft current slide</button>
           <button class="btn" type="button" id="copilotAddSlideBtn">Add generated slide</button>
           <button class="btn primary full" type="button" id="copilotGenerateDeckBtn">Generate full deck</button>
+          <button class="btn full" type="button" id="copilotReviewBtn">Review deck with Copilot…</button>
         </div>
 
         <div class="copilot-status" id="copilotStatus">Copilot ready. Enter a prompt, then generate a slide or deck.</div>
@@ -10195,6 +10197,32 @@ setTimeout(function(){
   function refresh(){setup();patchDiagnostics();var st=status(null);W.__LUMINA_STAGE40D_PLAN_BOARD_UX_STATUS=st;return st}
   function init(){W.LUMINA_STAGE=STAGE;W.LUMINA_STAGE_SIGNATURE=SIG;try{D.documentElement.setAttribute('data-lumina-stage',STAGE);D.documentElement.setAttribute('data-lumina-stage-signature',SIG)}catch(_e){}refresh();[40,120,260,520,1100,2200,4400,6500].forEach(function(ms){setTimeout(refresh,ms)});W.LuminaStage40DPlanBoardUx={stage:STAGE,refresh:refresh,status:function(){return status(null)},openPlan:function(){setSection('plan');refresh();return true},createStarter:starterPlan,addSlide:function(){addSlide('slide')}}}
   if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+
+<!-- ============================================================
+     Copilot Review (stage41a-20260428-1)
+     Per-slide review pass. Reuses LuminaCopilotCore for AI calls.
+     ============================================================ -->
+<script src="js/copilot-review.js?v=stage41a-20260428-1"
+        onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-review.js')"
+        onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-review.js')"
+        defer></script>
+<script>
+(function(){
+  function bindReviewBtn(){
+    var btn = document.getElementById('copilotReviewBtn');
+    if(!btn) return;
+    if(!window.CopilotReview){ setTimeout(bindReviewBtn, 100); return; }
+    if(btn.dataset.copilotReviewBound === '1') return;
+    btn.dataset.copilotReviewBound = '1';
+    btn.addEventListener('click', function(){
+      try { window.CopilotReview.open(); }
+      catch(err){ console.error('[CopilotReview] open failed:', err); alert('Could not open review: ' + (err && err.message || err)); }
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindReviewBtn);
+  else bindReviewBtn();
 })();
 </script>
 
