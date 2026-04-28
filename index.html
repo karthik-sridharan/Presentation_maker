@@ -134,6 +134,7 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 
 <link rel="stylesheet" href="css/styles-stage24c.css?v=stage38o-20260427-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
 <link rel="stylesheet" href="css/copilot-review.css?v=stage41a-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review.css')" />
+<link rel="stylesheet" href="css/copilot-browser-key-test.css?v=stage41c-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-browser-key-test.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -10204,10 +10205,14 @@ setTimeout(function(){
      Copilot Review (stage41a-20260428-1)
      Per-slide review pass. Reuses LuminaCopilotCore for AI calls.
      ============================================================ -->
-<script src="js/copilot-review.js?v=stage41a-20260428-1"
+<script src="js/copilot-review.js?v=stage41b-20260428-1"
         onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-review.js')"
         onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-review.js')"
-        defer></script>
+        ></script>
+<script src="js/copilot-browser-key-test.js?v=stage41c-20260428-1"
+        onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-browser-key-test.js')"
+        onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-browser-key-test.js')"
+        ></script>
 <script>
 (function(){
   function bindReviewBtn(){
@@ -10226,5 +10231,126 @@ setTimeout(function(){
 })();
 </script>
 
+
+
+<style id="stage41b-copilot-review-entry-css">
+  body.stage41b-copilot-review #stage38qAiDrawer[data-section="review"] [data-ai-section]:not([data-ai-section~="review"]){display:none!important}
+  body.stage41b-copilot-review .stage41b-review-main-entry{margin:.72rem 0 0;display:flex;gap:.46rem;flex-wrap:wrap;align-items:center}
+  body.stage41b-copilot-review .stage41b-review-main-entry .btn{min-height:34px}
+  body.stage41b-copilot-review .stage41b-review-card{margin:0 0 .78rem;padding:.88rem;border-radius:20px;border:1px solid rgba(23,54,93,.14);background:linear-gradient(180deg,#ffffff 0%,#f3f8ff 100%);box-shadow:0 12px 32px rgba(15,23,42,.06);color:#334155}
+  body.stage41b-copilot-review .stage41b-review-card h3{margin:.05rem 0 .28rem;color:#10233b;font-size:1rem;letter-spacing:-.025em}
+  body.stage41b-copilot-review .stage41b-review-card p{margin:.12rem 0 .6rem;color:#64748b;font-size:.8rem;line-height:1.4}
+  body.stage41b-copilot-review .stage41b-review-card .stage41b-review-actions{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center;margin:.55rem 0 .45rem}
+  body.stage41b-copilot-review .stage41b-review-card .stage41b-review-stats{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.52rem}
+  body.stage41b-copilot-review .stage41b-review-card .stage41b-review-stats span{border-radius:999px;border:1px solid rgba(23,54,93,.12);background:#fff;color:#17365d;padding:.28rem .52rem;font-size:.72rem;font-weight:900}
+  body.stage41b-copilot-review .stage41b-hidden-legacy-review{display:none!important}
+</style>
+<script id="stage41b-copilot-review-entry-script">
+(function(){
+  'use strict';
+  var W=window,D=document,STAGE='stage41b-review-entry-20260428-1',SIG='index-inline-stage41b-copilot-review-entry-20260428-1';
+  function byId(id){return D.getElementById(id)}
+  function qs(sel,root){return (root||D).querySelector(sel)}
+  function qsa(sel,root){return Array.prototype.slice.call((root||D).querySelectorAll(sel))}
+  function h(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function app(){return W.LuminaAppCommands||{}}
+  function slideCount(){try{var a=app(); return typeof a.getSlideCount==='function'?Number(a.getSlideCount()||0):0}catch(_e){return 0}}
+  function setReviewSection(){
+    var d=byId('stage38qAiDrawer'); if(!d) return false;
+    d.dataset.section='review';
+    qsa('[data-tab]',d).forEach(function(b){var on=b.getAttribute('data-tab')==='review'; b.classList.toggle('active',on); b.setAttribute('aria-selected',on?'true':'false')});
+    return true;
+  }
+  function openReviewDrawer(){
+    try{
+      if(W.LuminaStage40ADeckPlanning&&typeof W.LuminaStage40ADeckPlanning.openAI==='function') W.LuminaStage40ADeckPlanning.openAI('review');
+      else if(W.LuminaStage39AAiDrawerWorkflow&&typeof W.LuminaStage39AAiDrawerWorkflow.openAI==='function') W.LuminaStage39AAiDrawerWorkflow.openAI('review');
+      else if(W.LuminaStage38QAiDrawerAdvanced&&typeof W.LuminaStage38QAiDrawerAdvanced.openAI==='function') W.LuminaStage38QAiDrawerAdvanced.openAI('review');
+    }catch(_e){}
+    ensureAiEntry();
+    var d=byId('stage38qAiDrawer');
+    if(d){d.classList.add('open');d.setAttribute('aria-hidden','false');setReviewSection();}
+    return !!d;
+  }
+  function openReview(){
+    ensureEntrypoints();
+    if(W.CopilotReview&&typeof W.CopilotReview.open==='function'){
+      try{W.CopilotReview.open();return true}catch(err){console.error('[Stage41B] CopilotReview.open failed',err); alert('Could not open review: '+((err&&err.message)||err)); return false}
+    }
+    alert('Copilot Review did not load. Check that js/copilot-review.js is deployed next to index.html.');
+    return false;
+  }
+  function bind(btn,mode){
+    if(!btn||btn.dataset.stage41bReviewBound==='1')return;
+    btn.dataset.stage41bReviewBound='1';
+    btn.addEventListener('click',function(ev){ev.preventDefault(); if(mode==='drawer')openReviewDrawer(); else openReview();},true);
+  }
+  function ensureMainEntry(){
+    var intro=qs('.editor-intro'); if(!intro)return false;
+    var row=byId('stage41bReviewMainEntry');
+    if(!row){
+      row=D.createElement('div'); row.id='stage41bReviewMainEntry'; row.className='stage41b-review-main-entry';
+      row.innerHTML='<button class="btn primary" type="button" id="stage41bOpenReviewBtn">Review deck with Copilot</button><button class="btn" type="button" id="stage41bOpenReviewDrawerBtn">Open review workspace</button><span class="help" id="stage41bReviewMainHelp">Review an existing deck slide by slide: keep, remove, remake, or merge.</span>';
+      intro.appendChild(row);
+    }
+    bind(byId('stage41bOpenReviewBtn'),'open');
+    bind(byId('stage41bOpenReviewDrawerBtn'),'drawer');
+    var help=byId('stage41bReviewMainHelp'); if(help){var n=slideCount(); help.textContent='Current deck: '+n+' slide'+(n===1?'':'s')+'. Review slide by slide: keep, remove, remake, or merge.';}
+    return true;
+  }
+  function ensureReviewTab(){
+    var d=byId('stage38qAiDrawer'),tb=d&&qs('.stage38q-drawer-tabs',d); if(!tb)return false;
+    var tab=qs('[data-tab="review"]',tb);
+    if(!tab){
+      tab=D.createElement('button'); tab.className='stage38q-drawer-tab'; tab.type='button'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false'); tab.setAttribute('data-tab','review'); tab.setAttribute('data-step',String(qsa('[data-tab]',tb).length+1)); tab.textContent='Review';
+      tb.appendChild(tab);
+      tab.addEventListener('click',function(e){e.preventDefault(); setReviewSection();},true);
+    }
+    return true;
+  }
+  function ensureAiEntry(){
+    ensureReviewTab();
+    var panel=qs('#stage38qAiDrawer .copilot-panel')||byId('stage38qAiDrawerBody'); if(!panel)return false;
+    var card=byId('stage41bReviewCard');
+    if(!card){
+      card=D.createElement('div'); card.id='stage41bReviewCard'; card.className='stage41b-review-card'; card.setAttribute('data-ai-section','review');
+      card.innerHTML='<h3>Review existing deck with Copilot</h3><p>Open a slide-by-slide review window. For each slide choose Keep, Remove, or Remake. Remake can use the full deck as context and can merge selected slides into one replacement slide.</p><div class="stage41b-review-actions"><button class="btn primary" type="button" id="stage41bReviewCardOpenBtn">Start deck review</button><button class="btn" type="button" id="stage41bReviewRefreshBtn">Refresh count</button></div><div class="stage41b-review-stats" id="stage41bReviewStats"></div><div class="help">The final deck opens as a preview first. Nothing replaces the current deck until you click Apply.</div>';
+      var anchor=byId('stage40aPlanCard')||byId('stage39aPreviewCard')||panel.firstChild;
+      if(anchor&&anchor.parentNode===panel) panel.insertBefore(card,anchor); else panel.appendChild(card);
+    }
+    bind(byId('stage41bReviewCardOpenBtn'),'open');
+    bind(byId('stage41bReviewRefreshBtn'),'drawer');
+    updateStats();
+    return true;
+  }
+  function updateStats(){
+    var n=slideCount();
+    var st=byId('stage41bReviewStats');
+    if(st)st.innerHTML='<span>Slides: '+h(n)+'</span><span>AI used only for Remake</span><span>Preview before apply</span>';
+    var old=byId('copilotReviewBtn');
+    if(old){old.classList.add('stage41b-hidden-legacy-review'); bind(old,'open');}
+  }
+  function ensureEntrypoints(){
+    if(D.body)D.body.classList.add('stage41b-copilot-review');
+    ensureMainEntry(); ensureAiEntry(); updateStats(); patchDiagnostics();
+    W.__LUMINA_STAGE41B_COPILOT_REVIEW_STATUS=status();
+    return W.__LUMINA_STAGE41B_COPILOT_REVIEW_STATUS;
+  }
+  function status(){
+    var d=byId('stage38qAiDrawer'),tab=!!(d&&qs('[data-tab="review"]',d));
+    var tests={reviewScriptLoaded:!!(W.CopilotReview&&typeof W.CopilotReview.open==='function'),mainEntry:!!byId('stage41bOpenReviewBtn'),drawerReviewTab:tab,drawerReviewCard:!!byId('stage41bReviewCard'),deckBridge:!!(app().getSlides&&app().setSlides),legacyHiddenOrBound:!byId('copilotReviewBtn')||byId('copilotReviewBtn').dataset.stage41bReviewBound==='1'};
+    tests.pass=Object.keys(tests).every(function(k){return !!tests[k]});
+    return {stage:STAGE,copilotReviewEntry:true,stageFromWindow:W.LUMINA_STAGE||STAGE,indexStageSignature:W.LUMINA_STAGE_SIGNATURE||SIG,slideCount:slideCount(),currentAiSection:d&&d.dataset?d.dataset.section:null,tests:tests,pass:tests.pass};
+  }
+  function patchDiagnostics(){
+    var LD=W.LuminaDiagnostics;if(!LD||LD.__stage41bReviewPatched)return false;
+    var prev=(typeof LD.collectReport==='function'?LD.collectReport.bind(LD):(typeof LD.getReport==='function'?LD.getReport.bind(LD):null)); if(!prev)return false;
+    function wrap(){var r={};try{r=prev()||{}}catch(e){r={stage:STAGE,stage41bPreviousReportError:String(e&&(e.stack||e.message)||e)}}var st=status();r.stage=STAGE;r.diagnosticScriptStage=STAGE;r.stageFromWindow=W.LUMINA_STAGE||STAGE;r.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||SIG;if(D.documentElement&&D.documentElement.dataset)r.indexDatasetStage=D.documentElement.dataset.luminaStage||STAGE;r.stage41BCopilotReviewStatus=st;r.stage41BCopilotReviewDiagnostics={tests:st.tests,slideCount:st.slideCount,currentAiSection:st.currentAiSection};if(r.featurePolishSummary)r.featurePolishSummary=Object.assign({},r.featurePolishSummary,{copilotReview:true,reviewDrawerTab:true,reviewMainEntry:true});return r}
+    LD.collectReport=wrap;LD.getReport=wrap;LD.__stage41bReviewPatched=true;return true;
+  }
+  function init(){W.LUMINA_STAGE=STAGE;W.LUMINA_STAGE_SIGNATURE=SIG;try{D.documentElement.setAttribute('data-lumina-stage',STAGE);D.documentElement.setAttribute('data-lumina-stage-signature',SIG)}catch(_e){}ensureEntrypoints();[80,180,420,900,1800,3600,6500].forEach(function(ms){setTimeout(ensureEntrypoints,ms)});W.LuminaStage41BCopilotReview={stage:STAGE,refresh:ensureEntrypoints,status:status,openReview:openReview,openReviewDrawer:openReviewDrawer};}
+  if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
 </body>
 </html>
