@@ -2158,12 +2158,34 @@ window.LuminaAppCommands = {
   },
   nextSlide: () => window.LuminaAppCommands.goToSlide(activeIndex + 1),
   previousSlide: () => window.LuminaAppCommands.goToSlide(activeIndex - 1),
-  // Stage 41a: exposed for Copilot Review feature.
-  getSlides: () => slides.slice(),
+  // Stage 41b: robust deck read/write surface for Copilot Review.
+  getSlides: () => slides.map(slide => {
+    try { return JSON.parse(JSON.stringify(slide)); }
+    catch(_e) { return Object.assign({}, slide); }
+  }),
+  setActiveIndex: (idx) => {
+    if(!slides.length) { activeIndex = 0; return false; }
+    const next = Math.max(0, Math.min(slides.length - 1, Number(idx) || 0));
+    activeIndex = next;
+    applySlideToForm(slides[activeIndex]);
+    buildPreview();
+    renderDeckList();
+    return true;
+  },
   setSlides: (next) => {
     slides = Array.isArray(next) ? next.map(normalizeSlide) : [];
+    if (!slides.length) {
+      activeIndex = 0;
+      renderDeckList();
+      buildPreview();
+      return true;
+    }
     if (activeIndex >= slides.length) activeIndex = slides.length - 1;
-    if (activeIndex < 0 && slides.length) activeIndex = 0;
+    if (activeIndex < 0) activeIndex = 0;
+    applySlideToForm(slides[activeIndex]);
+    buildPreview();
+    renderDeckList();
+    return true;
   }
 };
 
