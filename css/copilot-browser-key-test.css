@@ -1,0 +1,18 @@
+/* copilot-browser-key-test.css — temporary browser API-key testing panel. Remove for production. */
+body.stage41c-browser-key-test .stage41c-browser-key-card{margin:.72rem 0 .85rem;padding:.88rem;border-radius:20px;border:1px solid rgba(245,158,11,.34);background:linear-gradient(180deg,#fffaf0 0%,#fff7ed 100%);box-shadow:0 12px 30px rgba(146,64,14,.08);color:#3f2d12}
+body.stage41c-browser-key-test .stage41c-browser-key-card h3{margin:.02rem 0 .22rem;font-size:1rem;color:#7c2d12;letter-spacing:-.025em}
+body.stage41c-browser-key-test .stage41c-browser-key-card p{margin:.12rem 0 .64rem;font-size:.8rem;line-height:1.42;color:#7c4a12}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-key-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.58rem;align-items:end}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-field{display:flex;flex-direction:column;gap:.25rem;min-width:0}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-field.full{grid-column:1 / -1}
+body.stage41c-browser-key-test .stage41c-browser-key-card label{font-size:.72rem;font-weight:900;color:#72340f}
+body.stage41c-browser-key-test .stage41c-browser-key-card input,body.stage41c-browser-key-test .stage41c-browser-key-card select{width:100%;border-radius:13px;border:1px solid rgba(124,45,18,.22);background:#fff;color:#241103;padding:.55rem .62rem;font:inherit}
+body.stage41c-browser-key-test .stage41c-key-input-row{display:flex;gap:.4rem;align-items:center}
+body.stage41c-browser-key-test .stage41c-key-input-row input{flex:1 1 auto;min-width:0}
+body.stage41c-browser-key-test .stage41c-key-input-row .btn{flex:0 0 auto}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-actions{display:flex;flex-wrap:wrap;gap:.42rem;align-items:center;margin-top:.68rem}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-status{margin-top:.52rem;font-size:.76rem;line-height:1.38;color:#7c4a12}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-status.ready{color:#14532d}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-status.error{color:#991b1b}
+body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-warning{margin:.58rem 0 0;padding:.55rem .62rem;border-radius:14px;border:1px solid rgba(245,158,11,.42);background:rgba(255,251,235,.78);color:#7c2d12;font-size:.76rem;line-height:1.42}
+@media (max-width:720px){body.stage41c-browser-key-test .stage41c-browser-key-card .stage41c-key-grid{grid-template-columns:1fr}}
