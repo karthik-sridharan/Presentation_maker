@@ -1,0 +1,13 @@
+{
+  "stage": "stage40d-20260427-1",
+  "signature": "index-inline-stage40d-plan-board-ux-tightening-20260427-1",
+  "files": [
+    "index.html",
+    "README_DEPLOY_STAGE40D.md",
+    "RELEASE_NOTES_STAGE40D.md",
+    "DEPLOY_CHECK_STAGE40D.md",
+    "NEXT_STAGE_CONTEXT_STAGE40D.md",
+    "INTERNAL_DIAGNOSTIC_STAGE40D.json",
+    "check_stage40d.js"
+  ]
+}

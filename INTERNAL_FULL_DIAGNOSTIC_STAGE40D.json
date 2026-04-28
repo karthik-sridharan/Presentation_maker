@@ -1,0 +1,45 @@
+{
+  "stage": "stage40d-20260427-1",
+  "diagnosticScriptStage": "stage40d-20260427-1",
+  "indexStageSignature": "index-inline-stage40d-plan-board-ux-tightening-20260427-1",
+  "checkedAt": "2026-04-28T01:41:09.235Z",
+  "fileBytes": 768934,
+  "loadedScriptCount": 83,
+  "styleCount": 39,
+  "syntax": {
+    "stage40dScriptOk": true,
+    "stage40dScriptBytes": 14162,
+    "syntaxError": ""
+  },
+  "stageMarkers": {
+    "topStage": true,
+    "topSignature": true,
+    "css": true,
+    "script": true
+  },
+  "regressionsPreserved": {
+    "stage40C": true,
+    "stage40B": true,
+    "stage40A": true,
+    "previewOnly": true,
+    "applyOnly": true
+  },
+  "stage40D": {
+    "planBoardUx": true,
+    "planBoardPresent": true,
+    "storyboardPresent": true,
+    "emptyStarter": true,
+    "quickAdds": true,
+    "starterCta": true,
+    "slideIntentSummaries": true,
+    "jsonFirstReduced": true
+  },
+  "tests": {
+    "syntax": true,
+    "stage": true,
+    "inserted": true,
+    "preserves": true,
+    "ux": true
+  },
+  "pass": true
+}
