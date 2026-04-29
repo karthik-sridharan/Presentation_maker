@@ -197,6 +197,7 @@ const COPILOT_DECK_PROMPT_FILE = 'prompts/deck.txt';
 const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
   'Deck-level generation instructions:',
   'Create a coherent complete presentation, not a loose collection of slides.',
+    'For large requested decks, preserve the requested slide count and outline granularity; do not collapse many outline slides into a smaller summary deck.',
   'Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.',
   'Make slide titles specific and informative.',
   'Use speaker notes to explain transitions, emphasis, and teaching guidance.',
@@ -939,6 +940,7 @@ function copilotSystemPrompt(){
     'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
     'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
     'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
+    'If the prompt says Target slide count, return exactly that many slides when possible. For long lecture decks, make individual slides concise rather than reducing the slide count.',
     'Do not invent citations or external image-file URLs. When a figure is needed, prefer mode image with a concrete assetPrompt; the app will generate the image.',
     'For image blocks, set mode to image, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize.',
     'When several small related visuals are needed on one slide, ask for one composite image/mosaic in a single image block instead of many separate image blocks.',
@@ -1014,7 +1016,7 @@ function parseCopilotDeckSpecText(rawText){
       const targetFromJson = Number(parsed.targetSlideCount || parsed.slideCount || parsed.slidesCount || rawSlides.length || 0);
       const jsonPlan = {
         mode:'deck-spec', sourceFormat:'json', deckTitle:safeString(parsed.deckTitle || parsed.title || ''),
-        targetSlideCount:Number.isFinite(targetFromJson) && targetFromJson > 0 ? Math.min(30, Math.max(1, targetFromJson)) : (rawSlides.length || null),
+        targetSlideCount:Number.isFinite(targetFromJson) && targetFromJson > 0 ? Math.min(100, Math.max(1, targetFromJson)) : (rawSlides.length || null),
         themeHint:safeString(parsed.themeHint || parsed.theme || parsed.style || ''), operation:safeString(parsed.operation || 'generateDeck'),
         rawText:text, slides:rawSlides, globalInstructions:Array.isArray(parsed.globalInstructions) ? parsed.globalInstructions : []
       };
@@ -1049,7 +1051,7 @@ function parseCopilotDeckSpecText(rawText){
     const line = safeString(rawLine).trim(); if(!line) return;
     let m;
     if((m=line.match(/^#\s*Deck\s*:\s*(.+)$/i)) || (m=line.match(/^Deck\s*:\s*(.+)$/i))){ plan.deckTitle=clean(m[1]); activeField=''; return; }
-    if((m=line.match(/^Slides?\s*:\s*(\d+)\s*$/i))){ plan.targetSlideCount=Math.max(1, Math.min(30, Number(m[1]))); activeField=''; return; }
+    if((m=line.match(/^Slides?\s*:\s*(\d+)\s*$/i))){ plan.targetSlideCount=Math.max(1, Math.min(100, Number(m[1]))); activeField=''; return; }
     if((m=line.match(/^(?:Style|Theme)\s*:\s*(.+)$/i))){ plan.themeHint=clean(m[1]); activeField=''; return; }
     if((m=line.match(/^(?:Operation|Mode)\s*:\s*(.+)$/i))){ plan.operation=clean(m[1]) || plan.operation; activeField=''; return; }
     if((m=line.match(/add\s+(?:the\s+)?next\s+(\d+)\s+slides?\s+(?:on|about)\s+(.+)$/i))){ expandNextSlides(Math.max(1, Math.min(12, Number(m[1]))), clean(m[2])); return; }
@@ -1074,7 +1076,7 @@ function parseCopilotDeckSpecText(rawText){
   });
   plan.slides = plan.slides.map((s, idx)=>{ const start=Number(s.rangeStart || idx + 1); const end=Math.max(start, Number(s.rangeEnd || start)); return Object.assign({}, s, { rangeStart:start, rangeEnd:end, requiredBlocks:[].concat(s.figures || [], s.demos || []) }); });
   const maxSlide = plan.slides.reduce((m,s)=>Math.max(m, Number(s.rangeEnd || s.rangeStart || 0)), 0);
-  if(!plan.targetSlideCount) plan.targetSlideCount = maxSlide || Math.max(1, Math.min(30, plan.slides.length || 6));
+  if(!plan.targetSlideCount) plan.targetSlideCount = maxSlide || Math.max(1, Math.min(100, plan.slides.length || 6));
   if(!plan.deckTitle){ const titleLine=lines.map(l=>l.trim()).find(l=>/^#\s+/.test(l) && !/^#\s*Slide/i.test(l)); plan.deckTitle = titleLine ? clean(titleLine.replace(/^#+\s*/,'')) : ''; }
   if(!plan.slides.length) plan.globalInstructions.push('Treat the raw text as a complete deck outline/specification. Preserve slide order and all requested figures/demos.');
   updateCopilotRuntime({ lastDeckSpecStatus:'parsed-text', lastDeckSpecSlideCount:plan.targetSlideCount || 0, lastDeckSpecParsedSlides:plan.slides.length });
@@ -1164,7 +1166,7 @@ async function buildCopilotUserPrompt(kind, deckSpecPlan){
   const isSpecMode = kind === 'deck-spec';
   if(!prompt && !isSpecMode) throw new Error('Tell Copilot what to create first.');
   const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
-  const count = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || 1)));
+  const count = Math.max(1, Math.min(100, Number(specCount || copilotEls.slideCount?.value || 1)));
   const tone = copilotEls.tone?.value || 'clear and concise';
   const mode = isSpecMode ? 'Create a complete deck from the parsed DeckPlan specification.' : (kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.');
   const parts = [mode];
@@ -1479,7 +1481,7 @@ function normalizeCopilotDeck(deck, kind='deck', deckSpecPlan=null){
   if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
   const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
   const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
-  const requestedCount = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+  const requestedCount = Math.max(1, Math.min(100, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
   const deckSlides = normalizedSlides.slice(0, requestedCount);
   if((kind === 'deck' || kind === 'deck-spec') && normalizedSlides.length > deckSlides.length){
     updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
