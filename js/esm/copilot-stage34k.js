@@ -1,4 +1,4 @@
-/* Stage 36Y: Copilot core with deck-only dev prompt, reference-link web search, and stronger figure directives.
+/* Stage 41I: Copilot core with editable external system prompt, no 30-slide planning cap, reference-link web search, and stronger figure directives.
    Stage 34K filename retained for cache-compatible loader continuity.
 
    It receives a narrow dependency bridge from legacy-app-stage24c.js and keeps
@@ -23,6 +23,7 @@ function createApi(deps){
   const COPILOT_DEFAULT_ENDPOINT = deps.defaultEndpoint || 'https://api.openai.com/v1/responses';
   const COPILOT_DEV_PROMPT_FILE = deps.devPromptFile || 'prompts/dev.txt';
   const COPILOT_DECK_PROMPT_FILE = deps.deckPromptFile || 'prompts/deck.txt';
+  const COPILOT_SYSTEM_PROMPT_FILE = deps.systemPromptFile || 'prompts/system_promp.txt';
   const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
     'Deck-level generation instructions:',
     'Treat these as deck-only developer instructions.',
@@ -35,7 +36,48 @@ function createApi(deps){
     'Use speaker notes to explain transitions, emphasis, and teaching guidance.',
     'Keep the deck editable: prefer normal text/panel blocks and avoid embedding large custom HTML unless explicitly requested.'
   ].join('\n');
+  const COPILOT_DEFAULT_SYSTEM_PROMPT = [
+    "Lumina Copilot system prompt",
+    "",
+    "You are a presentation copilot embedded in an HTML slide generator.",
+    "Return only JSON that matches the schema supplied by the request.",
+    "Create editable slide objects that work in the generator.",
+    "Use only slideType values title-center, single, or two-col unless the schema or app is extended.",
+    "Use h1 for title slides and h2 for normal slides.",
+    "Set inheritTheme to true unless the user explicitly asks for custom colors.",
+    "For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.",
+    "Keep each slide focused, with 1-3 content blocks unless the requested source deck clearly needs more.",
+    "Put speaker guidance, source-following assumptions, missing-reference warnings, and transition notes in notesBody.",
+    "Return exactly one deck; never concatenate two alternate decks.",
+    "Include at most one title slide unless the user explicitly asks for multiple decks.",
+    "If the dynamic prompt supplies a Target slide count, return exactly that many slides when possible.",
+    "For long lecture decks, preserve the requested slide count and outline granularity; do not collapse many outline slides into a smaller summary deck.",
+    "For slide ranges in an outline, expand each range into separate slides while preserving order.",
+    "Create a coherent complete presentation, not a loose collection of slides.",
+    "Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.",
+    "Make slide titles specific and informative.",
+    "If the user provides lecture notes, pasted text, uploaded PDFs, or URLs, follow that material closely. Do not produce a generic overview of the topic.",
+    "Preserve the source lecture's ordering unless the user asks for a different organization.",
+    "Use supplied reference material as grounding/source material. Prioritize it over generic background knowledge.",
+    "Do not invent facts, definitions, citations, claims, or external image-file URLs that conflict with supplied reference material.",
+    "When reference content cannot be accessed, mention that limitation in the deck summary and speaker notes.",
+    "Preserve important definitions, examples, notation, claims, figures, diagrams, examples, and ordering from supplied references.",
+    "When the app attaches PDFs as file inputs, treat them as source documents.",
+    "When web search is enabled for non-PDF reference URLs, use it only to access the listed references and related grounding.",
+    "For requested demos, simulations, animations, calculators, or arbitrary HTML, use mode custom and put a complete self-contained HTML document or fragment in content. Use inline CSS and JavaScript. Keep it sandbox-friendly: no external libraries, no network calls, no popups, no tracking, and no infinite heavy loops.",
+    "For requested original images, figures, visual metaphors, diagrams, plots, pictures, or illustrations, use mode image with a concrete assetPrompt, concise assetAlt, and an aspect-ratio/size hint.",
+    "For image blocks, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize. Use empty asset fields for non-image blocks.",
+    "Keep generated image prompts specific: describe subject, composition, labels/text policy, style, color palette, and how the image supports the slide.",
+    "Avoid asking for dense embedded text inside generated images unless the user explicitly requests it.",
+    "When several small related visuals belong together on one slide, request one composite/mosaic image in a single image block instead of many separate image blocks.",
+    "Prefer editable panel/plain blocks for normal text.",
+    "Keep the deck editable and avoid embedding large custom HTML unless explicitly requested.",
+    "When provided with style context or a style screenshot, use it only to match colors, spacing, layout, and visual tone. Do not insert the screenshot itself unless the user explicitly asks.",
+    "For plan-generation requests, produce concise editable slide-by-slide plans before deck generation. Each planned slide should include a title, purpose, layout, visual/demo request if useful, key points, and speaker notes/constraints.",
+    "The dynamic user message will supply items such as user request, target slide count, tone/style, reference material, parsed DeckPlan JSON, and current deck context. Treat those dynamic fields as request-specific inputs that fill in this system prompt."
+  ].join('\n');
   let deckPromptPrefixCache = null;
+  let systemPromptCache = null;
   let copilotReferencePdfFiles = [];
   const store = deps.localStorage || (typeof globalThis !== 'undefined' ? globalThis.localStorage : null);
   const fetchImpl = deps.fetch || (typeof globalThis !== 'undefined' ? globalThis.fetch : null);
@@ -51,7 +93,7 @@ function createApi(deps){
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage41h-large-deck-target-20260429-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage41i-system-prompt-no-30-cap-20260429-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, systemPromptFile:COPILOT_SYSTEM_PROMPT_FILE, deckPromptAppliesTo:'superseded-by-system-promp' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -77,6 +119,13 @@ function createApi(deps){
     const k = safeString(key).trim();
     if(!k) return '';
     return k.slice(0, Math.min(10, k.length)) + (k.length > 10 ? '…' : '');
+  }
+  function normalizeRequestedSlideCount(value, fallback=1){
+    const n = Number(value);
+    const fb = Number(fallback);
+    if(Number.isFinite(n) && n > 0) return Math.floor(n);
+    if(Number.isFinite(fb) && fb > 0) return Math.floor(fb);
+    return 1;
   }
   function validateCopilotApiKey(key, endpoint, options={}){
     const k = safeString(key).trim();
@@ -222,26 +271,7 @@ function createApi(deps){
     };
   }
   function copilotSystemPrompt(){
-    return [
-      'You are a presentation copilot embedded in an HTML slide generator.',
-      'Return only JSON that matches the provided schema.',
-      'Create editable slide objects that work in the generator.',
-      'Use only slideType values title-center, single, or two-col.',
-      'Use h1 for title slides and h2 for normal slides.',
-      'Set inheritTheme to true unless the user explicitly asks for custom colors.',
-      'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
-      'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
-    'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
-    'If the prompt says Target slide count, return exactly that many slides when possible. For long lecture decks, make individual slides concise rather than reducing the slide count.',
-      'Do not invent citations or external image-file URLs. When a figure is needed, prefer an image block with a concrete assetPrompt; the app will generate the image.',
-      'If the user asks to follow lecture notes or a reference link, do not answer as a generic topic summary; organize the deck around the referenced material and say in the summary when reference content could not be accessed.',
-      'If the instructions mention figures, diagrams, plots, pictures, or visuals, prefer mode image with a concrete assetPrompt instead of a vague placeholder.',
-      'For image blocks, set mode to image, put a short caption in content, a detailed generation prompt in assetPrompt, concise alt text in assetAlt, and a size hint in assetSize. Use empty asset fields for non-image blocks.',
-      'When several small related visuals are needed on one slide, ask for one composite image/mosaic in a single image block instead of many separate image blocks.',
-      'Write image prompts that match the slide style and avoid dense embedded text unless the user explicitly asks for text inside the image.',
-      'For demos, animations, simulations, calculators, or arbitrary HTML, use mode custom and put a complete self-contained HTML document or fragment in content. Use inline CSS and JavaScript. Keep it sandbox-friendly: no external libraries, no network calls, no popups, no tracking, and no infinite heavy loops.',
-      'When provided with style context or a style screenshot, use it to match colors, spacing, and visual tone. Do not embed the screenshot itself unless the user explicitly asks.'
-    ].join('\n');
+    return systemPromptCache || COPILOT_DEFAULT_SYSTEM_PROMPT;
   }
   function compactDeckForCopilot(){
     const deck = typeof deps.currentDeckData === 'function' ? deps.currentDeckData() : {};
@@ -280,6 +310,19 @@ function createApi(deps){
     }catch(err){
       return { text:'', source:name, status:'file-load-error', error:(err && err.message) || safeString(err) };
     }
+  }
+  async function loadCopilotSystemPrompt(){
+    if(systemPromptCache !== null) return systemPromptCache;
+    const result = await fetchPromptFile(COPILOT_SYSTEM_PROMPT_FILE);
+    if(result.error) updateCopilotRuntime({ systemPromptLastError:result.error });
+    systemPromptCache = result.text || COPILOT_DEFAULT_SYSTEM_PROMPT;
+    updateCopilotRuntime({
+      systemPromptFile:COPILOT_SYSTEM_PROMPT_FILE,
+      systemPromptSource: result.text ? result.source : 'builtin-default',
+      systemPromptStatus: result.text ? result.status : (result.status + ';used-builtin-default'),
+      systemPromptLoadedAt: new Date().toISOString()
+    });
+    return systemPromptCache;
   }
   async function loadDeckPromptPrefix(){
     if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
@@ -377,36 +420,33 @@ function createApi(deps){
   }
   async function buildCopilotUserPrompt(kind, deckSpecPlan){
     const prompt = (copilotEls.prompt?.value || '').trim();
-    if(!prompt && !deckSpecPlan && !getCopilotReferenceMaterial().hasAny) throw new Error('Tell Copilot what to create first, provide a deck spec, or add reference material.');
-    const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
-    const count = Math.max(1, Math.min(100, Number(specCount || copilotEls.slideCount?.value || 1)));
-    const tone = copilotEls.tone?.value || 'clear and concise';
-    const mode = deckSpecPlan ? 'Create a complete deck from the parsed DeckPlan specification.' : (kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.');
-    const parts = [mode];
-    if(deckSpecPlan){
-      parts.push('Parsed DeckPlan JSON. This is the source of truth for the requested deck. Satisfy every requested slide, figure, and custom HTML demo:', JSON.stringify(deckSpecPlan, null, 2));
-      parts.push('Hard rules: expand ranges into slides; every Figure requirement becomes a mode image block; every Demo requirement becomes a mode custom block with self-contained HTML/CSS/JS; do not append a second alternate deck.');
-    }
     const referenceMaterial = getCopilotReferenceMaterial();
+    if(!prompt && !deckSpecPlan && !referenceMaterial.hasAny) throw new Error('Tell Copilot what to create first, provide a deck spec, or add reference material.');
+    const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
+    const count = normalizeRequestedSlideCount(specCount || copilotEls.slideCount?.value || 1, 1);
+    const tone = copilotEls.tone?.value || 'clear and concise';
+    const requestKind = deckSpecPlan ? 'deck-spec' : (kind === 'deck' ? 'deck' : 'single-slide');
+    const parts = [
+      'REQUEST_KIND: ' + requestKind,
+      'TARGET_SLIDE_COUNT: ' + (kind === 'slide' ? 1 : count),
+      'TONE_STYLE: ' + tone,
+      'USER_REQUEST:\n' + (prompt || '(none)')
+    ];
+    if(deckSpecPlan){
+      parts.push('PARSED_DECKPLAN_JSON:\n' + JSON.stringify(deckSpecPlan, null, 2));
+    }
     if(referenceMaterial.hasAny){
       parts.push(
-        'Reference material supplied by the user. Use this as grounding/source material for the deck. Prioritize it over generic background knowledge. Do not invent facts that conflict with it.',
-        referenceMaterial.urls.length ? ('Reference URLs to use, in order:\n' + referenceMaterial.urls.map((url, idx)=>(idx + 1) + '. ' + url).join('\n')) : 'Reference URLs: none',
-        referenceMaterial.pdfFiles.length ? ('Uploaded PDF reference files attached to this request: ' + referenceMaterial.pdfFiles.map(file=>file.filename).join(', ')) : 'Uploaded PDF reference files: none',
-        referenceMaterial.pdfUrls.length ? ('PDF reference URLs attached as file inputs: ' + referenceMaterial.pdfUrls.join(', ')) : 'PDF reference URLs attached as file inputs: none',
-        referenceMaterial.text ? ('Uploaded/pasted reference text:\n' + referenceMaterial.text) : 'Uploaded/pasted reference text: none',
-        'Reference material rules: preserve important definitions, examples, notation, claims, figures, examples, and ordering from the supplied references; use attached PDFs as source documents when present; use web search for listed non-PDF URLs when available; mention in summary if URL content could not be accessed.'
+        'REFERENCE_URLS:\n' + (referenceMaterial.urls.length ? referenceMaterial.urls.map((url, idx)=>(idx + 1) + '. ' + url).join('\n') : '(none)'),
+        'REFERENCE_PDF_FILE_NAMES: ' + (referenceMaterial.pdfFiles.length ? referenceMaterial.pdfFiles.map(file=>file.filename).join(', ') : '(none)'),
+        'REFERENCE_PDF_URLS: ' + (referenceMaterial.pdfUrls.length ? referenceMaterial.pdfUrls.join(', ') : '(none)'),
+        'REFERENCE_TEXT:\n' + (referenceMaterial.text || '(none)'),
+        'REFERENCE_TEXT_TRUNCATED: ' + (referenceMaterial.truncated ? 'yes' : 'no')
       );
     }
-    parts.push(
-      'User request: ' + (prompt || '(Follow the uploaded/pasted DeckPlan and reference material.)'),
-      'Target slide count: ' + (kind === 'slide' ? 1 : count),
-      'Tone/style: ' + tone,
-      collectCopilotStyleContext(),
-      'Current deck context JSON:',
-      JSON.stringify(compactDeckForCopilot(), null, 2),
-      'Important: output JSON with deckTitle, summary, and slides. For single-slide requests, slides must contain exactly one slide.'
-    );
+    const styleContext = collectCopilotStyleContext();
+    if(styleContext) parts.push('STYLE_CONTEXT:\n' + styleContext);
+    parts.push('CURRENT_DECK_CONTEXT_JSON:\n' + JSON.stringify(compactDeckForCopilot(), null, 2));
     return parts.join('\n\n');
   }
   function extractResponsesOutputText(data){
@@ -655,13 +695,9 @@ async function callCopilot(kind, deckSpecPlan){
     updateCopilotKeyWarning();
     const headers = { 'Content-Type':'application/json' };
     if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
-    const deckPromptPrefix = (kind === 'deck' || kind === 'deck-spec') ? await loadDeckPromptPrefix() : '';
     const userPrompt = await buildCopilotUserPrompt(kind, deckSpecPlan);
-    let systemContent = copilotSystemPrompt();
-    if((kind === 'deck' || kind === 'deck-spec') && deckPromptPrefix){
-      systemContent += '\n\nDeck-only developer instructions from ' + (runtimeStatus.deckPromptSource || COPILOT_DEV_PROMPT_FILE || COPILOT_DECK_PROMPT_FILE) + ':\n' + deckPromptPrefix;
-    }
-    const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, deckPromptPrefix);
+    const systemContent = await loadCopilotSystemPrompt();
+    const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, '');
     callCopilot._styleScreenshot = await captureCopilotStyleScreenshot();
     const body = {
       model,
@@ -670,13 +706,13 @@ async function callCopilot(kind, deckSpecPlan){
         { role:'user', content: (function(){
           const content = [{ type:'input_text', text:userPrompt }];
           if(callCopilot._styleScreenshot){
-            content.push({ type:'input_text', text:'The next image is a screenshot of the current slide preview. Use it only as visual style context.' });
+            content.push({ type:'input_text', text:'STYLE_SCREENSHOT_ATTACHED: current slide preview image follows.' });
             content.push({ type:'input_image', image_url:callCopilot._styleScreenshot });
           }
           const pdfAttachStatus = appendCopilotPdfReferenceInputs(content, endpoint);
           callCopilot._pdfAttachStatus = pdfAttachStatus;
           if(pdfAttachStatus.skipped){
-            content.push({ type:'input_text', text:'PDF references were uploaded but not attached because the current endpoint is not the default OpenAI Responses endpoint. Use pasted text or the default OpenAI endpoint for direct PDF input.' });
+            content.push({ type:'input_text', text:'PDF_REFERENCE_ATTACHMENT_STATUS: skipped because the current endpoint is not the default OpenAI Responses endpoint.' });
           }
           return content;
         })() }
@@ -718,7 +754,7 @@ async function callCopilot(kind, deckSpecPlan){
     if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
     const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
     const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
-  const requestedCount = Math.max(1, Math.min(100, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+  const requestedCount = normalizeRequestedSlideCount(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1, normalizedSlides.length || 1);
     const deckSlides = normalizedSlides.slice(0, requestedCount);
     if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
       updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
@@ -856,7 +892,7 @@ async function callCopilot(kind, deckSpecPlan){
   }
 
   return Object.freeze({
-    __stage:'stage41h-large-deck-target-20260429-1',
+    __stage:'stage41i-system-prompt-no-30-cap-20260429-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
@@ -872,6 +908,7 @@ async function callCopilot(kind, deckSpecPlan){
     copilotSlideSchema: maybeClassic('copilotSlideSchema', copilotSlideSchema),
     copilotDeckSchema: maybeClassic('copilotDeckSchema', copilotDeckSchema),
     copilotSystemPrompt: maybeClassic('copilotSystemPrompt', copilotSystemPrompt),
+    loadCopilotSystemPrompt: maybeClassic('loadCopilotSystemPrompt', loadCopilotSystemPrompt),
     compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
     buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
     loadDeckPromptPrefix: maybeClassic('loadDeckPromptPrefix', loadDeckPromptPrefix),
