@@ -27,6 +27,7 @@ function createApi(deps){
     'Deck-level generation instructions:',
     'Treat these as deck-only developer instructions.',
     'Create a coherent complete presentation, not a loose collection of slides.',
+    'For large requested decks, preserve the requested slide count and outline granularity; do not collapse many outline slides into a smaller summary deck.',
     'Use a strong narrative arc: title/context, motivation, key ideas, details/examples, synthesis, and closing recap.',
     'Make slide titles specific and informative.',
     'When the user provides reference lecture notes, pasted excerpts, or URLs, follow that source structure closely instead of giving a generic topic overview.',
@@ -43,14 +44,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage37h-20260427-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage41h-large-deck-target-20260429-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage37h-20260427-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
+  updateCopilotRuntime({ stage:'stage41h-large-deck-target-20260429-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, deckPromptAppliesTo:'deck-only' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -231,6 +232,7 @@ function createApi(deps){
       'For panel/plain blocks, use this lightweight syntax: \\paragraph{Heading}, \\begin{itemize}, \\item item text, \\end{itemize}, \\begin{card}{Title}content\\end{card}.',
       'Keep each slide focused, with 1-3 content blocks. Put speaker guidance in notesBody.',
     'Return exactly one deck, never two alternate decks concatenated together. Include at most one title slide unless the user explicitly asks for multiple decks.',
+    'If the prompt says Target slide count, return exactly that many slides when possible. For long lecture decks, make individual slides concise rather than reducing the slide count.',
       'Do not invent citations or external image-file URLs. When a figure is needed, prefer an image block with a concrete assetPrompt; the app will generate the image.',
       'If the user asks to follow lecture notes or a reference link, do not answer as a generic topic summary; organize the deck around the referenced material and say in the summary when reference content could not be accessed.',
       'If the instructions mention figures, diagrams, plots, pictures, or visuals, prefer mode image with a concrete assetPrompt instead of a vague placeholder.',
@@ -377,7 +379,7 @@ function createApi(deps){
     const prompt = (copilotEls.prompt?.value || '').trim();
     if(!prompt && !deckSpecPlan && !getCopilotReferenceMaterial().hasAny) throw new Error('Tell Copilot what to create first, provide a deck spec, or add reference material.');
     const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
-    const count = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || 1)));
+    const count = Math.max(1, Math.min(100, Number(specCount || copilotEls.slideCount?.value || 1)));
     const tone = copilotEls.tone?.value || 'clear and concise';
     const mode = deckSpecPlan ? 'Create a complete deck from the parsed DeckPlan specification.' : (kind === 'deck' ? 'Create a complete deck.' : 'Create exactly one slide.');
     const parts = [mode];
@@ -716,7 +718,7 @@ async function callCopilot(kind, deckSpecPlan){
     if(!rawSlides.length) throw new Error('Copilot did not return any slides.');
     const normalizedSlides = rawSlides.map(normalizeCopilotSlide);
     const specCount = deckSpecPlan && Number(deckSpecPlan.targetSlideCount || 0);
-  const requestedCount = Math.max(1, Math.min(30, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
+  const requestedCount = Math.max(1, Math.min(100, Number(specCount || copilotEls.slideCount?.value || normalizedSlides.length || 1)));
     const deckSlides = normalizedSlides.slice(0, requestedCount);
     if(kind === 'deck' && normalizedSlides.length > deckSlides.length){
       updateCopilotRuntime({ trimmedReturnedSlides: normalizedSlides.length - deckSlides.length, requestedSlideCount: requestedCount });
@@ -854,7 +856,7 @@ async function callCopilot(kind, deckSpecPlan){
   }
 
   return Object.freeze({
-    __stage:'stage37h-20260427-1',
+    __stage:'stage41h-large-deck-target-20260429-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
