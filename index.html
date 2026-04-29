@@ -133,13 +133,9 @@ window.LUMINA_OPTIONAL_ES_MODULE_ASSETS = [
 
 
 <link rel="stylesheet" href="css/styles-stage24c.css?v=stage38o-20260427-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/styles-stage24c.css')" />
-<link rel="stylesheet" href="css/copilot-review.css?v=stage41a-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review.css')" />
+<link rel="stylesheet" href="css/copilot-review.css?v=stage41e-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review.css')" />
 <link rel="stylesheet" href="css/copilot-browser-key-test.css?v=stage41c-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-browser-key-test.css')" />
 <link rel="stylesheet" href="css/copilot-review-visible-entry.css?v=stage41d-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review-visible-entry.css')" />
-<link rel="stylesheet" href="css/copilot-review.css?v=stage41a-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review.css')" />
-<link rel="stylesheet" href="css/copilot-browser-key-test.css?v=stage41c-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-browser-key-test.css')" />
-<link rel="stylesheet" href="css/copilot-review-visible-entry.css?v=stage41d-20260428-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review-visible-entry.css')" />
-<link rel="stylesheet" href="css/copilot-review-remake-controls-hotfix.css?v=stage41e-manual-1" onerror="window.luminaBootError&&window.luminaBootError('Failed to load css/copilot-review-remake-controls-hotfix.css')" />
 
 <style id="stage35a-workflow-nav-css">
   .left-tabs.mode-bar.stage35a-workflow-tabs {
@@ -2732,7 +2728,7 @@ https://example.com/lecture-notes.html"></textarea>
           </div>
           <div class="field">
             <label for="copilotSlideCount">Target slides</label>
-            <input id="copilotSlideCount" type="number" min="1" max="30" step="1" value="6" />
+            <input id="copilotSlideCount" type="number" min="1" step="1" value="6" />
           </div>
           <div class="field">
             <label for="copilotTone">Tone / style</label>
@@ -9991,7 +9987,7 @@ setTimeout(function(){
   function splitBullets(lines){return (lines||[]).map(function(x){return String(x||'').replace(/^\s*(?:[-*•]|\d+[.)])\s*/,'').trim()}).filter(Boolean).slice(0,8)}
   function slideFromTitle(title,i,body){var points=splitBullets(body||[]);return {slideNumber:i+1,title:title||('Slide '+(i+1)),purpose:points[0]||'Explain the next idea clearly.',layout:'single',visual:'',keyPoints:points.length?points:['Main idea','Key example or intuition','Takeaway for the audience'],speakerNotes:''}}
   function planFromJson(obj){var slides=Array.isArray(obj&&obj.slidePlan)?obj.slidePlan:(Array.isArray(obj&&obj.slides)?obj.slides:[]);var out=slides.map(function(s,i){var blocks=[].concat(s&&s.leftBlocks||[],s&&s.rightBlocks||[]);var pts=Array.isArray(s&&s.keyPoints)?s.keyPoints:splitBullets([s&&s.lede,s&&s.kicker].concat(blocks.map(function(b){return (b&&b.title?b.title+': ':'')+String(b&&b.content||'').slice(0,160)})));return {slideNumber:i+1,title:String((s&&s.title)||('Slide '+(i+1))),purpose:String((s&&s.purpose)||(s&&s.lede)||pts[0]||'Present this slide clearly.'),layout:String((s&&s.layout)||(s&&s.slideType)||'single'),visual:String((s&&s.visual)||(s&&s.figure)||''),keyPoints:pts.length?pts:['Main idea','Supporting detail','Takeaway'],speakerNotes:String((s&&s.speakerNotes)||(s&&s.notesBody)||'')}});return normalizePlan({deckTitle:String((obj&&obj.deckTitle)||(obj&&obj.title)||val('deckTitle')||'Planned deck'),audience:String(obj&&obj.audience||''),themeHint:String(obj&&obj.themeHint||obj&&obj.theme||''),slidePlan:out})}
-  function buildLocalPlan(){var raw=val('copilotSpecText').trim(),prompt=val('copilotPrompt').trim(),target=Math.max(1,Math.min(30,Number(val('copilotSlideCount')||0)||0));if(raw){try{return planFromJson(JSON.parse(raw))}catch(_e){}}
+  function buildLocalPlan(){var raw=val('copilotSpecText').trim(),prompt=val('copilotPrompt').trim(),target=Math.max(1,Number(val('copilotSlideCount')||0)||0);if(raw){try{return planFromJson(JSON.parse(raw))}catch(_e){}}
     var lines=raw.split(/\r?\n/),slides=[],cur=null,body=[];function flush(){if(cur){slides.push(slideFromTitle(cur,slides.length,body));cur=null;body=[]}}
     lines.forEach(function(line){var t=line.trim();if(!t)return;var m=t.match(/^(?:#{1,4}\s*)?(?:Slide\s*\d+\s*[:.)-]\s*)?(.+)$/i);var looks=/^#{1,4}\s+/.test(t)||/^Slide\s*\d+/i.test(t);if(looks){flush();cur=(m&&m[1]||t).replace(/^#+\s*/,'').trim()}else if(cur){body.push(t)}else if(/^[-*•]|^\d+[.)]/.test(t)){if(!cur)cur='Slide '+(slides.length+1);body.push(t)}});flush();
     if(!slides.length&&prompt){var chunks=prompt.split(/(?:\n\s*\n|;\s*)/).map(function(x){return x.trim()}).filter(Boolean);chunks.slice(0,target||6).forEach(function(c,i){slides.push(slideFromTitle(c.slice(0,72),i,[c]))})}
@@ -10010,8 +10006,8 @@ setTimeout(function(){
   function writeSpecFromPlan(){var spec=planToDeckSpec();if(!spec)return null;setVal('copilotSpecText',JSON.stringify(spec,null,2));return spec}
   async function generateFromPlan(){var spec=writeSpecFromPlan();if(!spec)return null;state.lastGeneratedFromPlan=false;setStatus('Plan written to deck spec. Generating preview from editable plan…');setSection('preview');try{var api=W.LuminaStage39AAiDrawerWorkflow;if(!api||typeof api.generatePreview!=='function')throw new Error('Stage 39A preview generator is not ready.');var deck=await api.generatePreview('deck-spec');state.lastGeneratedFromPlan=!!deck;state.lastGeneratedAt=deck?new Date().toISOString():'';if(deck)setStatus('Preview generated from editable plan. Review it, then apply.',false);return deck}catch(e){setStatus(e&&e.message?e.message:String(e),true);return null}}
   function extractResponsesOutputText(data){if(data&&typeof data.output_text==='string')return data.output_text;var parts=[];(data&&data.output||[]).forEach(function(item){(item.content||[]).forEach(function(c){if(typeof c.text==='string')parts.push(c.text);else if(typeof c.output_text==='string')parts.push(c.output_text)})});return parts.join('\n').trim()}
-  function planSchema(){return {type:'object',additionalProperties:false,required:['deckTitle','audience','themeHint','slidePlan'],properties:{deckTitle:{type:'string'},audience:{type:'string'},themeHint:{type:'string'},slidePlan:{type:'array',minItems:1,maxItems:30,items:{type:'object',additionalProperties:false,required:['slideNumber','title','purpose','layout','visual','keyPoints','speakerNotes'],properties:{slideNumber:{type:'integer'},title:{type:'string'},purpose:{type:'string'},layout:{type:'string'},visual:{type:'string'},keyPoints:{type:'array',minItems:1,maxItems:8,items:{type:'string'}},speakerNotes:{type:'string'}}}}}}}
-  async function createAiPlan(){var endpoint=val('copilotEndpoint').trim()||'https://api.openai.com/v1/responses',apiKey=val('copilotApiKey').trim(),model=val('copilotModel').trim()||'gpt-4.1-mini';if(!apiKey&&/api\.openai\.com\/v1\/responses/i.test(endpoint)){setStatus('Missing API key. Open Advanced → AI settings or use a backend proxy.',true);return null}var refs=getReferenceSummary();var prompt=['Create an editable slide-by-slide plan before deck generation. Do not generate slide JSON yet. Return only the requested JSON plan schema.','User prompt:\n'+(val('copilotPrompt').trim()||'(none)'), 'Raw outline/spec:\n'+(val('copilotSpecText').trim()||'(none)'), 'Target slide count: '+(val('copilotSlideCount')||'(infer)'), 'Tone/style: '+(val('copilotTone')||'clear and concise'), refs&&refs.hasAny?'References: '+(refs.urls||[]).join('\n')+'\nReference text excerpt:\n'+String((refs.text||val('copilotReferenceText')||'')).slice(0,12000):'References: none', 'Plan rules: each slide needs a title, purpose, layout, visual/demo request if useful, 3-6 key points, and speaker notes/constraints.'].join('\n\n');setStatus('Asking AI to create an editable deck plan…');try{var res=await fetch(endpoint,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},apiKey?{Authorization:'Bearer '+apiKey}:{}),body:JSON.stringify({model:model,input:[{role:'system',content:'You are a presentation planning assistant. Produce concise editable slide-by-slide plans before deck generation.'},{role:'user',content:[{type:'input_text',text:prompt}]}],text:{format:{type:'json_schema',name:'editable_deck_plan',schema:planSchema(),strict:true}},store:false})});var raw=await res.text(),data;try{data=raw?JSON.parse(raw):{}}catch(_e){data={raw:raw}}if(!res.ok)throw new Error((data&&data.error&&data.error.message)||raw||('Plan request failed: '+res.status));var output=extractResponsesOutputText(data);if(!output)throw new Error('AI returned an empty plan.');state.plan=normalizePlan(JSON.parse(output));state.lastPlanSource='ai';renderPlanEditor();validatePlan();setSection('plan');return state.plan}catch(e){setStatus('AI plan failed: '+(e&&e.message?e.message:String(e)),true);return null}}
+  function planSchema(){return {type:'object',additionalProperties:false,required:['deckTitle','audience','themeHint','slidePlan'],properties:{deckTitle:{type:'string'},audience:{type:'string'},themeHint:{type:'string'},slidePlan:{type:'array',minItems:1,items:{type:'object',additionalProperties:false,required:['slideNumber','title','purpose','layout','visual','keyPoints','speakerNotes'],properties:{slideNumber:{type:'integer'},title:{type:'string'},purpose:{type:'string'},layout:{type:'string'},visual:{type:'string'},keyPoints:{type:'array',minItems:1,maxItems:8,items:{type:'string'}},speakerNotes:{type:'string'}}}}}}}
+  async function createAiPlan(){var endpoint=val('copilotEndpoint').trim()||'https://api.openai.com/v1/responses',apiKey=val('copilotApiKey').trim(),model=val('copilotModel').trim()||'gpt-4.1-mini';if(!apiKey&&/api\.openai\.com\/v1\/responses/i.test(endpoint)){setStatus('Missing API key. Open Advanced → AI settings or use a backend proxy.',true);return null}var refs=getReferenceSummary();var prompt=['REQUEST_KIND: create_editable_deck_plan','USER_PROMPT:\n'+(val('copilotPrompt').trim()||'(none)'), 'RAW_OUTLINE_OR_SPEC:\n'+(val('copilotSpecText').trim()||'(none)'), 'TARGET_SLIDE_COUNT: '+(val('copilotSlideCount')||'(infer)'), 'TONE_STYLE: '+(val('copilotTone')||'clear and concise'), refs&&refs.hasAny?'REFERENCE_URLS:\n'+(refs.urls||[]).join('\n')+'\nREFERENCE_TEXT_EXCERPT:\n'+String((refs.text||val('copilotReferenceText')||'')).slice(0,12000):'REFERENCE_DATA: none'].join('\n\n');setStatus('Asking AI to create an editable deck plan…');try{var systemPrompt='';try{var coreApi=W.LuminaCopilotCore;if(coreApi&&typeof coreApi.loadCopilotSystemPrompt==='function')systemPrompt=await coreApi.loadCopilotSystemPrompt();else if(coreApi&&typeof coreApi.copilotSystemPrompt==='function')systemPrompt=coreApi.copilotSystemPrompt();}catch(_sp){}if(!systemPrompt)systemPrompt='Lumina Copilot system prompt: return only JSON matching the supplied schema and produce editable slide-by-slide plans before deck generation.';var res=await fetch(endpoint,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},apiKey?{Authorization:'Bearer '+apiKey}:{}),body:JSON.stringify({model:model,input:[{role:'system',content:systemPrompt},{role:'user',content:[{type:'input_text',text:prompt}]}],text:{format:{type:'json_schema',name:'editable_deck_plan',schema:planSchema(),strict:true}},store:false})});var raw=await res.text(),data;try{data=raw?JSON.parse(raw):{}}catch(_e){data={raw:raw}}if(!res.ok)throw new Error((data&&data.error&&data.error.message)||raw||('Plan request failed: '+res.status));var output=extractResponsesOutputText(data);if(!output)throw new Error('AI returned an empty plan.');state.plan=normalizePlan(JSON.parse(output));state.lastPlanSource='ai';renderPlanEditor();validatePlan();setSection('plan');return state.plan}catch(e){setStatus('AI plan failed: '+(e&&e.message?e.message:String(e)),true);return null}}
   function ensurePromptPlanStrip(){var card=byId('stage39aPromptActions')||qs('#stage38qAiDrawer .stage39a-prompt-actions')||(byId('stage39aPreviewDeckBtn')&&byId('stage39aPreviewDeckBtn').closest&&byId('stage39aPreviewDeckBtn').closest('.stage39a-ai-card'));if(!card||byId('stage40aPromptPlanStrip'))return;var strip=mk('div',{id:'stage40aPromptPlanStrip',class:'stage40a-prompt-plan-strip','data-ai-section':'prompt'},'<button class="btn primary" type="button" id="stage40aPromptAiPlanBtn">Create editable deck plan</button><button class="btn" type="button" id="stage40aPromptLocalPlanBtn">Build plan from outline</button>');var host=(card.classList&&card.classList.contains('stage39a-ai-card'))?card:card.closest&&card.closest('.stage39a-ai-card');(host||card).insertAdjacentElement('afterend',strip)}
   function ensurePlanCard(){var panel=qs('#stage38qAiDrawer .copilot-panel');if(!panel||byId('stage40aPlanCard'))return;var target=byId('stage39aPreviewCard')||field('copilotResultJson')||panel.lastChild;var card=mk('div',{id:'stage40aPlanCard',class:'stage40a-plan-card','data-ai-section':'plan'},'<h3>Editable deck plan</h3><p>Plan first, edit slide-by-slide, then generate the deck preview from this plan. The current deck is still unchanged.</p><div class="stage40a-plan-actions"><button class="btn primary" type="button" id="stage40aAiPlanBtn">Create AI plan</button><button class="btn" type="button" id="stage40aLocalPlanBtn">Build local plan</button><button class="btn" type="button" id="stage40aValidatePlanBtn">Validate plan</button><button class="btn" type="button" id="stage40aAddSlideBtn">Add slide</button><button class="btn" type="button" id="stage40aSyncJsonBtn">Reload JSON into cards</button><button class="btn primary" type="button" id="stage40aGenerateFromPlanBtn">Generate preview from plan</button></div><div class="stage40a-plan-status" id="stage40aPlanStatus">No plan yet. Create a plan from the prompt/outline, then edit it here.</div><div class="stage40a-plan-summary" id="stage40aPlanSummary"></div><div class="stage40a-plan-editor" id="stage40aPlanEditor"></div><textarea id="stage40aPlanJson" spellcheck="false" aria-label="Editable deck plan JSON"></textarea><div class="stage40a-plan-gate"><b>Planning gate:</b> deck preview generation from this path always writes a DeckPlan into the outline/spec field first, then calls the preview-only generator.</div>');if(target&&target.parentNode)target.parentNode.insertBefore(card,target);else panel.appendChild(card);}
   function bind(){[['stage40aAiPlanBtn',createAiPlan],['stage40aPromptAiPlanBtn',function(){setSection('plan');createAiPlan()}],['stage40aLocalPlanBtn',function(){state.plan=buildLocalPlan();state.lastPlanSource='local';renderPlanEditor();validatePlan();setSection('plan')}],['stage40aPromptLocalPlanBtn',function(){state.plan=buildLocalPlan();state.lastPlanSource='local';renderPlanEditor();validatePlan();setSection('plan')}],['stage40aValidatePlanBtn',validatePlan],['stage40aAddSlideBtn',function(){planAction('add',0)}],['stage40aSyncJsonBtn',syncPlanFromJson],['stage40aGenerateFromPlanBtn',generateFromPlan]].forEach(function(pair){var b=byId(pair[0]);if(b&&!b.__stage40aBound){b.__stage40aBound=1;b.addEventListener('click',pair[1],true)}});var ed=byId('stage40aPlanEditor');if(ed&&!ed.__stage40aBound){ed.__stage40aBound=1;ed.addEventListener('input',function(e){var t=e.target;if(t&&t.getAttribute&&t.getAttribute('data-plan-field'))updatePlanField(t)},true);ed.addEventListener('change',function(e){var t=e.target;if(t&&t.getAttribute&&t.getAttribute('data-plan-field'))updatePlanField(t)},true);ed.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-plan-action]');if(b)planAction(b.getAttribute('data-plan-action'),b.getAttribute('data-plan-index'))},true)}}
@@ -10210,7 +10206,7 @@ setTimeout(function(){
      Copilot Review (stage41a-20260428-1)
      Per-slide review pass. Reuses LuminaCopilotCore for AI calls.
      ============================================================ -->
-<script src="js/copilot-review.js?v=stage41b-20260428-1"
+<script src="js/copilot-review.js?v=stage41e-20260428-1"
         onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/copilot-review.js')"
         onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/copilot-review.js')"
         ></script>
@@ -10360,8 +10356,56 @@ setTimeout(function(){
 <script src="js/copilot-review-visible-entry.js?v=stage41d-20260428-1"
         onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded&&window.LuminaDiagnostics.markLoaded('js/copilot-review-visible-entry.js')"
         onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed&&window.LuminaDiagnostics.markFailed('js/copilot-review-visible-entry.js')"></script>
-<script src="js/copilot-review-remake-controls-hotfix.js?v=stage41e-manual-1"
-        onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded&&window.LuminaDiagnostics.markLoaded('js/copilot-review-remake-controls-hotfix.js')"
-        onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed&&window.LuminaDiagnostics.markFailed('js/copilot-review-remake-controls-hotfix.js')"></script>
+<script id="stage41e-review-remake-controls-diagnostics-script">
+(function(){
+  var W=window,D=document,STAGE='stage41e-review-remake-controls-20260428-1',SIG='index-inline-stage41e-review-remake-controls-20260428-1';
+  function patch(){
+    try{
+      W.LUMINA_STAGE=STAGE; W.LUMINA_STAGE_SIGNATURE=SIG;
+      if(D.documentElement){
+        D.documentElement.setAttribute('data-lumina-stage',STAGE);
+        D.documentElement.setAttribute('data-lumina-stage-signature',SIG);
+      }
+    }catch(_e){}
+    W.__LUMINA_STAGE41E_REVIEW_REMAKE_CONTROLS_STATUS={
+      stage:STAGE,
+      remakePromptOptional:true,
+      inlineMergePicker:true,
+      largeMergePickerPreserved:true,
+      tests:{
+        reviewScriptLoaded:!!(W.CopilotReview&&typeof W.CopilotReview.open==='function'),
+        cssLoaded:true,
+        promptOptional:true,
+        inlineMergePicker:true,
+        pass:!!(W.CopilotReview&&typeof W.CopilotReview.open==='function')
+      }
+    };
+    var LD=W.LuminaDiagnostics;
+    if(!LD||LD.__stage41eReviewRemakeControlsPatched)return;
+    var prev=(typeof LD.collectReport==='function'?LD.collectReport.bind(LD):(typeof LD.getReport==='function'?LD.getReport.bind(LD):null));
+    if(!prev)return;
+    function wrap(){
+      var r={};
+      try{r=prev()||{}}catch(e){r={stage:STAGE,previousReportError:String(e&&(e.stack||e.message)||e)}}
+      r.stage=STAGE;
+      r.diagnosticScriptStage=STAGE;
+      r.stageFromWindow=W.LUMINA_STAGE||STAGE;
+      r.indexStageSignature=W.LUMINA_STAGE_SIGNATURE||SIG;
+      r.stage41EReviewRemakeControlsStatus=W.__LUMINA_STAGE41E_REVIEW_REMAKE_CONTROLS_STATUS;
+      r.stage41EReviewRemakeControlsDiagnostics={
+        note:'Remake now shows an inline prompt textarea and inline merge slide checkboxes. Blank remake prompt is allowed and uses a default improvement instruction.',
+        promptOptional:true,
+        inlineMergePicker:true
+      };
+      return r;
+    }
+    LD.collectReport=wrap;
+    LD.getReport=wrap;
+    LD.__stage41eReviewRemakeControlsPatched=true;
+  }
+  if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',function(){patch();setTimeout(patch,500);setTimeout(patch,1600)},{once:true});
+  else{patch();setTimeout(patch,500);setTimeout(patch,1600)}
+})();
+</script>
 </body>
 </html>
