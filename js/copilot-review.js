@@ -1,6 +1,6 @@
 /* =============================================================================
  * copilot-review.js  —  Per-slide review pass for Lumina Presenter
- * Stage: 41a-review-20260428-1
+ * Stage: 41e-review-remake-controls-20260428-1
  * -----------------------------------------------------------------------------
  * For every slide in the current deck the user picks one action:
  *    keep       — leave it as-is
@@ -81,6 +81,7 @@
     _state: session
   };
   window.CopilotReview = CopilotReview;
+  window.__LUMINA_COPILOT_REVIEW_REMAKE_CONTROLS_STAGE = 'stage41e-review-remake-controls-20260428-1';
 
   /* -----------------------------------------------------------------------
    * Lumina integration helpers
@@ -275,6 +276,58 @@
     return head;
   }
 
+  function plainMergeText(value) {
+    return String(value || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\\begin\{[^}]+\}|\\end\{[^}]+\}/g, ' ')
+      .replace(/\\[a-zA-Z]+\*?(\[[^\]]*\])?(\{[^}]*\})?/g, ' ')
+      .replace(/[{}_*`#>~|]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function shortMergeText(value, maxLen) {
+    const text = plainMergeText(value);
+    if (!text) return '';
+    const limit = maxLen || 96;
+    return text.length > limit ? text.slice(0, limit - 1).trimEnd() + '…' : text;
+  }
+
+  function firstBlockSummary(slide) {
+    if (!slide) return '';
+    const pools = [];
+    if (Array.isArray(slide.leftBlocks)) pools.push.apply(pools, slide.leftBlocks);
+    if (Array.isArray(slide.rightBlocks)) pools.push.apply(pools, slide.rightBlocks);
+    for (const block of pools) {
+      const title = shortMergeText(block && block.title, 60);
+      const content = shortMergeText(block && block.content, 90);
+      if (title && content) return title + ': ' + content;
+      if (title) return title;
+      if (content) return content;
+    }
+    return '';
+  }
+
+  function slideMergeInfo(slide, idx, lockedElsewhere, consumer) {
+    const title = shortMergeText(slide && slide.title, 90) || 'Untitled slide';
+    const subtitle = shortMergeText((slide && (slide.kicker || slide.lede)) || firstBlockSummary(slide), 110);
+    const type = shortMergeText(slide && slide.slideType, 48) || 'single';
+    const lock = lockedElsewhere ? 'Already merges into slide ' + (consumer + 1) : '';
+    return { title, subtitle, type, lock, number: idx + 1 };
+  }
+
+  function buildTinyMergeThumb(slide, idx) {
+    const thumb = document.createElement('span');
+    thumb.className = 'crv-merge-mini-thumb';
+    thumb.setAttribute('aria-hidden', 'true');
+    try {
+      thumb.innerHTML = buildThumbHtml(slide, idx);
+    } catch (err) {
+      thumb.innerHTML = '<span class="crv-merge-mini-thumb-fallback">' + (idx + 1) + '</span>';
+    }
+    return thumb;
+  }
+
   function buildActionRow(idx, consumedBy) {
     const row = document.createElement('div');
     row.className = 'crv-actions';
@@ -303,6 +356,12 @@
         }
         renderList();
         renderSummary();
+        if (act === 'remake') {
+          setTimeout(() => {
+            const ta = session.rootEl && session.rootEl.querySelector('[data-crv-remake-prompt="' + idx + '"]');
+            if (ta && ta.focus) ta.focus({ preventScroll: false });
+          }, 0);
+        }
       };
       row.appendChild(btn);
     });
@@ -312,14 +371,24 @@
   function buildRemakePanel(idx) {
     const decision = session.decisions[idx];
     const wrap = document.createElement('div');
-    wrap.className = 'crv-remake-panel';
+    wrap.className = 'crv-remake-panel crv-remake-panel-visible';
+
+    const helper = document.createElement('div');
+    helper.className = 'crv-remake-help';
+    helper.innerHTML = '<b>Remake options for slide ' + (idx + 1) + '.</b> '
+      + 'The prompt is optional. Leave it blank to let Copilot improve this slide using the full deck context, '
+      + 'or type specific instructions. To merge, tick one or more slides below.';
 
     // Prompt textarea
-    const promptLabel = document.createElement('div');
+    const promptLabel = document.createElement('label');
     promptLabel.className = 'crv-label';
-    promptLabel.textContent = 'How should the AI remake this slide?';
+    promptLabel.setAttribute('for', 'crvRemakePrompt' + idx);
+    promptLabel.textContent = 'Optional prompt for this remake';
     const ta = document.createElement('textarea');
-    ta.placeholder = 'e.g. Tighten this into 3 bullets and add a concrete example.';
+    ta.id = 'crvRemakePrompt' + idx;
+    ta.className = 'crv-remake-prompt';
+    ta.setAttribute('data-crv-remake-prompt', String(idx));
+    ta.placeholder = 'Example: Tighten this into 3 bullets, add intuition, and remove redundancy with the next slide.';
     ta.value = decision.prompt;
     ta.oninput = () => { decision.prompt = ta.value; };
 
@@ -331,37 +400,118 @@
     mergeBtn.type = 'button';
     mergeBtn.className = 'crv-btn crv-btn-mini';
     mergeBtn.textContent = decision.mergeWith.length
-      ? 'Edit merged slides (' + decision.mergeWith.length + ')'
-      : 'Merge with other slides…';
+      ? 'Open large merge picker (' + decision.mergeWith.length + ')'
+      : 'Open large merge picker…';
     mergeBtn.onclick = () => openPicker(idx);
 
     const summary = document.createElement('div');
     summary.className = 'crv-merge-summary';
-    if (decision.mergeWith.length) {
-      const list = decision.mergeWith.map(i => i + 1).join(', ');
-      summary.innerHTML = 'Merging with slide(s) <b>' + list + '</b>.';
-    } else {
-      summary.textContent = 'No merge selected.';
-    }
+    updateMergeSummary(summary, decision);
 
     mergeRow.appendChild(mergeBtn);
     mergeRow.appendChild(summary);
 
+    // Inline merge picker: this is the iPad-friendly primary control.
+    const inlinePicker = buildInlineMergePicker(idx);
+
     // Keep-merged checkbox
     const cb = document.createElement('label');
-    cb.className = 'crv-checkbox';
+    cb.className = 'crv-checkbox crv-keep-merged-checkbox';
     const cbInput = document.createElement('input');
     cbInput.type = 'checkbox';
     cbInput.checked = !!decision.keepMerged;
+    cbInput.disabled = !decision.mergeWith.length;
     cbInput.onchange = () => { decision.keepMerged = cbInput.checked; renderSummary(); };
     cb.appendChild(cbInput);
-    cb.appendChild(document.createTextNode(' Also keep the merged-in slides in the final deck'));
-    if (!decision.mergeWith.length) cb.style.display = 'none';
+    cb.appendChild(document.createTextNode(' Keep the merged-in slides as separate slides too'));
+    const cbHint = document.createElement('span');
+    cbHint.className = 'crv-checkbox-hint';
+    cbHint.textContent = decision.mergeWith.length
+      ? 'Unchecked means selected merged slides are removed after being folded into this remake.'
+      : 'Pick slides to merge to enable this option.';
+    cb.appendChild(cbHint);
 
+    wrap.appendChild(helper);
     wrap.appendChild(promptLabel);
     wrap.appendChild(ta);
+    wrap.appendChild(inlinePicker);
     wrap.appendChild(mergeRow);
     wrap.appendChild(cb);
+    return wrap;
+  }
+
+  function updateMergeSummary(summary, decision) {
+    if (!summary) return;
+    if (decision.mergeWith.length) {
+      const list = decision.mergeWith.map(i => i + 1).join(', ');
+      summary.innerHTML = 'Merging with slide(s) <b>' + list + '</b>.';
+    } else {
+      summary.textContent = 'No merge selected. This remake will replace only this slide.';
+    }
+  }
+
+  function buildInlineMergePicker(anchorIdx) {
+    const decision = session.decisions[anchorIdx];
+    const wrap = document.createElement('div');
+    wrap.className = 'crv-inline-merge-picker';
+
+    const head = document.createElement('div');
+    head.className = 'crv-inline-merge-head';
+    head.innerHTML = '<span>Optional: merge other slides into this remade slide</span>'
+      + '<small>Tap slide chips to include/exclude them.</small>';
+    wrap.appendChild(head);
+
+    const grid = document.createElement('div');
+    grid.className = 'crv-inline-merge-grid';
+
+    session.slides.forEach((slide, idx) => {
+      if (idx === anchorIdx) return;
+      const consumer = findConsumingMerge(idx);
+      const lockedElsewhere = consumer >= 0 && consumer !== anchorIdx;
+      const id = 'crvMerge' + anchorIdx + '_' + idx;
+      const label = document.createElement('label');
+      label.className = 'crv-inline-merge-chip';
+      label.dataset.checked = String(decision.mergeWith.indexOf(idx) >= 0);
+      label.dataset.disabled = String(lockedElsewhere);
+      label.setAttribute('for', id);
+
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.id = id;
+      input.checked = decision.mergeWith.indexOf(idx) >= 0;
+      input.disabled = lockedElsewhere;
+      input.onchange = () => {
+        const set = new Set(decision.mergeWith);
+        if (input.checked) set.add(idx);
+        else set.delete(idx);
+        decision.mergeWith = Array.from(set).sort((a, b) => a - b);
+        if (!decision.mergeWith.length) decision.keepMerged = false;
+        renderList();
+        renderSummary();
+      };
+
+      const info = slideMergeInfo(slide, idx, lockedElsewhere, consumer);
+      const meta = document.createElement('span');
+      meta.className = 'crv-inline-merge-meta';
+      meta.innerHTML = ''
+        + '<b><span class="crv-merge-slide-num">Slide ' + info.number + '</span>'
+        + '<span class="crv-merge-slide-title">' + escapeHtml(info.title) + '</span></b>'
+        + '<small class="crv-merge-slide-type">' + escapeHtml(info.type) + '</small>'
+        + (info.subtitle ? '<em class="crv-merge-slide-subtitle">' + escapeHtml(info.subtitle) + '</em>' : '')
+        + (info.lock ? '<small class="crv-merge-slide-lock">' + escapeHtml(info.lock) + '</small>' : '');
+      label.appendChild(input);
+      label.appendChild(buildTinyMergeThumb(slide, idx));
+      label.appendChild(meta);
+      grid.appendChild(label);
+    });
+
+    if (!grid.children.length) {
+      const empty = document.createElement('div');
+      empty.className = 'crv-inline-merge-empty';
+      empty.textContent = 'This deck has only one slide, so there are no other slides to merge.';
+      grid.appendChild(empty);
+    }
+    wrap.appendChild(grid);
     return wrap;
   }
 
@@ -442,25 +592,48 @@
       const consumer = findConsumingMerge(idx);
       const lockedElsewhere = consumer >= 0 && consumer !== anchorIdx;
 
-      const card = document.createElement('div');
-      card.className = 'crv-pick-card';
+      const info = slideMergeInfo(slide, idx, lockedElsewhere, consumer);
+      const card = document.createElement('label');
+      card.className = 'crv-pick-card crv-pick-card-with-checkbox';
       card.setAttribute('aria-pressed', String(selected.has(idx)));
       card.dataset.disabled = String(lockedElsewhere);
-      card.innerHTML = ''
-        + '<div class="crv-pick-thumb">' + buildThumbHtml(slide, idx) + '</div>'
-        + '<div class="crv-pick-card-meta">'
-        +   '<b>' + escapeHtml(slide.title || ('Slide ' + (idx + 1))) + '</b>'
-        +   '<span>Slide ' + (idx + 1) + ' · ' + escapeHtml(slide.slideType || 'single') + '</span>'
-        +   (lockedElsewhere
-              ? '<span style="color:#ffb4b4">In merge group of slide ' + (consumer + 1) + '</span>'
-              : '')
-        + '</div>';
+
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.className = 'crv-pick-checkbox';
+      input.checked = selected.has(idx);
+      input.disabled = lockedElsewhere;
+      input.setAttribute('aria-label', 'Merge slide ' + info.number + ': ' + info.title);
+
+      const thumb = document.createElement('div');
+      thumb.className = 'crv-pick-thumb';
+      thumb.innerHTML = buildThumbHtml(slide, idx);
+
+      const meta = document.createElement('div');
+      meta.className = 'crv-pick-card-meta';
+      meta.innerHTML = ''
+        + '<b><span class="crv-merge-slide-num">Slide ' + info.number + '</span>'
+        + '<span class="crv-merge-slide-title">' + escapeHtml(info.title) + '</span></b>'
+        + '<span class="crv-merge-slide-type">' + escapeHtml(info.type) + '</span>'
+        + (info.subtitle ? '<em class="crv-merge-slide-subtitle">' + escapeHtml(info.subtitle) + '</em>' : '')
+        + (info.lock ? '<span class="crv-merge-slide-lock">' + escapeHtml(info.lock) + '</span>' : '');
+
+      card.appendChild(input);
+      card.appendChild(thumb);
+      card.appendChild(meta);
+
       if (!lockedElsewhere) {
-        card.onclick = () => {
-          if (selected.has(idx)) selected.delete(idx);
-          else selected.add(idx);
+        input.onchange = () => {
+          if (input.checked) selected.add(idx);
+          else selected.delete(idx);
           card.setAttribute('aria-pressed', String(selected.has(idx)));
           refreshHint();
+        };
+        card.onclick = (event) => {
+          if (event.target === input) return;
+          event.preventDefault();
+          input.checked = !input.checked;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
         };
       }
       grid.appendChild(card);
@@ -473,6 +646,7 @@
     root.querySelector('[data-act="clear"]').onclick = () => {
       selected.clear();
       grid.querySelectorAll('.crv-pick-card').forEach(c => c.setAttribute('aria-pressed', 'false'));
+      grid.querySelectorAll('.crv-pick-checkbox').forEach(c => { c.checked = false; });
       refreshHint();
     };
     root.querySelector('[data-act="apply"]').onclick = () => {
@@ -492,19 +666,9 @@
    * "Run review" — orchestrates AI calls, builds the new deck, opens preview
    * ---------------------------------------------------------------------*/
   async function onRunClicked() {
-    // Validate decisions: every remake without merge needs a prompt OR mergeWith
-    for (let i = 0; i < session.decisions.length; i++) {
-      const d = session.decisions[i];
-      if (d.action !== 'remake') continue;
-      const consumer = findConsumingMerge(i);
-      if (consumer >= 0 && consumer !== i) continue;
-      if (!d.prompt.trim() && !d.mergeWith.length) {
-        alert('Slide ' + (i + 1) + ' is set to "Remake" but has no prompt and no merge picks. '
-              + 'Add a prompt or pick slides to merge.');
-        return;
-      }
-    }
-
+    // Stage 41E: a Remake prompt is optional. If no prompt and no merge picks
+    // are provided, Copilot performs a default clarity/quality remake using the
+    // full deck as context.
     showBusy('Running Copilot on remake slides…');
 
     try {
@@ -615,6 +779,8 @@
     if (d.prompt && d.prompt.trim()) {
       lines.push('User instructions for the remake:');
       lines.push(d.prompt.trim());
+    } else {
+      lines.push('No specific user instructions were provided. Improve this slide by making it clearer, more polished, less redundant, and better aligned with the surrounding deck. Keep the result faithful to the original intent.');
     }
 
     lines.push('Anchor slide (the slide being remade):');
