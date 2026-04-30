@@ -1,0 +1,25 @@
+{
+  "stage": "stage42a-json-theme-library-20260430-1",
+  "summary": "Adds /theme JSON presets, save/load theme JSON, and Theme Copilot via prompts/theme_prompt.txt.",
+  "expectedNewFiles": [
+    "theme/manifest.json",
+    "theme/classic.json",
+    "theme/berkeley.json",
+    "theme/madrid.json",
+    "theme/annarbor.json",
+    "theme/cambridgeus.json",
+    "theme/pittsburgh.json",
+    "theme/notebook.json",
+    "theme/chalkboard.json",
+    "js/theme-json-stage42a.js",
+    "css/theme-json-stage42a.css",
+    "prompts/theme_prompt.txt"
+  ],
+  "manualChecks": [
+    "JSON theme library appears in the theme builder",
+    "Built-in themes load from /theme/manifest.json",
+    "Save current theme JSON downloads a JSON file",
+    "Load theme JSON reapplies a saved theme",
+    "Theme Copilot can generate a schema-valid theme JSON from a reference URL/upload"
+  ]
+}
