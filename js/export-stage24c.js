@@ -20,6 +20,15 @@
       slideForSnippet
     } = deps;
 
+    if(typeof window !== 'undefined'){
+      window.LuminaExportPdfStatus = {
+        stage: 'stage41j-custom-html-pdf-visible-snapshot-20260429-1',
+        skipCustomSlides: false,
+        customHtmlVisibleSnapshot: true,
+        note: 'PDF export includes custom HTML slides and snapshots the visible custom-frame area when possible.'
+      };
+    }
+
 function buildStandaloneViewer(payload){
   const deckJson = JSON.stringify(payload).replace(/<\/script>/gi, '<\\/script>');
   return `<!DOCTYPE html>
@@ -152,7 +161,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <div class="pdf-modal" id="pdfModal" hidden>
   <div class="pdf-dialog">
     <h3>Generate PDF</h3>
-    <p>Choose how many slides to place on each page. Slides containing custom HTML blocks will be skipped.</p>
+    <p>Choose how many slides to place on each page. Custom HTML blocks are included as visible-area snapshots when possible.</p>
     <label>
       <div style="font-weight:700;margin-bottom:.35rem">Slides per page</div>
       <select id="pdfSlidesPerPage">
@@ -173,6 +182,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <div class="deck" id="deck"></div>
 <script>
 const deckPayload=JSON.parse(document.getElementById('deck-source').textContent);
+window.luminaStandalonePdfStatus={stage:'stage41j-custom-html-pdf-visible-snapshot-20260429-1', skipCustomSlides:false, customHtmlVisibleSnapshot:true, customHtmlSnapshotCount:0, lastRenderedSlideCount:0, lastError:''};
 function normalizeExportControls(options){const src=(options&&options.exportControls)||{};const legacy=!!(options&&options.enableLiveDraw);return {slides:src.slides!==false,draw:legacy||!!src.draw,exportAnnotated:legacy||!!src.exportAnnotated,pointerMenu:src.pointerMenu!==false,generatePdf:src.generatePdf!==false};}
 const exportControls=normalizeExportControls(deckPayload.presentationOptions||{});
 const liveDrawEnabled=!!(exportControls.draw||exportControls.exportAnnotated);
@@ -325,7 +335,57 @@ function slideHasCustomHtml(slide){
   return all.some(block => String((block && block.mode) || 'panel') === 'custom');
 }
 function getEligiblePdfSlideIndices(){
-  return (deckPayload.slides || []).map((slide, idx) => slideHasCustomHtml(slide) ? null : idx).filter(idx => idx !== null);
+  return (deckPayload.slides || []).map((slide, idx) => idx).filter(idx => idx !== null);
+}
+function decodeHtmlEntitiesForPdfSnapshot(value){
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = String(value || '');
+  return textarea.value;
+}
+function stripUnsafeCustomSnapshotNodes(root){
+  if(!root) return;
+  root.querySelectorAll('script, iframe, frame, object, embed').forEach(el => el.remove());
+  root.querySelectorAll('*').forEach(el => {
+    Array.from(el.attributes || []).forEach(attr => {
+      const name = String(attr.name || '').toLowerCase();
+      const val = String(attr.value || '');
+      if(name.startsWith('on')) el.removeAttribute(attr.name);
+      if((name === 'src' || name === 'href' || name === 'xlink:href') && /^javascript:/i.test(val.trim())) el.removeAttribute(attr.name);
+    });
+  });
+}
+function prepareCustomHtmlVisibleSnapshots(clone, slideIndex){
+  const frames = Array.from(clone.querySelectorAll('.custom-frame-wrap'));
+  if(!frames.length) return 0;
+  let snapshotCount = 0;
+  frames.forEach((wrap, frameIndex) => {
+    const iframe = wrap.querySelector('iframe.custom-frame');
+    const rawSrcdoc = iframe ? (iframe.getAttribute('srcdoc') || iframe.srcdoc || '') : '';
+    const snapshot = document.createElement('div');
+    snapshot.className = 'custom-frame custom-frame-pdf-snapshot';
+    snapshot.setAttribute('data-pdf-custom-snapshot', '1');
+    snapshot.setAttribute('data-slide-index', String(slideIndex));
+    snapshot.setAttribute('data-custom-frame-index', String(frameIndex));
+    snapshot.style.width = '100%';
+    snapshot.style.height = '100%';
+    snapshot.style.minHeight = '260px';
+    snapshot.style.overflow = 'hidden';
+    snapshot.style.background = '#fff';
+    snapshot.style.position = 'relative';
+    const decoded = decodeHtmlEntitiesForPdfSnapshot(rawSrcdoc);
+    if(decoded.trim()){
+      snapshot.innerHTML = decoded;
+      stripUnsafeCustomSnapshotNodes(snapshot);
+    } else {
+      snapshot.innerHTML = '<div style="display:grid;place-items:center;width:100%;height:100%;min-height:260px;color:#555;font:16px system-ui,sans-serif;text-align:center;padding:1rem;">Custom HTML block</div>';
+    }
+    wrap.innerHTML = '';
+    wrap.appendChild(snapshot);
+    wrap.setAttribute('data-pdf-custom-visible-snapshot', '1');
+    snapshotCount += 1;
+  });
+  if(window.luminaStandalonePdfStatus) window.luminaStandalonePdfStatus.customHtmlSnapshotCount += snapshotCount;
+  return snapshotCount;
 }
 function getPdfLayout(slidesPerPage){
   const n = Number(slidesPerPage) || 1;
@@ -352,7 +412,7 @@ async function generatePdfFromSlides(slidesPerPage){
   if(!ok){ alert('PDF libraries did not load. Check your internet connection and try again.'); return; }
 
   const eligible = getEligiblePdfSlideIndices();
-  if(!eligible.length){ alert('No slides are eligible for PDF export. Slides with custom HTML blocks are skipped.'); return; }
+  if(!eligible.length){ alert('No slides are available for PDF export.'); return; }
 
   renderLiveDrawAnnotations();
   if(window.MathJax && typeof window.MathJax.typesetPromise === 'function'){
@@ -387,6 +447,7 @@ async function generatePdfFromSlides(slidesPerPage){
       clone.style.overflow = 'hidden';
       clone.querySelectorAll('.slide-actions,.slide-map,.deck-toolbar,.laser-pointer,.draw-session-toolbar,.pdf-modal').forEach(el => el.remove());
       clone.querySelectorAll('.slide-draw-surface').forEach(el => el.classList.remove('active'));
+      prepareCustomHtmlVisibleSnapshots(clone, slideIndex);
       stage.innerHTML = '';
       stage.appendChild(clone);
       if(window.MathJax && typeof window.MathJax.typesetPromise === 'function'){
@@ -395,13 +456,14 @@ async function generatePdfFromSlides(slidesPerPage){
           await window.MathJax.typesetPromise([clone]);
         }catch(err){ console.error(err); }
       }
-      const canvas = await window.html2canvas(clone, {backgroundColor:'#ffffff', scale:2, useCORS:true});
+      const canvas = await window.html2canvas(clone, {backgroundColor:'#ffffff', scale:2, useCORS:true, allowTaint:true});
       canvases.push(canvas);
     }
   } finally {
     stage.remove();
   }
 
+  if(window.luminaStandalonePdfStatus) window.luminaStandalonePdfStatus.lastRenderedSlideCount = canvases.length;
   setPdfStatus('Building PDF…');
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'landscape', unit:'pt', format:'letter', compress:true });
@@ -635,15 +697,9 @@ function currentPayload(){
 }
 
 function sanitizeBlockForPdf(block){
-  const b = clone(block || {});
-  if((b.mode || 'panel') === 'custom'){
-    return {
-      mode: 'panel',
-      title: b.title || 'Custom HTML',
-      content: '\\begin{card}{Custom HTML block}\\nHad custom HTML\\n\\end{card}'
-    };
-  }
-  return b;
+  // Stage 41J: keep custom HTML blocks for PDF/export rendering instead of replacing them.
+  // The rasterizer will snapshot the visible custom-frame area when possible.
+  return clone(block || {});
 }
 
 function sanitizeSlideForPdf(slide){
@@ -928,8 +984,39 @@ async function renderSlideForPdf(slide, rasterScale){
     }
     if(typeof fitFiguresIn === 'function') fitFiguresIn(root);
 
-    // Replace heavy embedded blocks with lightweight placeholders for PDF rendering.
-    root.querySelectorAll('iframe').forEach((frame)=>{
+    // Stage 41J: preserve custom HTML blocks by replacing sandboxed srcdoc iframes
+    // with a static visible-area snapshot before rasterization.
+    root.querySelectorAll('.custom-frame-wrap').forEach((wrap, frameIndex)=>{
+      const frame = wrap.querySelector('iframe.custom-frame');
+      if(!frame) return;
+      const rawSrcdoc = frame.getAttribute('srcdoc') || frame.srcdoc || '';
+      const snapshot = document.createElement('div');
+      snapshot.className = 'custom-frame custom-frame-pdf-snapshot';
+      snapshot.setAttribute('data-pdf-custom-snapshot', '1');
+      snapshot.setAttribute('data-custom-frame-index', String(frameIndex));
+      snapshot.style.cssText = 'width:100%;height:100%;min-height:260px;overflow:hidden;background:#fff;position:relative;';
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = rawSrcdoc;
+      const decoded = textarea.value;
+      if(decoded.trim()){
+        snapshot.innerHTML = decoded;
+        snapshot.querySelectorAll('script, iframe, frame, object, embed').forEach(el => el.remove());
+        snapshot.querySelectorAll('*').forEach(el => {
+          Array.from(el.attributes || []).forEach(attr => {
+            const name = String(attr.name || '').toLowerCase();
+            const val = String(attr.value || '');
+            if(name.startsWith('on')) el.removeAttribute(attr.name);
+            if((name === 'src' || name === 'href' || name === 'xlink:href') && /^javascript:/i.test(val.trim())) el.removeAttribute(attr.name);
+          });
+        });
+      }else{
+        snapshot.innerHTML = '<div style="display:grid;place-items:center;width:100%;height:100%;min-height:260px;color:#555;font:16px system-ui,sans-serif;text-align:center;padding:1rem;">Custom HTML block</div>';
+      }
+      wrap.innerHTML = '';
+      wrap.appendChild(snapshot);
+      wrap.setAttribute('data-pdf-custom-visible-snapshot', '1');
+    });
+    root.querySelectorAll('iframe:not(.custom-frame)').forEach((frame)=>{
       const ph = document.createElement('div');
       ph.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:180px;border:1px solid rgba(17,17,17,.14);border-radius:14px;background:#fff;color:#555;font:600 18px Inter,Arial,sans-serif;';
       ph.textContent = 'Embedded HTML block';
