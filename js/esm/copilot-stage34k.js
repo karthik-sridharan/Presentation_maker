@@ -1,4 +1,4 @@
-/* Stage 41I: Copilot core with editable external system prompt, no 30-slide planning cap, reference-link web search, and stronger figure directives.
+/* Stage 41K: Copilot core with import/create prompt routing, editable external prompts, no 30-slide planning cap, reference-link web search, and stronger figure directives.
    Stage 34K filename retained for cache-compatible loader continuity.
 
    It receives a narrow dependency bridge from legacy-app-stage24c.js and keeps
@@ -24,6 +24,8 @@ function createApi(deps){
   const COPILOT_DEV_PROMPT_FILE = deps.devPromptFile || 'prompts/dev.txt';
   const COPILOT_DECK_PROMPT_FILE = deps.deckPromptFile || 'prompts/deck.txt';
   const COPILOT_SYSTEM_PROMPT_FILE = deps.systemPromptFile || 'prompts/system_promp.txt';
+  const COPILOT_IMPORT_PROMPT_FILE = deps.importPromptFile || 'prompts/import_prompt.txt';
+  const COPILOT_CREATE_PROMPT_FILE = deps.createPromptFile || 'prompts/create_prompt.txt';
   const COPILOT_DEFAULT_DECK_PROMPT_PREFIX = [
     'Deck-level generation instructions:',
     'Treat these as deck-only developer instructions.',
@@ -78,6 +80,7 @@ function createApi(deps){
   ].join('\n');
   let deckPromptPrefixCache = null;
   let systemPromptCache = null;
+  let systemPromptCacheByMode = {};
   let copilotReferencePdfFiles = [];
   const store = deps.localStorage || (typeof globalThis !== 'undefined' ? globalThis.localStorage : null);
   const fetchImpl = deps.fetch || (typeof globalThis !== 'undefined' ? globalThis.fetch : null);
@@ -86,14 +89,14 @@ function createApi(deps){
   const fields = deps.fields || {};
   const normalizeSlide = typeof deps.normalizeSlide === 'function' ? deps.normalizeSlide : function(slide){ return Object.assign({ leftBlocks:[], rightBlocks:[] }, slide || {}); };
   const normalizeBlock = typeof deps.normalizeBlock === 'function' ? deps.normalizeBlock : function(block){ return Object.assign({ mode:'panel', title:'Block', content:'' }, block || {}); };
-  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage41h-large-deck-target-20260429-1' };
+  const runtimeStatus = deps.copilotRuntimeStatus || { stage:'stage41k-copilot-workflow-split-20260430-1' };
 
   function updateCopilotRuntime(patch){
     if(typeof deps.updateRuntime === 'function') return deps.updateRuntime(Object.assign({ runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {}));
     Object.assign(runtimeStatus, { runtimeSource:'esm:js/esm/copilot-stage34k.js' }, patch || {});
     return runtimeStatus;
   }
-  updateCopilotRuntime({ stage:'stage41i-system-prompt-no-30-cap-20260429-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, systemPromptFile:COPILOT_SYSTEM_PROMPT_FILE, deckPromptAppliesTo:'superseded-by-system-promp' });
+  updateCopilotRuntime({ stage:'stage41k-copilot-workflow-split-20260430-1', lastRuntimeLoadedAt:new Date().toISOString(), devPromptFile:COPILOT_DEV_PROMPT_FILE, deckPromptFile:COPILOT_DECK_PROMPT_FILE, systemPromptFile:COPILOT_SYSTEM_PROMPT_FILE, importPromptFile:COPILOT_IMPORT_PROMPT_FILE, createPromptFile:COPILOT_CREATE_PROMPT_FILE, deckPromptAppliesTo:'superseded-by-create-import-prompts' });
 
   function setCopilotStatus(message, isError=false){
     updateCopilotRuntime({ lastStatus: safeString(message), lastError: isError ? safeString(message) : runtimeStatus.lastError });
@@ -270,8 +273,22 @@ function createApi(deps){
       required:['deckTitle','summary','slides']
     };
   }
-  function copilotSystemPrompt(){
+  function getCopilotPromptMode(kind){
+    const globalMode = (typeof globalThis !== 'undefined' && globalThis.LuminaCopilotPromptMode) ? safeString(globalThis.LuminaCopilotPromptMode).toLowerCase() : '';
+    const runtimeMode = safeString(runtimeStatus.promptMode || '').toLowerCase();
+    const mode = globalMode || runtimeMode || (kind === 'import' || kind === 'import-deck' ? 'import' : 'create');
+    return mode === 'import' ? 'import' : 'create';
+  }
+  function copilotSystemPrompt(mode){
+    const promptMode = safeString(mode || getCopilotPromptMode()).toLowerCase();
+    if(systemPromptCacheByMode[promptMode]) return systemPromptCacheByMode[promptMode];
     return systemPromptCache || COPILOT_DEFAULT_SYSTEM_PROMPT;
+  }
+  function setCopilotPromptMode(mode){
+    const next = safeString(mode || 'create').toLowerCase() === 'import' ? 'import' : 'create';
+    if(typeof globalThis !== 'undefined') globalThis.LuminaCopilotPromptMode = next;
+    updateCopilotRuntime({ promptMode:next, promptModeSetAt:new Date().toISOString() });
+    return next;
   }
   function compactDeckForCopilot(){
     const deck = typeof deps.currentDeckData === 'function' ? deps.currentDeckData() : {};
@@ -311,18 +328,32 @@ function createApi(deps){
       return { text:'', source:name, status:'file-load-error', error:(err && err.message) || safeString(err) };
     }
   }
-  async function loadCopilotSystemPrompt(){
-    if(systemPromptCache !== null) return systemPromptCache;
-    const result = await fetchPromptFile(COPILOT_SYSTEM_PROMPT_FILE);
-    if(result.error) updateCopilotRuntime({ systemPromptLastError:result.error });
-    systemPromptCache = result.text || COPILOT_DEFAULT_SYSTEM_PROMPT;
+  async function loadCopilotSystemPrompt(mode){
+    const promptMode = getCopilotPromptMode(mode);
+    if(systemPromptCacheByMode[promptMode]) return systemPromptCacheByMode[promptMode];
+    const primaryFile = promptMode === 'import' ? COPILOT_IMPORT_PROMPT_FILE : COPILOT_CREATE_PROMPT_FILE;
+    const primary = await fetchPromptFile(primaryFile);
+    let chosen = primary;
+    let fallback = null;
+    if(!chosen.text){
+      fallback = await fetchPromptFile(COPILOT_SYSTEM_PROMPT_FILE);
+      if(fallback.text) chosen = fallback;
+    }
+    const errors = [primary && primary.error, fallback && fallback.error].filter(Boolean).join('\n');
+    if(errors) updateCopilotRuntime({ systemPromptLastError:errors });
+    systemPromptCacheByMode[promptMode] = chosen.text || COPILOT_DEFAULT_SYSTEM_PROMPT;
+    systemPromptCache = systemPromptCacheByMode[promptMode];
     updateCopilotRuntime({
-      systemPromptFile:COPILOT_SYSTEM_PROMPT_FILE,
-      systemPromptSource: result.text ? result.source : 'builtin-default',
-      systemPromptStatus: result.text ? result.status : (result.status + ';used-builtin-default'),
+      promptMode:promptMode,
+      systemPromptFile: chosen.text ? chosen.source : primaryFile,
+      importPromptFile:COPILOT_IMPORT_PROMPT_FILE,
+      createPromptFile:COPILOT_CREATE_PROMPT_FILE,
+      legacySystemPromptFile:COPILOT_SYSTEM_PROMPT_FILE,
+      systemPromptSource: chosen.text ? chosen.source : 'builtin-default',
+      systemPromptStatus: chosen.text ? chosen.status : ([primaryFile + ':' + primary.status, fallback ? (COPILOT_SYSTEM_PROMPT_FILE + ':' + fallback.status) : ''].filter(Boolean).join(';') + ';used-builtin-default'),
       systemPromptLoadedAt: new Date().toISOString()
     });
-    return systemPromptCache;
+    return systemPromptCacheByMode[promptMode];
   }
   async function loadDeckPromptPrefix(){
     if(deckPromptPrefixCache !== null) return deckPromptPrefixCache;
@@ -426,7 +457,9 @@ function createApi(deps){
     const count = normalizeRequestedSlideCount(specCount || copilotEls.slideCount?.value || 1, 1);
     const tone = copilotEls.tone?.value || 'clear and concise';
     const requestKind = deckSpecPlan ? 'deck-spec' : (kind === 'deck' ? 'deck' : 'single-slide');
+    const promptMode = getCopilotPromptMode(kind);
     const parts = [
+      'COPILOT_WORKFLOW_MODE: ' + (promptMode === 'import' ? 'IMPORT_EXISTING_PRESENTATION' : 'CREATE_NEW_DECK'),
       'REQUEST_KIND: ' + requestKind,
       'TARGET_SLIDE_COUNT: ' + (kind === 'slide' ? 1 : count),
       'TONE_STYLE: ' + tone,
@@ -696,7 +729,8 @@ async function callCopilot(kind, deckSpecPlan){
     const headers = { 'Content-Type':'application/json' };
     if(apiKey) headers.Authorization = 'Bearer ' + apiKey;
     const userPrompt = await buildCopilotUserPrompt(kind, deckSpecPlan);
-    const systemContent = await loadCopilotSystemPrompt();
+    const promptMode = getCopilotPromptMode(kind);
+    const systemContent = await loadCopilotSystemPrompt(promptMode);
     const webSearch = shouldUseOpenAiWebSearch(kind, endpoint, userPrompt, '');
     callCopilot._styleScreenshot = await captureCopilotStyleScreenshot();
     const body = {
@@ -892,7 +926,7 @@ async function callCopilot(kind, deckSpecPlan){
   }
 
   return Object.freeze({
-    __stage:'stage41i-system-prompt-no-30-cap-20260429-1',
+    __stage:'stage41k-copilot-workflow-split-20260430-1',
     __source:'esm:js/esm/copilot-stage34k.js',
     __classicCompat: classicCompat,
     setCopilotStatus: maybeClassic('setCopilotStatus', setCopilotStatus),
@@ -909,6 +943,8 @@ async function callCopilot(kind, deckSpecPlan){
     copilotDeckSchema: maybeClassic('copilotDeckSchema', copilotDeckSchema),
     copilotSystemPrompt: maybeClassic('copilotSystemPrompt', copilotSystemPrompt),
     loadCopilotSystemPrompt: maybeClassic('loadCopilotSystemPrompt', loadCopilotSystemPrompt),
+    setCopilotPromptMode: maybeClassic('setCopilotPromptMode', setCopilotPromptMode),
+    getCopilotPromptMode: maybeClassic('getCopilotPromptMode', getCopilotPromptMode),
     compactDeckForCopilot: maybeClassic('compactDeckForCopilot', compactDeckForCopilot),
     buildCopilotUserPrompt: maybeClassic('buildCopilotUserPrompt', buildCopilotUserPrompt),
     loadDeckPromptPrefix: maybeClassic('loadDeckPromptPrefix', loadDeckPromptPrefix),
