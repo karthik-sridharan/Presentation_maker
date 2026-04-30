@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "pittsburgh",
+  "name": "Pittsburgh",
+  "description": "Clean white deck with slim blue rule",
+  "theme": {
+    "name": "Pittsburgh",
+    "bgColor": "#ffffff",
+    "fontColor": "#111111",
+    "accentColor": "#2f6fed",
+    "panelRadius": 22,
+    "titleScale": 1.02,
+    "beamerStyle": "pittsburgh",
+    "chromeColor": "#2f6fed",
+    "chromeTextColor": "#ffffff",
+    "sidebarWidth": 96,
+    "titleCaps": "0"
+  }
+}

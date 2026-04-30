@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "cambridgeus",
+  "name": "CambridgeUS",
+  "description": "Formal blue-and-red title chrome",
+  "theme": {
+    "name": "CambridgeUS",
+    "bgColor": "#ffffff",
+    "fontColor": "#10233b",
+    "accentColor": "#c53030",
+    "panelRadius": 16,
+    "titleScale": 1,
+    "beamerStyle": "cambridgeus",
+    "chromeColor": "#0f4c81",
+    "chromeTextColor": "#ffffff",
+    "sidebarWidth": 118,
+    "titleCaps": "1"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "madrid",
+  "name": "Madrid",
+  "description": "Blue top chrome with accent footer",
+  "theme": {
+    "name": "Madrid",
+    "bgColor": "#ffffff",
+    "fontColor": "#111111",
+    "accentColor": "#2f6fed",
+    "panelRadius": 20,
+    "titleScale": 1,
+    "beamerStyle": "madrid",
+    "chromeColor": "#1f4e79",
+    "chromeTextColor": "#ffffff",
+    "sidebarWidth": 118,
+    "titleCaps": "0"
+  }
+}

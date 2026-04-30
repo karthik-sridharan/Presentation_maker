@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "annarbor",
+  "name": "AnnArbor",
+  "description": "Warm cream-and-gold academic theme",
+  "theme": {
+    "name": "AnnArbor",
+    "bgColor": "#fffaf0",
+    "fontColor": "#2f2410",
+    "accentColor": "#7a4f01",
+    "panelRadius": 18,
+    "titleScale": 1,
+    "beamerStyle": "annarbor",
+    "chromeColor": "#c99a06",
+    "chromeTextColor": "#111111",
+    "sidebarWidth": 118,
+    "titleCaps": "0"
+  }
+}

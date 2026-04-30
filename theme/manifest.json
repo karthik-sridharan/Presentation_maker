@@ -1,0 +1,54 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "version": 1,
+  "themes": [
+    {
+      "id": "classic",
+      "file": "classic.json",
+      "name": "Classic",
+      "description": "Minimal white canvas"
+    },
+    {
+      "id": "berkeley",
+      "file": "berkeley.json",
+      "name": "Berkeley",
+      "description": "Left sidebar Beamer-style academic theme"
+    },
+    {
+      "id": "madrid",
+      "file": "madrid.json",
+      "name": "Madrid",
+      "description": "Blue top chrome with accent footer"
+    },
+    {
+      "id": "annarbor",
+      "file": "annarbor.json",
+      "name": "AnnArbor",
+      "description": "Warm cream-and-gold academic theme"
+    },
+    {
+      "id": "cambridgeus",
+      "file": "cambridgeus.json",
+      "name": "CambridgeUS",
+      "description": "Formal blue-and-red title chrome"
+    },
+    {
+      "id": "pittsburgh",
+      "file": "pittsburgh.json",
+      "name": "Pittsburgh",
+      "description": "Clean white deck with slim blue rule"
+    },
+    {
+      "id": "notebook",
+      "file": "notebook.json",
+      "name": "Notebook",
+      "description": "Warm lined-paper teaching style"
+    },
+    {
+      "id": "chalkboard",
+      "file": "chalkboard.json",
+      "name": "Chalkboard",
+      "description": "Dark chalkboard classroom theme"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "notebook",
+  "name": "Notebook",
+  "description": "Warm lined-paper teaching style",
+  "theme": {
+    "name": "Notebook",
+    "bgColor": "#fffdf3",
+    "fontColor": "#1f2937",
+    "accentColor": "#2f6fed",
+    "panelRadius": 14,
+    "titleScale": 1.02,
+    "beamerStyle": "notebook",
+    "chromeColor": "#2f6fed",
+    "chromeTextColor": "#ffffff",
+    "sidebarWidth": 118,
+    "titleCaps": "0"
+  }
+}

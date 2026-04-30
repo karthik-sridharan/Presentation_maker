@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "chalkboard",
+  "name": "Chalkboard",
+  "description": "Dark chalkboard classroom theme",
+  "theme": {
+    "name": "Chalkboard",
+    "bgColor": "#050807",
+    "fontColor": "#f8fafc",
+    "accentColor": "#d1d5db",
+    "panelRadius": 18,
+    "titleScale": 1.03,
+    "beamerStyle": "chalkboard",
+    "chromeColor": "#f8fafc",
+    "chromeTextColor": "#050807",
+    "sidebarWidth": 118,
+    "titleCaps": "0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "classic",
+  "name": "Classic",
+  "description": "Minimal white canvas",
+  "theme": {
+    "name": "Classic",
+    "bgColor": "#ffffff",
+    "fontColor": "#111111",
+    "accentColor": "#2f6fed",
+    "panelRadius": 22,
+    "titleScale": 1,
+    "beamerStyle": "classic",
+    "chromeColor": "#17365d",
+    "chromeTextColor": "#ffffff",
+    "sidebarWidth": 118,
+    "titleCaps": "0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "stage": "stage42a-json-themes-20260430-1",
+  "id": "berkeley",
+  "name": "Berkeley",
+  "description": "Left sidebar Beamer-style academic theme",
+  "theme": {
+    "name": "Berkeley",
+    "bgColor": "#ffffff",
+    "fontColor": "#111111",
+    "accentColor": "#d4a017",
+    "panelRadius": 18,
+    "titleScale": 1,
+    "beamerStyle": "berkeley",
+    "chromeColor": "#17365d",
+    "chromeTextColor": "#ffffff",
+    "sidebarWidth": 118,
+    "titleCaps": "0"
+  }
+}
