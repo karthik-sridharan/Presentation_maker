@@ -1,4 +1,4 @@
-/* Stage 5 migration: theme/style-builder workflow extracted from legacy-app.js.
+/* Stage 42A JSON themes (registry-backed presets); Stage 5 migration: theme/style-builder workflow extracted from legacy-app.js.
    Classic browser script; exposes window.LuminaTheme. */
 (function(global){
   'use strict';
@@ -190,6 +190,10 @@
     }
     function beamerPresetTheme(name){
       const id = String(name || 'classic').toLowerCase();
+      // Stage 42A: JSON theme registry hook. Built-in themes are loaded from /theme/*.json.
+      const registry = global.LuminaThemeRegistry;
+      const fromJson = registry && typeof registry.getThemeSync === 'function' ? registry.getThemeSync(id) : null;
+      if(fromJson) return normalizeTheme(fromJson.theme || fromJson);
       const presets = {
         classic: {name:'Classic', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:22, titleScale:1, beamerStyle:'classic', chromeColor:'#17365d', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
         berkeley: {name:'Berkeley', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#d4a017', panelRadius:18, titleScale:1, beamerStyle:'berkeley', chromeColor:'#17365d', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
@@ -223,7 +227,7 @@
       showToast('Updated master style.');
     }
     function randomizeStyleBuilder(){
-      const styles = ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard'];
+      const registry = global.LuminaThemeRegistry; const styles = registry && typeof registry.themeIds === 'function' && registry.themeIds().length ? registry.themeIds() : ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard'];
       setThemeFieldValue('beamerStyle', styles[Math.floor(Math.random() * styles.length)]);
       setThemeFieldValue('chromeColor', randomHexColor());
       setThemeFieldValue('accentColor', randomHexColor());
