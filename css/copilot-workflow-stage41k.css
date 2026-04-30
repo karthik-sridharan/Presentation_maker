@@ -1,0 +1,73 @@
+/* Stage 41K: split Copilot workflow, Review tab, and separate AI setup. */
+body.stage41k-copilot-workflow .left-tabs.mode-bar.stage35a-workflow-tabs{
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+}
+body.stage41k-copilot-workflow .stage41k-card{
+  margin:0 0 .82rem;
+  padding:.9rem;
+  border-radius:20px;
+  border:1px solid rgba(23,54,93,.14);
+  background:linear-gradient(180deg,#ffffff 0%,#f5f9ff 100%);
+  color:#334155;
+  box-shadow:0 12px 32px rgba(15,23,42,.06);
+}
+body.stage41k-copilot-workflow .stage41k-card h2,
+body.stage41k-copilot-workflow .stage41k-card h3{margin:.1rem 0 .35rem;color:#10233b;letter-spacing:-.025em}
+body.stage41k-copilot-workflow .stage41k-card p{margin:.15rem 0 .62rem;color:#64748b;font-size:.82rem;line-height:1.42}
+body.stage41k-copilot-workflow .stage41k-actions{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin-top:.55rem}
+body.stage41k-copilot-workflow .stage41k-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.38rem;margin:.55rem 0}
+body.stage41k-copilot-workflow .stage41k-kpis span{border-radius:14px;background:#fff;border:1px solid rgba(23,54,93,.12);padding:.44rem .5rem;color:#17365d;font-weight:900;font-size:.72rem}
+body.stage41k-copilot-workflow .stage41k-kpis b{display:block;color:#10233b;font-size:.95rem}
+body.stage41k-copilot-workflow .stage41k-setup-pane #stage41cBrowserKeyPanel{margin:0!important;box-shadow:none!important}
+body.stage41k-copilot-workflow .stage41k-prompt-files{display:grid;gap:.4rem;margin-top:.7rem}
+body.stage41k-copilot-workflow .stage41k-prompt-files code{display:block;border-radius:12px;background:#eef4fb;border:1px solid rgba(23,54,93,.12);padding:.5rem;color:#17365d;font-weight:900;white-space:normal;overflow-wrap:anywhere}
+#stage38qAiDrawer.stage41k-repurposed .stage38q-drawer-panel{width:min(920px,calc(100vw - 20px))}
+#stage38qAiDrawer.stage41k-repurposed .stage38q-drawer-head{background:linear-gradient(180deg,#ffffff 0%,#eaf3ff 100%)}
+#stage38qAiDrawer.stage41k-repurposed .stage38q-drawer-head h2{letter-spacing:-.035em}
+#stage38qAiDrawer.stage41k-repurposed .stage38q-drawer-tabs{display:none!important}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-router{display:grid;gap:.78rem;margin:0 0 .85rem}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-choice{border-radius:20px;border:1px solid rgba(23,54,93,.14);background:#fff;color:#10233b;padding:.9rem;text-align:left;box-shadow:0 10px 24px rgba(15,23,42,.06);cursor:pointer}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-choice:hover{transform:translateY(-1px);box-shadow:0 16px 34px rgba(15,23,42,.10)}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-choice.active{border-color:rgba(23,54,93,.45);background:linear-gradient(180deg,#ffffff 0%,#eef6ff 100%)}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-choice strong{display:block;font-size:1rem;margin-bottom:.25rem}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-choice span{display:block;color:#64748b;font-size:.82rem;line-height:1.35;font-weight:750}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-import-card,
+#stage38qAiDrawer.stage41k-repurposed .stage41k-create-card{border-radius:20px;border:1px solid rgba(23,54,93,.14);background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);padding:.88rem;color:#334155;box-shadow:0 10px 24px rgba(15,23,42,.05)}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin-top:.65rem}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field{display:grid;gap:.32rem}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field.full{grid-column:1/-1}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field label{font-size:.74rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#17365d}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field input,
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field select,
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field textarea{width:100%;border-radius:14px;border:1px solid rgba(23,54,93,.16);background:#fff;color:#10233b;padding:.62rem;font:inherit;box-shadow:inset 0 1px 2px rgba(15,23,42,.04)}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-field textarea{min-height:6.4rem;resize:vertical}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-help{color:#64748b;font-size:.78rem;line-height:1.36;font-weight:700}
+#stage38qAiDrawer.stage41k-repurposed .stage41k-import-status{border-radius:14px;background:#eef4fb;border:1px solid rgba(23,54,93,.12);padding:.55rem .62rem;color:#17365d;font-size:.78rem;font-weight:850;margin-top:.6rem;white-space:pre-wrap}
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="choice"] .stage41k-import-card,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="choice"] .stage41k-create-card,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="choice"] .copilot-panel{display:none!important}
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .stage41k-create-card{display:none!important}
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="create"] .stage41k-import-card{display:none!important}
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel .field-grid,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage39aPromptActions,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage40aPlanCard,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage40aPromptPlanStrip,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage39bAiHero,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage39bOutlinePanel,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage39bReferencePanel,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="import"] .copilot-panel #stage39bReferenceSummary{display:none!important}
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="create"] .copilot-panel .field:has(#copilotModel),
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="create"] .copilot-panel .field:has(#copilotEndpoint),
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="create"] .copilot-panel .field:has(#copilotApiKey),
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="create"] #stage41cBrowserKeyPanel,
+#stage38qAiDrawer.stage41k-repurposed[data-stage41k-mode="create"] #copilotReviewBtn{display:none!important}
+#stage38qAiDrawer.stage41k-repurposed .stage39a-ai-card,
+#stage38qAiDrawer.stage41k-repurposed #stage39aPreviewCard,
+#stage38qAiDrawer.stage41k-repurposed #stage39aApplyBanner{background:#fff;color:#334155;border-color:rgba(23,54,93,.14)}
+@media (max-width:900px){
+  body.stage41k-copilot-workflow .left-tabs.mode-bar.stage35a-workflow-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #stage38qAiDrawer.stage41k-repurposed .stage41k-choice-grid,
+  #stage38qAiDrawer.stage41k-repurposed .stage41k-field-grid{grid-template-columns:1fr}
+  body.stage41k-copilot-workflow .stage41k-kpis{grid-template-columns:1fr}
+}
