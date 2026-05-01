@@ -2,7 +2,7 @@
 (function(){
   'use strict';
   var W=window,D=document;
-  var STAGE='stage42a-json-theme-library-20260430-1';
+  var STAGE='stage42b-theme-typography-20260430-1';
   var MANIFEST_PATH='theme/manifest.json';
   var THEME_PROMPT_PATH='prompts/theme_prompt.txt';
   var API_KEY_STORAGE='html-presentation-generator-openai-api-key-v1';
@@ -32,6 +32,7 @@
     payload=payload||{};
     var t=payload.theme||payload;
     function color(v,fb){v=String(v||'').trim(); return /^#[0-9a-f]{6}$/i.test(v)?v:fb}
+    function fontSize(v,fb){v=String(v==null?'':v).trim(); if(!v)return fb; var n=Number(v.replace(/px$/i,'')); if(Number.isFinite(n))return Math.max(8,Math.min(180,n))+'px'; if(/^\d+(?:\.\d+)?(?:px|rem|em|pt)$/i.test(v))return v; if(/^clamp\([^<>;{}]+\)$/i.test(v))return v; return fb}
     var id=slug(payload.id || fallbackId || t.beamerStyle || t.name || 'theme');
     var out={
       id:id,
@@ -44,6 +45,17 @@
         accentColor:color(t.accentColor,'#2f6fed'),
         panelRadius:Math.max(0,Math.min(48,Number.isFinite(Number(t.panelRadius))?Math.round(Number(t.panelRadius)):22)),
         titleScale:Math.max(.8,Math.min(1.6,Number.isFinite(Number(t.titleScale))?Number(t.titleScale):1)),
+        titleH1FontSize:fontSize(t.titleH1FontSize,'5.6rem'),
+        titleH2FontSize:fontSize(t.titleH2FontSize,'3.1rem'),
+        kickerFontSize:fontSize(t.kickerFontSize,'1rem'),
+        ledeFontSize:fontSize(t.ledeFontSize,'1.14rem'),
+        bodyFontSize:fontSize(t.bodyFontSize,'1.26rem'),
+        bulletFontSize:fontSize(t.bulletFontSize,'1.22rem'),
+        blockHeadingFontSize:fontSize(t.blockHeadingFontSize,'1.3rem'),
+        mathFontSize:fontSize(t.mathFontSize,'1.2rem'),
+        codeFontSize:fontSize(t.codeFontSize,'1.08rem'),
+        cardFontSize:fontSize(t.cardFontSize,'1.08rem'),
+        placeholderFontSize:fontSize(t.placeholderFontSize,'1.12rem'),
         beamerStyle:(['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard'].indexOf(String(t.beamerStyle||'').toLowerCase())>=0?String(t.beamerStyle).toLowerCase():'classic'),
         chromeColor:color(t.chromeColor,'#17365d'),
         chromeTextColor:color(t.chromeTextColor,'#ffffff'),
@@ -99,6 +111,17 @@
       accentColor:(byId('themeAccentColor')&&byId('themeAccentColor').value)||'#2f6fed',
       panelRadius:(byId('themePanelRadius')&&byId('themePanelRadius').value)||22,
       titleScale:(byId('themeTitleScale')&&byId('themeTitleScale').value)||1,
+      titleH1FontSize:(byId('themeTitleH1FontSize')&&byId('themeTitleH1FontSize').value)||'5.6rem',
+      titleH2FontSize:(byId('themeTitleH2FontSize')&&byId('themeTitleH2FontSize').value)||'3.1rem',
+      kickerFontSize:(byId('themeKickerFontSize')&&byId('themeKickerFontSize').value)||'1rem',
+      ledeFontSize:(byId('themeLedeFontSize')&&byId('themeLedeFontSize').value)||'1.14rem',
+      bodyFontSize:(byId('themeBodyFontSize')&&byId('themeBodyFontSize').value)||'1.26rem',
+      bulletFontSize:(byId('themeBulletFontSize')&&byId('themeBulletFontSize').value)||'1.22rem',
+      blockHeadingFontSize:(byId('themeBlockHeadingFontSize')&&byId('themeBlockHeadingFontSize').value)||'1.3rem',
+      mathFontSize:(byId('themeMathFontSize')&&byId('themeMathFontSize').value)||'1.2rem',
+      codeFontSize:(byId('themeCodeFontSize')&&byId('themeCodeFontSize').value)||'1.08rem',
+      cardFontSize:(byId('themeCardFontSize')&&byId('themeCardFontSize').value)||'1.08rem',
+      placeholderFontSize:(byId('themePlaceholderFontSize')&&byId('themePlaceholderFontSize').value)||'1.12rem',
       beamerStyle:(byId('themeBeamerStyle')&&byId('themeBeamerStyle').value)||'classic',
       chromeColor:(byId('themeChromeColor')&&byId('themeChromeColor').value)||'#17365d',
       chromeTextColor:(byId('themeChromeTextColor')&&byId('themeChromeTextColor').value)||'#ffffff',
@@ -113,7 +136,19 @@
     var t=p.theme;
     setVal('themeName',p.name || t.name);
     setVal('themeBgColor',t.bgColor); setVal('themeFontColor',t.fontColor); setVal('themeAccentColor',t.accentColor);
-    setVal('themePanelRadius',t.panelRadius); setVal('themeTitleScale',t.titleScale); setVal('themeBeamerStyle',t.beamerStyle);
+    setVal('themePanelRadius',t.panelRadius); setVal('themeTitleScale',t.titleScale);
+    setVal('themeTitleH1FontSize',t.titleH1FontSize);
+    setVal('themeTitleH2FontSize',t.titleH2FontSize);
+    setVal('themeKickerFontSize',t.kickerFontSize);
+    setVal('themeLedeFontSize',t.ledeFontSize);
+    setVal('themeBodyFontSize',t.bodyFontSize);
+    setVal('themeBulletFontSize',t.bulletFontSize);
+    setVal('themeBlockHeadingFontSize',t.blockHeadingFontSize);
+    setVal('themeMathFontSize',t.mathFontSize);
+    setVal('themeCodeFontSize',t.codeFontSize);
+    setVal('themeCardFontSize',t.cardFontSize);
+    setVal('themePlaceholderFontSize',t.placeholderFontSize);
+    setVal('themeBeamerStyle',t.beamerStyle);
     setVal('themeChromeColor',t.chromeColor); setVal('themeChromeTextColor',t.chromeTextColor); setVal('themeSidebarWidth',t.sidebarWidth); setVal('themeTitleCaps',t.titleCaps);
     try{if(W.LuminaAppCommands){W.LuminaAppCommands.buildPreview&&W.LuminaAppCommands.buildPreview(); W.LuminaAppCommands.renderDeckList&&W.LuminaAppCommands.renderDeckList(); W.LuminaAppCommands.scheduleAutosave&&W.LuminaAppCommands.scheduleAutosave(reason||'Autosaved after JSON theme update.');}}catch(_e){}
     state.lastApplied=p.id; setStatus('Applied theme: '+p.name,false); toast('Applied theme: '+p.name); refreshThemeGallery();
@@ -206,8 +241,8 @@
   function themeSchema(){
     return {type:'object',additionalProperties:false,required:['id','name','description','theme'],properties:{
       id:{type:'string'},name:{type:'string'},description:{type:'string'},
-      theme:{type:'object',additionalProperties:false,required:['name','bgColor','fontColor','accentColor','panelRadius','titleScale','beamerStyle','chromeColor','chromeTextColor','sidebarWidth','titleCaps'],properties:{
-        name:{type:'string'},bgColor:{type:'string'},fontColor:{type:'string'},accentColor:{type:'string'},panelRadius:{type:'integer'},titleScale:{type:'number'},beamerStyle:{type:'string',enum:['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard']},chromeColor:{type:'string'},chromeTextColor:{type:'string'},sidebarWidth:{type:'integer'},titleCaps:{type:'string',enum:['0','1']}
+      theme:{type:'object',additionalProperties:false,required:['name','bgColor','fontColor','accentColor','panelRadius','titleScale','titleH1FontSize','titleH2FontSize','kickerFontSize','ledeFontSize','bodyFontSize','bulletFontSize','blockHeadingFontSize','mathFontSize','codeFontSize','cardFontSize','placeholderFontSize','beamerStyle','chromeColor','chromeTextColor','sidebarWidth','titleCaps'],properties:{
+        name:{type:'string'},bgColor:{type:'string'},fontColor:{type:'string'},accentColor:{type:'string'},panelRadius:{type:'integer'},titleScale:{type:'number'},titleH1FontSize:{type:'string'},titleH2FontSize:{type:'string'},kickerFontSize:{type:'string'},ledeFontSize:{type:'string'},bodyFontSize:{type:'string'},bulletFontSize:{type:'string'},blockHeadingFontSize:{type:'string'},mathFontSize:{type:'string'},codeFontSize:{type:'string'},cardFontSize:{type:'string'},placeholderFontSize:{type:'string'},beamerStyle:{type:'string',enum:['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard']},chromeColor:{type:'string'},chromeTextColor:{type:'string'},sidebarWidth:{type:'integer'},titleCaps:{type:'string',enum:['0','1']}
       }}
     }};
   }
@@ -263,7 +298,7 @@
   function patchDiagnostics(){
     var LD=W.LuminaDiagnostics; if(!LD||LD.__stage42aThemeJsonPatched)return false;
     var prev=(typeof LD.collectReport==='function'?LD.collectReport.bind(LD):(typeof LD.getReport==='function'?LD.getReport.bind(LD):null)); if(!prev)return false;
-    function wrap(){var r={}; try{r=prev()||{}}catch(e){r={stage:STAGE,stage42aPreviousReportError:String(e&&(e.stack||e.message)||e)}} r.stage=STAGE; r.diagnosticScriptStage=STAGE; r.stage42AThemeJsonStatus=status(); r.stage42AThemeJsonDiagnostics={themeIds:themeIds(),source:state.source,lastApplied:state.lastApplied,lastSaved:state.lastSaved,lastAiThemeName:state.lastAiThemeName,lastError:state.lastError}; if(r.featurePolishSummary)r.featurePolishSummary=Object.assign({},r.featurePolishSummary,{jsonThemeLibrary:true,themeSaveJson:true,themeCopilot:true,themePromptFile:true}); return r}
+    function wrap(){var r={}; try{r=prev()||{}}catch(e){r={stage:STAGE,stage42aPreviousReportError:String(e&&(e.stack||e.message)||e)}} r.stage=STAGE; r.diagnosticScriptStage=STAGE; r.stage42AThemeJsonStatus=status(); r.stage42AThemeJsonDiagnostics={themeIds:themeIds(),source:state.source,lastApplied:state.lastApplied,lastSaved:state.lastSaved,lastAiThemeName:state.lastAiThemeName,lastError:state.lastError}; if(r.featurePolishSummary)r.featurePolishSummary=Object.assign({},r.featurePolishSummary,{jsonThemeLibrary:true,themeSaveJson:true,themeCopilot:true,themePromptFile:true,themeTypographyDefaults:true}); return r}
     LD.collectReport=wrap; LD.getReport=wrap; LD.__stage42aThemeJsonPatched=true; return true;
   }
   function status(){
