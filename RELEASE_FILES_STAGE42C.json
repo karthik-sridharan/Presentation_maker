@@ -1,0 +1,12 @@
+{
+  "stage": "stage42c-theme-discovery-20260501-1",
+  "newOrEditedFiles": [
+    "index.html",
+    "css/theme-discovery-stage42c.css",
+    "js/theme-discovery-stage42c.js",
+    "README_DEPLOY_STAGE42C.md",
+    "DEPLOY_CHECK_STAGE42C.md",
+    "RELEASE_NOTES_STAGE42C.md",
+    "INTERNAL_DIAGNOSTIC_STAGE42C.json"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "stage": "stage42c-theme-discovery-20260501-1",
+  "summary": "Makes Theme Designer and Theme Copilot directly visible in the Design tab and routes the toolbar Theme action there.",
+  "newFiles": [
+    "css/theme-discovery-stage42c.css",
+    "js/theme-discovery-stage42c.js"
+  ],
+  "expectedStatusKey": "stage42CThemeDiscoveryStatus",
+  "expectedPass": true
+}
