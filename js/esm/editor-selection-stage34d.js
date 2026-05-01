@@ -88,14 +88,14 @@ function createApi(deps){
     }
     function populatePreviewBlockStyleEditor(block){
       const style = normalizeBlockStyle(block && block.style);
-      if(previewBlockFontScale) previewBlockFontScale.value = fontSizeToPx(style, 20);
+      if(previewBlockFontScale && !(typeof document !== 'undefined' && document.activeElement === previewBlockFontScale)) previewBlockFontScale.value = fontSizeToPx(style, 20);
       setFontFamilySelectValue(previewBlockFontFamily, style.fontFamily);
       if(previewBlockFontColor) previewBlockFontColor.value = style.fontColor;
       if(previewBlockBulletType) previewBlockBulletType.value = style.bulletType;
     }
     function populatePreviewTitleStyleEditor(){
       const style = selectedPreviewTitleStyle();
-      if(previewBlockFontScale) previewBlockFontScale.value = fontSizeToPx(style, titleBasePx());
+      if(previewBlockFontScale && !(typeof document !== 'undefined' && document.activeElement === previewBlockFontScale)) previewBlockFontScale.value = fontSizeToPx(style, titleBasePx());
       setFontFamilySelectValue(previewBlockFontFamily, style.fontFamily);
       if(previewBlockFontColor) previewBlockFontColor.value = style.fontColor;
       if(previewBlockBulletType) previewBlockBulletType.value = style.bulletType || 'disc';
