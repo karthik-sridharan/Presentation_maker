@@ -65,7 +65,7 @@ export function createApi(deps){
 
   function titleWrapperStyle(style, heading){
     var s = normalizeBlockStyle(style || {});
-    var baseMap = { h1:'5.6rem', h2:'3.1rem', h3:'2.45rem', h4:'2.1rem', h5:'1.8rem', h6:'1.55rem' };
+    var baseMap = { h1:'calc(var(--theme-title-h1-font-size,5.6rem) * var(--title-scale,1))', h2:'calc(var(--theme-title-h2-font-size,3.1rem) * var(--title-scale,1))', h3:'var(--theme-block-heading-font-size,2.45rem)', h4:'2.1rem', h5:'1.8rem', h6:'1.55rem' };
     return '--block-font-scale:' + s.fontScale + ';' + (s.fontSize ? '--block-font-size:' + escapeAttr(s.fontSize) + ';font-size:' + escapeAttr(s.fontSize) + ';' : '') + '--block-font-family:' + escapeAttr(s.fontFamily) + ';--block-font-color:' + s.fontColor + ';--title-base-size:' + (baseMap[String(heading || 'h2').toLowerCase()] || '3.1rem') + ';';
   }
 

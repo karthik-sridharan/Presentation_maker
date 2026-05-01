@@ -61,6 +61,17 @@ function finiteNumber(value, fallback){
   return isFinite(n) ? n : fallback;
 }
 
+
+function normalizeThemeFontSize(value, fallback){
+  if(value === undefined || value === null || value === '') return fallback;
+  var raw = String(value).trim();
+  var n = Number(raw.replace(/px$/i, ''));
+  if(isFinite(n)) return Math.max(8, Math.min(180, n)) + 'px';
+  if(/^\d+(?:\.\d+)?(?:px|rem|em|pt)$/i.test(raw)) return raw;
+  if(/^clamp\([^<>;{}]+\)$/i.test(raw)) return raw;
+  return fallback;
+}
+
 export function normalizeTheme(theme){
   var t = theme || {};
   return {
@@ -70,6 +81,17 @@ export function normalizeTheme(theme){
     accentColor: t.accentColor || '#2f6fed',
     panelRadius: finiteNumber(t.panelRadius, 22),
     titleScale: finiteNumber(t.titleScale, 1),
+    titleH1FontSize: normalizeThemeFontSize(t.titleH1FontSize, '5.6rem'),
+    titleH2FontSize: normalizeThemeFontSize(t.titleH2FontSize, '3.1rem'),
+    kickerFontSize: normalizeThemeFontSize(t.kickerFontSize, '1rem'),
+    ledeFontSize: normalizeThemeFontSize(t.ledeFontSize, '1.14rem'),
+    bodyFontSize: normalizeThemeFontSize(t.bodyFontSize, '1.26rem'),
+    bulletFontSize: normalizeThemeFontSize(t.bulletFontSize, '1.22rem'),
+    blockHeadingFontSize: normalizeThemeFontSize(t.blockHeadingFontSize, '1.3rem'),
+    mathFontSize: normalizeThemeFontSize(t.mathFontSize, '1.2rem'),
+    codeFontSize: normalizeThemeFontSize(t.codeFontSize, '1.08rem'),
+    cardFontSize: normalizeThemeFontSize(t.cardFontSize, '1.08rem'),
+    placeholderFontSize: normalizeThemeFontSize(t.placeholderFontSize, '1.12rem'),
     beamerStyle: t.beamerStyle || 'classic',
     chromeColor: t.chromeColor || '#17365d',
     chromeTextColor: t.chromeTextColor || '#ffffff',
