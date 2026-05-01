@@ -2112,10 +2112,42 @@ document.querySelectorAll('[data-preset]').forEach(btn=>btn.addEventListener('cl
 document.querySelectorAll('[data-style-preset]').forEach(btn=>btn.addEventListener('click', ()=>applyStylePreset(btn.dataset.stylePreset)));
 document.getElementById('applyStyleBuilderBtn')?.addEventListener('click', applyStyleBuilder);
 document.getElementById('randomizeStyleBtn')?.addEventListener('click', randomizeStyleBuilder);
+// Stage 42D hotfix: treat font size as a true text-entry control.
+// The old live input handler coerced an empty field to 20px while the user
+// pressed Backspace, rebuilt the preview immediately, and repopulated the
+// field with an apparently arbitrary value. Now users can type freely; the
+// value commits on Enter, blur, or change.
+function commitPreviewBlockFontSize(){
+  if(!previewBlockFontScale) return;
+  const raw = String(previewBlockFontScale.value ?? '').trim();
+  if(raw === ''){
+    previewBlockFontScale.dataset.pendingFontSize = '';
+    return;
+  }
+  const px = Number(raw);
+  if(!Number.isFinite(px)){
+    previewBlockFontScale.dataset.pendingFontSize = raw;
+    return;
+  }
+  const clamped = Math.max(8, Math.min(120, Math.round(px)));
+  previewBlockFontScale.value = String(clamped);
+  previewBlockFontScale.dataset.pendingFontSize = String(clamped);
+  applySelectedInspectorStylePatch({ fontSize: clamped + 'px' });
+}
 previewBlockFontScale?.addEventListener('input', ()=>{
-  const px = Number(previewBlockFontScale.value || 20);
-  const fontSize = Number.isFinite(px) ? (Math.max(8, Math.min(120, px)) + 'px') : '';
-  applySelectedInspectorStylePatch({ fontSize });
+  previewBlockFontScale.dataset.pendingFontSize = String(previewBlockFontScale.value ?? '');
+});
+previewBlockFontScale?.addEventListener('change', commitPreviewBlockFontSize);
+previewBlockFontScale?.addEventListener('blur', commitPreviewBlockFontSize, true);
+previewBlockFontScale?.addEventListener('keydown', event=>{
+  if(event.key === 'Enter'){
+    event.preventDefault();
+    commitPreviewBlockFontSize();
+    try{ previewBlockFontScale.blur(); }catch(_e){}
+  }
+  if(event.key === 'Escape'){
+    try{ previewBlockFontScale.blur(); }catch(_e){}
+  }
 });
 previewBlockFontFamily?.addEventListener('change', ()=>applySelectedInspectorStylePatch({ fontFamily: previewBlockFontFamily.value || 'inherit' }));
 previewBlockFontColor?.addEventListener('input', ()=>applySelectedInspectorStylePatch({ fontColor: previewBlockFontColor.value || '#111111' }));
