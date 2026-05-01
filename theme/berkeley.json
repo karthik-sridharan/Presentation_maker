@@ -1,5 +1,5 @@
 {
-  "stage": "stage42a-json-themes-20260430-1",
+  "stage": "stage42b-theme-typography-20260430-1",
   "id": "berkeley",
   "name": "Berkeley",
   "description": "Left sidebar Beamer-style academic theme",
@@ -14,6 +14,17 @@
     "chromeColor": "#17365d",
     "chromeTextColor": "#ffffff",
     "sidebarWidth": 118,
-    "titleCaps": "0"
+    "titleCaps": "0",
+    "titleH1FontSize": "5.6rem",
+    "titleH2FontSize": "3.1rem",
+    "kickerFontSize": "1rem",
+    "ledeFontSize": "1.14rem",
+    "bodyFontSize": "1.26rem",
+    "bulletFontSize": "1.22rem",
+    "blockHeadingFontSize": "1.3rem",
+    "mathFontSize": "1.2rem",
+    "codeFontSize": "1.08rem",
+    "cardFontSize": "1.08rem",
+    "placeholderFontSize": "1.12rem"
   }
 }
