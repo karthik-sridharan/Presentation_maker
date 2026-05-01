@@ -158,10 +158,10 @@
     padding:3rem 3.3rem 4.8rem;background:#ffffff;color:#111111;overflow:hidden;
   }
   .slide h1,.slide h2{margin:0;line-height:1.05}
-  .slide h1{font-size:calc(3.4rem * var(--title-scale,1));max-width:15ch}
-  .slide h2{font-size:calc(2.3rem * var(--title-scale,1));}
-  .slide .kicker{margin-top:.6rem;color:rgba(17,17,17,.72);font-size:1rem;line-height:1.45;max-width:68ch}
-  .slide .lede{margin-top:1rem;color:rgba(17,17,17,.72);font-size:1.14rem;line-height:1.52;max-width:68ch}
+  .slide h1{font-size:var(--theme-title-h1-font-size,calc(3.4rem * var(--title-scale,1)));max-width:15ch}
+  .slide h2{font-size:var(--theme-title-h2-font-size,calc(2.3rem * var(--title-scale,1)));}
+  .slide .kicker{margin-top:.6rem;color:rgba(17,17,17,.72);font-size:var(--theme-kicker-font-size,1rem);line-height:1.45;max-width:68ch}
+  .slide .lede{margin-top:1rem;color:rgba(17,17,17,.72);font-size:var(--theme-lede-font-size,1.14rem);line-height:1.52;max-width:68ch}
   .slide-body{margin-top:1.35rem}
   .slide.single .slide-body{display:block}
   .slide.two-col .slide-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.35rem;align-items:start}
@@ -171,18 +171,18 @@
   .slide .rich p,.slide .rich ul,.slide .rich ol,.slide .rich h3,.slide .display-math,.slide .bullet-card,.slide .placeholder,.slide .diag,.slide .pseudo-block,.slide .pseudo-latex-block,.slide .custom-frame-wrap{
     margin:0;border:1px solid rgba(17,17,17,.12);border-radius:var(--radius,22px);background:rgba(127,127,127,.045);box-shadow:0 8px 24px rgba(0,0,0,.04)
   }
-  .slide .rich p{color:rgba(17,17,17,.85);font-size:1.26rem;line-height:1.62;padding:1rem 1.15rem}
-  .slide .rich ul,.slide .rich ol{color:rgba(17,17,17,.85);font-size:1.22rem;line-height:1.58;padding:1rem 1.2rem 1rem 2.3rem}
-  .slide .rich li{margin:.5rem 0;color:rgba(17,17,17,.85);font-size:1.22rem;line-height:1.58}
-  .slide .rich h3{font-size:1.3rem;color:inherit;padding:.95rem 1.15rem}
-  .display-math{font-size:1.2rem;padding:1rem 1.15rem;overflow-x:auto}
+  .slide .rich p{color:rgba(17,17,17,.85);font-size:var(--theme-body-font-size,1.26rem);line-height:1.62;padding:1rem 1.15rem}
+  .slide .rich ul,.slide .rich ol{color:rgba(17,17,17,.85);font-size:var(--theme-bullet-font-size,1.22rem);line-height:1.58;padding:1rem 1.2rem 1rem 2.3rem}
+  .slide .rich li{margin:.5rem 0;color:rgba(17,17,17,.85);font-size:var(--theme-bullet-font-size,1.22rem);line-height:1.58}
+  .slide .rich h3{font-size:var(--theme-block-heading-font-size,1.3rem);color:inherit;padding:.95rem 1.15rem}
+  .display-math{font-size:var(--theme-math-font-size,1.2rem);padding:1rem 1.15rem;overflow-x:auto}
   .slide .pseudo-block,.slide .pseudo-latex-block{
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    font-size: 1.08rem;line-height:1.62;white-space:pre-wrap;tab-size:2;padding:1rem 1.15rem;overflow-x:auto;color:rgba(17,17,17,.9)
+    font-size: var(--theme-code-font-size,1.08rem);line-height:1.62;white-space:pre-wrap;tab-size:2;padding:1rem 1.15rem;overflow-x:auto;color:rgba(17,17,17,.9)
   }
   .slide .pseudo-latex-block mjx-container{font-size:100% !important}
   .bullet-card{padding:1rem 1.15rem;background:rgba(127,127,127,.045)}
-  .bullet-card b{display:block;margin-bottom:.35rem;font-size:1.12rem}
+  .bullet-card b{display:block;margin-bottom:.35rem;font-size:var(--theme-card-font-size,1.12rem)}
   .preview-block{position:relative;border-radius:18px;cursor:pointer;transition:outline-color .12s ease, box-shadow .12s ease}
   .preview-block:hover{box-shadow:0 0 0 2px rgba(97,180,255,.18)}
   .preview-block.selected{outline:4px solid rgba(97,180,255,.92);outline-offset:4px}
@@ -197,10 +197,10 @@
   .preview-block .pseudo-latex-block,
   .preview-block .bullet-card,
   .preview-block .placeholder{font-family:var(--block-font-family,inherit);color:var(--block-font-color,inherit)}
-  .preview-block .rich p{font-size:var(--block-font-size,calc(1.26rem * var(--block-font-scale,1))) !important}
-  .preview-block .rich ul,.preview-block .rich ol,.preview-block .rich li{font-size:var(--block-font-size,calc(1.22rem * var(--block-font-scale,1))) !important}
-  .preview-block .rich h3{font-size:var(--block-font-size,calc(1.3rem * var(--block-font-scale,1))) !important}
-  .preview-block .display-math,.preview-block .pseudo-block,.preview-block .pseudo-latex-block,.preview-block .bullet-card{font-size:var(--block-font-size,calc(1.08rem * var(--block-font-scale,1))) !important}
+  .preview-block .rich p{font-size:var(--block-font-size,calc(var(--theme-body-font-size,1.26rem) * var(--block-font-scale,1))) !important}
+  .preview-block .rich ul,.preview-block .rich ol,.preview-block .rich li{font-size:var(--block-font-size,calc(var(--theme-bullet-font-size,1.22rem) * var(--block-font-scale,1))) !important}
+  .preview-block .rich h3{font-size:var(--block-font-size,calc(var(--theme-block-heading-font-size,1.3rem) * var(--block-font-scale,1))) !important}
+  .preview-block .display-math{font-size:var(--block-font-size,calc(var(--theme-math-font-size,1.2rem) * var(--block-font-scale,1))) !important}.preview-block .pseudo-block,.preview-block .pseudo-latex-block{font-size:var(--block-font-size,calc(var(--theme-code-font-size,1.08rem) * var(--block-font-scale,1))) !important}.preview-block .bullet-card{font-size:var(--block-font-size,calc(var(--theme-card-font-size,1.08rem) * var(--block-font-scale,1))) !important}
   .preview-block .rich ul{list-style-type:var(--block-bullet-type,disc)}
   .preview-block .rich ol{list-style-type:var(--block-bullet-type,decimal)}
   .preview-block-props{display:grid;gap:.8rem}
@@ -208,7 +208,7 @@
   .preview-title:hover{box-shadow:0 0 0 2px rgba(97,180,255,.18)}
   .preview-title.selected{outline:4px solid rgba(97,180,255,.92);outline-offset:4px}
   .preview-title > h1,.preview-title > h2,.preview-title > h3,.preview-title > h4,.preview-title > h5,.preview-title > h6{font-family:var(--block-font-family,inherit);color:var(--block-font-color,inherit);font-size:var(--block-font-size,calc(var(--title-base-size,1em) * var(--block-font-scale,1))) !important}
-  .placeholder{min-height:220px;display:grid;place-items:center;color:rgba(17,17,17,.72);padding:1rem 1.15rem;text-align:center}
+  .placeholder{min-height:220px;display:grid;place-items:center;color:rgba(17,17,17,.72);font-size:var(--theme-placeholder-font-size,1.12rem);padding:1rem 1.15rem;text-align:center}
   .slide .figure-embed{
     padding:0 !important;
     background:transparent !important;
