@@ -44,8 +44,8 @@
 })();
 </script>
 <script>
-window.LUMINA_STAGE = 'stage42d-theme-discovery-fontsize-hotfix-20260501-1';
-window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage42d-theme-discovery-fontsize-hotfix-20260501-1';
+window.LUMINA_STAGE = 'stage42e-theme-button-route-hotfix-20260501-1';
+window.LUMINA_STAGE_SIGNATURE = 'index-inline-stage42e-theme-button-route-hotfix-20260501-1';
 try { document.documentElement.setAttribute('data-lumina-stage', window.LUMINA_STAGE); document.documentElement.setAttribute('data-lumina-stage-signature', window.LUMINA_STAGE_SIGNATURE); } catch (e) {}
 window.LUMINA_EXPECTED_ASSETS = [
   "css/styles-stage24c.css",
@@ -56,6 +56,7 @@ window.LUMINA_EXPECTED_ASSETS = [
   "js/theme-stage24c.js",
   "js/theme-json-stage42a.js",
   "js/theme-discovery-stage42d.js",
+  "js/theme-button-stage42e.js",
   "js/presets-stage24c.js",
   "js/parser-stage24c.js",
   "js/block-style-stage24c.js",
@@ -5250,6 +5251,7 @@ https://example.com/lecture-notes.html"></textarea>
 <script src="js/theme-stage24c.js?v=stage38o-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-stage24c.js')"></script>
 <script src="js/theme-json-stage42a.js?v=stage42a-20260430-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-json-stage42a.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-json-stage42a.js')"></script>
 <script src="js/theme-discovery-stage42d.js?v=stage42d-20260501-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-discovery-stage42d.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-discovery-stage42d.js')"></script>
+<script src="js/theme-button-stage42e.js?v=stage42e-20260501-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/theme-button-stage42e.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/theme-button-stage42e.js')"></script>
 <script src="js/presets-stage24c.js?v=stage38o-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/presets-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/presets-stage24c.js')"></script>
 <script src="js/parser-stage24c.js?v=stage38o-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/parser-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/parser-stage24c.js')"></script>
 <script src="js/block-style-stage24c.js?v=stage38o-20260427-1" onload="window.LuminaDiagnostics&&window.LuminaDiagnostics.markLoaded('js/block-style-stage24c.js')" onerror="window.LuminaDiagnostics&&window.LuminaDiagnostics.markFailed('js/block-style-stage24c.js')"></script>
@@ -7934,7 +7936,7 @@ setTimeout(function(){
     if(action==='redo') return clickId('redoBtn') || (D.execCommand&&D.execCommand('redo'));
     if(action==='copilot'){openDrawer('copilot');return true;}
     if(action==='edit'){openDrawer('edit');return true;}
-    if(action==='theme'){openDrawer('presets','presets:styles');return true;}
+    if(action==='theme'){ if(W.LuminaThemeButtonStage42E&&typeof W.LuminaThemeButtonStage42E.openThemeDesigner==='function') return W.LuminaThemeButtonStage42E.openThemeDesigner(); openDrawer('styles'); return true; }
     if(action==='present'){openDrawer('files','files:save');return true;}
     if(action==='advanced'){openDrawer('slides');return true;}
     if(action==='diagnostics'){

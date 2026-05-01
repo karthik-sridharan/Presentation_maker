@@ -1,0 +1,11 @@
+{
+  "stage": "stage42e-theme-button-route-hotfix-20260501-1",
+  "deployZip": "lumina-presenter-stage42e-theme-button-route-hotfix-deploy.zip",
+  "newEditedZip": "lumina-presenter-stage42e-theme-button-route-hotfix-new-edited-files-only.zip",
+  "changedFiles": [
+    "index.html",
+    "js/theme-button-stage42e.js",
+    "README_DEPLOY_STAGE42E.md",
+    "RELEASE_FILES_STAGE42E.json"
+  ]
+}
