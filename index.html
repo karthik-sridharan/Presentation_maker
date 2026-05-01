@@ -2269,7 +2269,55 @@ window.MathJax = {
           <label for="themeTitleScale">Title scale</label>
           <input id="themeTitleScale" type="number" min="0.8" max="1.6" step="0.05" value="1" />
         </div>
+
         <div class="field full">
+          <div class="smallcaps">Theme typography defaults</div>
+          <div class="help" style="margin:.2rem 0 .55rem">These are true fallback font sizes for slide elements. Individual block font sizes still override them.</div>
+        </div>
+        <div class="field">
+          <label for="themeTitleH1FontSize">Title H1 font size</label>
+          <input id="themeTitleH1FontSize" type="text" value="5.6rem" />
+        </div>
+        <div class="field">
+          <label for="themeTitleH2FontSize">Title H2 font size</label>
+          <input id="themeTitleH2FontSize" type="text" value="3.1rem" />
+        </div>
+        <div class="field">
+          <label for="themeBodyFontSize">Body paragraph size</label>
+          <input id="themeBodyFontSize" type="text" value="1.26rem" />
+        </div>
+        <div class="field">
+          <label for="themeBulletFontSize">Bullet/list size</label>
+          <input id="themeBulletFontSize" type="text" value="1.22rem" />
+        </div>
+        <div class="field">
+          <label for="themeBlockHeadingFontSize">Block heading size</label>
+          <input id="themeBlockHeadingFontSize" type="text" value="1.3rem" />
+        </div>
+        <div class="field">
+          <label for="themeMathFontSize">Equation/math size</label>
+          <input id="themeMathFontSize" type="text" value="1.2rem" />
+        </div>
+        <div class="field">
+          <label for="themeCodeFontSize">Code/pseudocode size</label>
+          <input id="themeCodeFontSize" type="text" value="1.08rem" />
+        </div>
+        <div class="field">
+          <label for="themeCardFontSize">Card/callout size</label>
+          <input id="themeCardFontSize" type="text" value="1.08rem" />
+        </div>
+        <div class="field">
+          <label for="themeKickerFontSize">Kicker/subtitle size</label>
+          <input id="themeKickerFontSize" type="text" value="1rem" />
+        </div>
+        <div class="field">
+          <label for="themeLedeFontSize">Lede/intro size</label>
+          <input id="themeLedeFontSize" type="text" value="1.14rem" />
+        </div>
+        <div class="field">
+          <label for="themePlaceholderFontSize">Placeholder/caption size</label>
+          <input id="themePlaceholderFontSize" type="text" value="1.12rem" />
+        </div>        <div class="field full">
           <div class="row">
             <button class="btn mini" id="applyThemeToCurrentBtn">Apply theme to current slide</button>
             <button class="btn mini" id="applyThemeToAllBtn">Apply theme to all slides</button>
@@ -5778,7 +5826,10 @@ try{
   function makeThemeFields(){
     var ids = {
       name:'themeName', bgColor:'themeBgColor', fontColor:'themeFontColor', accentColor:'themeAccentColor',
-      panelRadius:'themePanelRadius', titleScale:'themeTitleScale', beamerStyle:'themeBeamerStyle', chromeColor:'themeChromeColor',
+      panelRadius:'themePanelRadius', titleScale:'themeTitleScale', titleH1FontSize:'themeTitleH1FontSize', titleH2FontSize:'themeTitleH2FontSize',
+      kickerFontSize:'themeKickerFontSize', ledeFontSize:'themeLedeFontSize', bodyFontSize:'themeBodyFontSize', bulletFontSize:'themeBulletFontSize',
+      blockHeadingFontSize:'themeBlockHeadingFontSize', mathFontSize:'themeMathFontSize', codeFontSize:'themeCodeFontSize', cardFontSize:'themeCardFontSize',
+      placeholderFontSize:'themePlaceholderFontSize', beamerStyle:'themeBeamerStyle', chromeColor:'themeChromeColor',
       chromeTextColor:'themeChromeTextColor', sidebarWidth:'themeSidebarWidth', titleCaps:'themeTitleCaps'
     };
     var out = {};
@@ -6268,7 +6319,10 @@ try{
     function makeDomThemeFields(){
       var ids = {
         name:'themeName', bgColor:'themeBgColor', fontColor:'themeFontColor', accentColor:'themeAccentColor',
-        panelRadius:'themePanelRadius', titleScale:'themeTitleScale', beamerStyle:'themeBeamerStyle', chromeColor:'themeChromeColor',
+        panelRadius:'themePanelRadius', titleScale:'themeTitleScale', titleH1FontSize:'themeTitleH1FontSize', titleH2FontSize:'themeTitleH2FontSize',
+        kickerFontSize:'themeKickerFontSize', ledeFontSize:'themeLedeFontSize', bodyFontSize:'themeBodyFontSize', bulletFontSize:'themeBulletFontSize',
+        blockHeadingFontSize:'themeBlockHeadingFontSize', mathFontSize:'themeMathFontSize', codeFontSize:'themeCodeFontSize', cardFontSize:'themeCardFontSize',
+        placeholderFontSize:'themePlaceholderFontSize', beamerStyle:'themeBeamerStyle', chromeColor:'themeChromeColor',
         chromeTextColor:'themeChromeTextColor', sidebarWidth:'themeSidebarWidth', titleCaps:'themeTitleCaps'
       };
       var out = {};

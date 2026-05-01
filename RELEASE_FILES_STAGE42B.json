@@ -1,0 +1,28 @@
+{
+  "stage": "stage42b-theme-typography-20260430-1",
+  "base": "stage42a-json-theme-library-20260430-1",
+  "editedFiles": [
+    "index.html",
+    "README_DEPLOY_STAGE42B.md",
+    "RELEASE_FILES_STAGE42B.json",
+    "css/styles-stage24c.css",
+    "js/utils-stage24c.js",
+    "js/esm/utils-stage34j.js",
+    "js/theme-stage24c.js",
+    "js/esm/theme-stage34j.js",
+    "js/block-style-stage24c.js",
+    "js/esm/block-style-stage34j.js",
+    "js/legacy-app-stage24c.js",
+    "js/theme-json-stage42a.js",
+    "prompts/theme_prompt.txt",
+    "theme/manifest.json",
+    "theme/classic.json",
+    "theme/berkeley.json",
+    "theme/madrid.json",
+    "theme/annarbor.json",
+    "theme/cambridgeus.json",
+    "theme/pittsburgh.json",
+    "theme/notebook.json",
+    "theme/chalkboard.json"
+  ]
+}
