@@ -1,0 +1,10 @@
+Your previous Lumina deck JSON had validation problems:
+{{PROBLEMS}}
+
+Repair the JSON only. Do not redesign the deck unless required to fix the listed problems.
+Return ONLY valid JSON. Do not wrap it in markdown.
+Ensure every LaTeX backslash is JSON-escaped: use "\\times", "\\text{}", "\\top", "\\operatorname{}" inside JSON strings.
+Ensure custom animations use responsive 100% height/width CSS, no external assets, no <script>, no iframes, and no fixed 720px two-column stage height.
+
+Previous output to repair:
+{{PREVIOUS_OUTPUT}}
