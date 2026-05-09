@@ -58,6 +58,18 @@
         .replace(/\\r/g, '\n')
         .replace(/\\t/g, ' ');
     }
+    function cleanEditableContent(value, mode){
+      const resolvedMode = String(mode || '').toLowerCase();
+      const text = decodeLiteralNewlines(value);
+      if(resolvedMode === 'pseudocode' || resolvedMode === 'pseudocode-latex' || resolvedMode === 'custom') return text;
+      return text
+        .split('\n')
+        .map(line => String(line || '').replace(/^\s*P:\s*/i, '').replace(/^\s*UL:\s*/i, '- '))
+        .join('\n')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n[ \t]+/g, '\n')
+        .trim();
+    }
     function currentDraftSlide(){
       if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
@@ -146,7 +158,7 @@
       } else {
         blockFields.mode.value = block.mode || 'panel';
         blockFields.title.value = block.title || '';
-        blockFields.content.value = decodeLiteralNewlines(block.content || '');
+        blockFields.content.value = cleanEditableContent(block.content || '', block.mode || 'panel');
       }
       renderBlockList();
     }
@@ -156,7 +168,7 @@
     }
     function currentBlockFromEditor(){
       const existing = getDraftBlock(currentColumnName(), selectedIndex(currentColumnName()));
-      const nextContent = decodeLiteralNewlines(blockFields.content.value);
+      const nextContent = cleanEditableContent(blockFields.content.value, blockFields.mode.value || (existing && existing.mode) || 'panel');
       const nextBlock = {
         mode: blockFields.mode.value || (existing && existing.mode) || 'panel',
         title: blockFields.title.value,
@@ -168,7 +180,7 @@
       if(existing && existing.importSourceLayout) nextBlock.importSourceLayout = clone(existing.importSourceLayout);
       if(existing && existing.importRole) nextBlock.importRole = existing.importRole;
       if(existing && Array.isArray(existing.importRuns)){
-        const oldContent = decodeLiteralNewlines(existing.content || '');
+        const oldContent = cleanEditableContent(existing.content || '', existing.mode || 'panel');
         if(nextContent === oldContent){
           nextBlock.importRuns = clone(existing.importRuns).map(run=>Object.assign({}, run, { text: decodeLiteralNewlines(run && run.text || '') }));
         }
