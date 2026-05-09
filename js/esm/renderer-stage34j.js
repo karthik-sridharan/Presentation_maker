@@ -102,6 +102,7 @@ export function createApi(deps){
     }
     if(block.layout) out.layout = normalizeLayout(block.layout);
     if(Array.isArray(block.importRuns)) out.importRuns = block.importRuns.map(normalizeImportRun);
+    if(block.importSourceLayout) out.importSourceLayout = normalizeLayout(block.importSourceLayout);
     if(block.importRole) out.importRole = String(block.importRole);
     return out;
   }
@@ -168,6 +169,30 @@ export function createApi(deps){
     var rot = l.rotate ? ('transform:rotate(' + l.rotate + 'deg);transform-origin:top left;') : '';
     return 'left:' + l.x + 'px;top:' + l.y + 'px;width:' + l.w + 'px;height:' + l.h + 'px;z-index:' + l.z + ';' + rot;
   }
+  function freeformFitMeta(slide){
+    var meta = slide && slide.importMeta ? slide.importMeta : {};
+    var sw = safeNum(meta.sourceWidth, 0);
+    var sh = safeNum(meta.sourceHeight, 0);
+    var tw = safeNum(meta.targetWidth || meta.canvasWidth, 1600);
+    var th = safeNum(meta.targetHeight || meta.canvasHeight, 900);
+    if(!(sw > 0 && sh > 0 && tw > 0 && th > 0)) return null;
+    var scale = Math.min(tw / sw, th / sh);
+    return { scale: scale, ox: (tw - sw * scale) / 2, oy: (th - sh * scale) / 2, tw: tw, th: th, sw: sw, sh: sh };
+  }
+  function sourceProjectedLayout(block, slide){
+    var src = block && block.importSourceLayout;
+    var fit = freeformFitMeta(slide);
+    if(!src || !fit) return block && block.layout;
+    var l = normalizeLayout(src);
+    return {
+      x: fit.ox + l.x * fit.scale,
+      y: fit.oy + l.y * fit.scale,
+      w: l.w * fit.scale,
+      h: l.h * fit.scale,
+      z: block && block.layout ? block.layout.z : l.z,
+      rotate: block && block.layout ? block.layout.rotate : l.rotate
+    };
+  }
   function runStyle(run){
     var r = normalizeImportRun(run);
     return 'font-size:' + r.fontSize + 'px;font-family:' + escapeAttr(r.fontFamily) + ';color:' + escapeAttr(r.fontColor) + ';font-weight:' + escapeAttr(r.fontWeight) + ';font-style:' + escapeAttr(r.fontStyle) + ';';
@@ -179,10 +204,10 @@ export function createApi(deps){
     var runs = Array.isArray(block.importRuns) && block.importRuns.length ? block.importRuns : [{ text: block.content || '', fontSize: (block.style && parseFloat(block.style.fontSize)) || 18, fontFamily: block.style && block.style.fontFamily, fontColor: block.style && block.style.fontColor }];
     return '<div class="freeform-text-content">' + runs.map(function(run){ return '<span style="' + runStyle(run) + '">' + renderRunText(run.text) + '</span>'; }).join('') + '</div>';
   }
-  function renderFreeformBlock(block, idx){
+  function renderFreeformBlock(block, idx, slide){
     var mode = String(block && block.mode || 'panel');
     var roleClass = block && block.importRole ? ' import-role-' + escapeAttr(block.importRole) : '';
-    var outerAttrs = ' data-freeform-index="' + idx + '" style="' + layoutStyle(block && block.layout) + '"';
+    var outerAttrs = ' data-freeform-index="' + idx + '" style="' + layoutStyle(sourceProjectedLayout(block, slide)) + '"';
     if(mode === 'import-text'){
       return '<div class="freeform-block freeform-text-block' + roleClass + '"' + outerAttrs + '><div class="preview-block" data-column="left" data-block-index="' + idx + '" data-block-mode="import-text"' + animationDataAttrs(block.animation) + ' style="' + blockWrapperStyle(block) + '">' + renderImportText(block) + '</div></div>';
     }
@@ -190,10 +215,10 @@ export function createApi(deps){
     var klass = mode === 'import-image' ? 'freeform-image-block' : 'freeform-generic-block';
     return '<div class="freeform-block ' + klass + roleClass + '"' + outerAttrs + '>' + rendered + '</div>';
   }
-  function renderFreeformBlocks(blocks){
+  function renderFreeformBlocks(blocks, slide){
     var list = blocks && blocks.length ? blocks : [];
     if(!list.length) return '<div class="placeholder">No importable objects found on this slide.</div>';
-    return '<div class="freeform-layer">' + list.map(function(block, idx){ return renderFreeformBlock(block, idx); }).join('') + '</div>';
+    return '<div class="freeform-layer">' + list.map(function(block, idx){ return renderFreeformBlock(block, idx, slide); }).join('') + '</div>';
   }
   function buildSlideInner(slide){
     slide = slide || {};
@@ -203,7 +228,7 @@ export function createApi(deps){
     var ledeHtml = slide.lede ? '<div class="lede">' + escapeHtml(slide.lede) + '</div>' : '';
     var s = normalizeSlide(slide);
     if(s.slideType === 'title-center') return '<div class="title-center">' + titleHtml + kickerHtml + '</div>';
-    if(isFreeformSlide(s)) return renderFreeformBlocks(s.leftBlocks);
+    if(isFreeformSlide(s)) return renderFreeformBlocks(s.leftBlocks, s);
     if(isTwoColumnSlideType(s.slideType)){
       return titleHtml + kickerHtml + ledeHtml + '<div class="slide-body"><div class="col">' + renderBlocks(s.leftBlocks, 'Left column', 'left') + '</div><div class="col">' + renderBlocks(s.rightBlocks, 'Right column', 'right') + '</div></div>';
     }
