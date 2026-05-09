@@ -1,8 +1,10 @@
-/* Stage 14 file/import workflow helpers.
+/* Stage 41A file/import workflow helpers.
    Classic browser script; exposes window.LuminaFileIo.
-   This layer owns browser FileReader/text loading and the bridge that applies imported slides to app state.
+   Adds optional backend extraction for PDF/PPTX/PPT via /api/lumina/extract.
 */
 (function(global){
+  'use strict';
+
   function createApi(deps){
     deps = deps || {};
     const {
@@ -65,6 +67,10 @@
       }
     });
 
+    const STORAGE_ENDPOINT = 'luminaExtractionEndpoint';
+    const STORAGE_TOKEN = 'luminaExtractionToken';
+    const STORAGE_ENABLED = 'luminaExtractionEnabled';
+
     function doc(){ return typeof getDocument === 'function' ? getDocument() : global.document; }
     function readFileAsDataUrl(file){
       return new Promise((resolve,reject)=>{
@@ -74,8 +80,83 @@
         reader.readAsDataURL(file);
       });
     }
+    function storageGet(key, fallback=''){
+      try{ return global.localStorage ? (global.localStorage.getItem(key) || fallback || '') : (fallback || ''); }
+      catch(_err){ return fallback || ''; }
+    }
+    function storageSet(key, value){
+      try{ if(global.localStorage) global.localStorage.setItem(key, String(value || '')); }
+      catch(_err){}
+    }
+    function initExtractionFields(){
+      const d = doc();
+      const endpoint = d.getElementById('extractionEndpointInput');
+      const token = d.getElementById('extractionTokenInput');
+      const enabled = d.getElementById('useExtractionBackendCheckbox');
+      if(endpoint && !endpoint.value) endpoint.value = storageGet(STORAGE_ENDPOINT, '/api/lumina/extract');
+      if(token && !token.value) token.value = storageGet(STORAGE_TOKEN, '');
+      if(enabled && !enabled.__luminaExtractionInit){
+        enabled.checked = storageGet(STORAGE_ENABLED, 'true') !== 'false';
+        enabled.__luminaExtractionInit = true;
+      }
+    }
     function importModeValue(){
       return (doc().getElementById('importModeSelect')?.value || 'append') === 'replace' ? 'replace' : 'append';
+    }
+    function extractionBackendEnabled(){
+      initExtractionFields();
+      const el = doc().getElementById('useExtractionBackendCheckbox');
+      if(!el) return true;
+      storageSet(STORAGE_ENABLED, el.checked ? 'true' : 'false');
+      return !!el.checked;
+    }
+    function extractionEndpointValue(){
+      initExtractionFields();
+      const el = doc().getElementById('extractionEndpointInput');
+      const value = String((el && el.value) || storageGet(STORAGE_ENDPOINT, '/api/lumina/extract') || '').trim();
+      if(value) storageSet(STORAGE_ENDPOINT, value);
+      return value;
+    }
+    function extractionTokenValue(){
+      initExtractionFields();
+      const el = doc().getElementById('extractionTokenInput');
+      const value = String((el && el.value) || storageGet(STORAGE_TOKEN, '') || '').trim();
+      storageSet(STORAGE_TOKEN, value);
+      return value;
+    }
+    function isExtractablePresentationFile(file){
+      const name = String(file && file.name || '').toLowerCase();
+      return /\.(pdf|pptx|ppt)$/i.test(name) || file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || file.type === 'application/vnd.ms-powerpoint';
+    }
+    function fileKind(file){
+      const name = String(file && file.name || '').toLowerCase();
+      if(/\.pdf$/i.test(name) || file.type === 'application/pdf') return 'pdf';
+      if(/\.pptx$/i.test(name)) return 'pptx';
+      if(/\.ppt$/i.test(name)) return 'ppt';
+      return '';
+    }
+    async function extractPresentationFile(file){
+      if(typeof fetch !== 'function' || typeof FormData !== 'function') throw new Error('This browser does not support fetch/FormData upload.');
+      const endpoint = extractionEndpointValue();
+      if(!endpoint) throw new Error('Set an extraction backend endpoint first.');
+      const form = new FormData();
+      form.append('file', file, file.name || 'presentation');
+      const kind = fileKind(file);
+      if(kind) form.append('kind', kind);
+      const headers = {};
+      const token = extractionTokenValue();
+      if(token) headers.Authorization = 'Bearer ' + token;
+      const res = await fetch(endpoint, { method:'POST', headers, body:form });
+      const text = await res.text();
+      let payload = null;
+      try{ payload = text ? JSON.parse(text) : null; }
+      catch(_err){ payload = { ok:false, error:{ message: text ? text.slice(0, 500) : 'Empty response from extraction backend.' } }; }
+      if(!res.ok || !payload || payload.ok === false){
+        const msg = payload && payload.error && payload.error.message ? payload.error.message : ('Extraction backend failed with HTTP ' + res.status + '.');
+        throw new Error(msg);
+      }
+      if(!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
+      return payload;
     }
     function applyImportedSlides(importedSlides, opts={}){
       const incoming = (importedSlides || []).map(normalizeSlide).filter(Boolean);
@@ -106,37 +187,63 @@
     }
 
     async function importSelectedFiles(fileList){
+      initExtractionFields();
       const files = Array.from(fileList || []);
       if(!files.length) throw new Error('Choose one or more files first.');
       const imported = [];
       let deckTitle = '';
+      const warnings = [];
       for(const file of files){
         const lower = String(file.name || '').toLowerCase();
-        if(!deckTitle) deckTitle = String(file.name || 'Imported deck').replace(/.[^.]+$/,'');
-        if((file.type && file.type.startsWith('image/')) || /.(png|jpe?g|gif|webp|svg)$/i.test(lower)){
+        if(!deckTitle) deckTitle = String(file.name || 'Imported deck').replace(/\.[^.]+$/,'');
+
+        if(isExtractablePresentationFile(file)){
+          if(extractionBackendEnabled()){
+            try{
+              const payload = await extractPresentationFile(file);
+              if(payload.deckTitle && !deckTitle) deckTitle = payload.deckTitle;
+              imported.push(...(payload.slides || []));
+              if(Array.isArray(payload.warnings)) warnings.push(...payload.warnings);
+            } catch(err){
+              if(/\.pdf$/i.test(lower) || file.type === 'application/pdf'){
+                warnings.push('PDF extraction failed for ' + (file.name || 'file') + '; imported it as a reference PDF instead. ' + (err && err.message ? err.message : ''));
+                const dataUrl = await readFileAsDataUrl(file);
+                imported.push(makeReferencePdfSlide(dataUrl, file.name));
+              } else {
+                throw new Error('Could not extract ' + (file.name || 'presentation') + '. PPT/PPTX imports require the Lumina extraction backend. ' + (err && err.message ? err.message : ''));
+              }
+            }
+          } else if(/\.pdf$/i.test(lower) || file.type === 'application/pdf'){
+            const dataUrl = await readFileAsDataUrl(file);
+            imported.push(makeReferencePdfSlide(dataUrl, file.name));
+          } else {
+            throw new Error('PPT/PPTX import requires the extraction backend. Enable it and set the backend endpoint.');
+          }
+          continue;
+        }
+
+        if((file.type && file.type.startsWith('image/')) || /\.(png|jpe?g|gif|webp|svg)$/i.test(lower)){
           const dataUrl = await readFileAsDataUrl(file);
           imported.push(makeReferenceImageSlide(dataUrl, file.name));
-        } else if(file.type === 'application/pdf' || /.pdf$/i.test(lower)){
-          const dataUrl = await readFileAsDataUrl(file);
-          imported.push(makeReferencePdfSlide(dataUrl, file.name));
         } else {
           const text = await file.text();
-          if(/.(md|markdown)$/i.test(lower)) imported.push(...parseMarkdownToSlides(text));
-          else if(/.(tex|ltx)$/i.test(lower)) imported.push(...parseBeamerToSlides(text));
-          else if(/.json$/i.test(lower)) imported.push(...parseJsonOutlineToSlides(text));
+          if(/\.(md|markdown)$/i.test(lower)) imported.push(...parseMarkdownToSlides(text));
+          else if(/\.(tex|ltx)$/i.test(lower)) imported.push(...parseBeamerToSlides(text));
+          else if(/\.json$/i.test(lower)) imported.push(...parseJsonOutlineToSlides(text));
           else imported.push(...parsePowerPointTextToSlides(text));
         }
       }
       applyImportedSlides(imported, { mode: importModeValue(), deckTitle });
+      if(warnings.length) showToast(warnings[0]);
     }
 
     async function loadDeckFromFile(file){
       const text = await file.text();
       let payload;
-      if(/.json$/i.test(file.name) || String(text).trim().startsWith('{')){
+      if(/\.json$/i.test(file.name) || String(text).trim().startsWith('{')){
         payload = JSON.parse(text);
       } else {
-        const match = text.match(new RegExp('<script id=[\"\']deck-source[\"\'][^>]*type=[\"\']application\\/json[\"\'][^>]*>([\\s\\S]*?)<\\/script>', 'i'));
+        const match = text.match(new RegExp('<script id=["\']deck-source["\'][^>]*type=["\']application\\/json["\'][^>]*>([\\s\\S]*?)<\\/script>', 'i'));
         if(!match) throw new Error('This file does not contain an editable deck-source block.');
         payload = JSON.parse(match[1]);
       }
@@ -169,12 +276,15 @@
       renderDeckList();
     }
 
+    setTimeout(initExtractionFields, 0);
+
     return {
       importModeValue,
       applyImportedSlides,
       importSelectedFiles,
       loadDeckFromFile,
-      loadPresentationJsonFromFile
+      loadPresentationJsonFromFile,
+      extractPresentationFile
     };
   }
 
