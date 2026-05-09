@@ -51,6 +51,13 @@
     function blankBlock(mode='panel'){
       return { mode, title:'', content:'' };
     }
+    function decodeLiteralNewlines(value){
+      return String(value || '')
+        .replace(/\\r\\n/g, '\n')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\n')
+        .replace(/\\t/g, ' ');
+    }
     function currentDraftSlide(){
       if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
@@ -139,7 +146,7 @@
       } else {
         blockFields.mode.value = block.mode || 'panel';
         blockFields.title.value = block.title || '';
-        blockFields.content.value = block.content || '';
+        blockFields.content.value = decodeLiteralNewlines(block.content || '');
       }
       renderBlockList();
     }
@@ -149,16 +156,23 @@
     }
     function currentBlockFromEditor(){
       const existing = getDraftBlock(currentColumnName(), selectedIndex(currentColumnName()));
+      const nextContent = decodeLiteralNewlines(blockFields.content.value);
       const nextBlock = {
         mode: blockFields.mode.value || (existing && existing.mode) || 'panel',
         title: blockFields.title.value,
-        content: blockFields.content.value,
+        content: nextContent,
         style: normalizeBlockStyle(existing && existing.style),
         animation: normalizeAnimation(existing && existing.animation)
       };
       if(existing && existing.layout) nextBlock.layout = clone(existing.layout);
-      if(existing && Array.isArray(existing.importRuns)) nextBlock.importRuns = clone(existing.importRuns);
+      if(existing && existing.importSourceLayout) nextBlock.importSourceLayout = clone(existing.importSourceLayout);
       if(existing && existing.importRole) nextBlock.importRole = existing.importRole;
+      if(existing && Array.isArray(existing.importRuns)){
+        const oldContent = decodeLiteralNewlines(existing.content || '');
+        if(nextContent === oldContent){
+          nextBlock.importRuns = clone(existing.importRuns).map(run=>Object.assign({}, run, { text: decodeLiteralNewlines(run && run.text || '') }));
+        }
+      }
       return nextBlock;
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){

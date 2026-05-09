@@ -1,4 +1,4 @@
-/* Stage 41H renderer helpers.
+/* Stage 41J renderer helpers.
    Adds aspect-preserving freeform import rendering for high-fidelity PDF/PPT/PPTX imports. */
 
 function diagramMarkup(){
@@ -36,6 +36,13 @@ function safeNum(value, fallback){
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 }
+function decodeLiteralNewlines(value){
+  return String(value || '')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\n')
+    .replace(/\\t/g, ' ');
+}
 function normalizeLayout(layout){
   const l = layout || {};
   return {
@@ -54,7 +61,7 @@ function normalizeImportRun(run){
   const weight = /^(?:[1-9]00|bold|normal)$/i.test(String(r.fontWeight || '')) ? String(r.fontWeight) : '400';
   const style = /^(?:normal|italic|oblique)$/i.test(String(r.fontStyle || '')) ? String(r.fontStyle) : 'normal';
   const family = String(r.fontFamily || 'Arial, sans-serif').replace(/[<>";]/g, '').slice(0, 160) || 'Arial, sans-serif';
-  return { text: String(r.text || ''), fontSize: fs, fontFamily: family, fontColor: color, fontWeight: weight, fontStyle: style };
+  return { text: decodeLiteralNewlines(r.text || ''), fontSize: fs, fontFamily: family, fontColor: color, fontWeight: weight, fontStyle: style };
 }
 function normalizeBlock(block){
   block = block || {};
@@ -72,7 +79,7 @@ function normalizeBlock(block){
     out = {
       mode: mode,
       title: block.title || '',
-      content: block.content || '',
+      content: decodeLiteralNewlines(block.content || ''),
       style: normalizeBlockStyle(block.style),
       animation: normalizeAnimation(block.animation)
     };
@@ -175,7 +182,7 @@ function runStyle(run){
   return 'font-size:' + r.fontSize + 'px;font-family:' + escapeAttr(r.fontFamily) + ';color:' + escapeAttr(r.fontColor) + ';font-weight:' + escapeAttr(r.fontWeight) + ';font-style:' + escapeAttr(r.fontStyle) + ';';
 }
 function renderRunText(text){
-  return escapeHtml(String(text || '')).replace(/\n/g, '<br>');
+  return escapeHtml(decodeLiteralNewlines(text)).replace(/\n/g, '<br>');
 }
 function renderImportText(block){
   const runs = Array.isArray(block.importRuns) && block.importRuns.length ? block.importRuns : [{ text: block.content || '', fontSize: (block.style && parseFloat(block.style.fontSize)) || 18, fontFamily: block.style && block.style.fontFamily, fontColor: block.style && block.style.fontColor }];
