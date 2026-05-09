@@ -59,7 +59,8 @@ function required(deps, name){
       if(idx >= 0 && idx < target.length){
         target[idx] = edited;
       }
-      return {
+      const existingSlide = getSlides()[getActiveIndex()] || {};
+      const draftSlide = {
         slideType: fields.slideType.value,
         headingLevel: fields.headingLevel.value,
         bgColor: fields.bgColor.value,
@@ -75,10 +76,13 @@ function required(deps, name){
         notesTitle: fields.notesTitle.value,
         notesBody: fields.notesBody.value
       };
+      if(existingSlide.importMeta) draftSlide.importMeta = clone(existingSlide.importMeta);
+      return draftSlide;
     }
     function applySlideToForm(slide){
       const s = normalizeSlide(slide);
       fields.slideType.value = s.slideType || 'single';
+      if(!fields.slideType.value) fields.slideType.value = 'single';
       fields.headingLevel.value = s.headingLevel || 'h2';
       fields.bgColor.value = s.bgColor || '#ffffff';
       fields.fontColor.value = s.fontColor || '#111111';
@@ -141,13 +145,17 @@ function required(deps, name){
     }
     function currentBlockFromEditor(){
       const existing = getDraftBlock(currentColumnName(), selectedIndex(currentColumnName()));
-      return {
-        mode: blockFields.mode.value,
+      const nextBlock = {
+        mode: blockFields.mode.value || (existing && existing.mode) || 'panel',
         title: blockFields.title.value,
         content: blockFields.content.value,
         style: normalizeBlockStyle(existing && existing.style),
         animation: normalizeAnimation(existing && existing.animation)
       };
+      if(existing && existing.layout) nextBlock.layout = clone(existing.layout);
+      if(existing && Array.isArray(existing.importRuns)) nextBlock.importRuns = clone(existing.importRuns);
+      if(existing && existing.importRole) nextBlock.importRole = existing.importRole;
+      return nextBlock;
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){
       if(isSyncingPreviewFigures()) return;

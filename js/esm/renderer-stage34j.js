@@ -1,5 +1,5 @@
-/* Stage 34J: browser-compatible ES module version of renderer helpers.
-   Runtime note: optional parity diagnostics; selected modules may also be used by guarded live ESM runtime. */
+/* Stage 41D: browser-compatible ES module renderer helpers.
+   Adds freeform import rendering for high-fidelity PDF/PPT/PPTX imports. */
 
 function required(deps, name){
   var value = deps && deps[name];
@@ -43,7 +43,9 @@ export function createApi(deps){
       return {
         mode: 'custom',
         title: block.title || '',
-        content: diagramStandaloneDocument(block.content || diagramMarkup())
+        content: diagramStandaloneDocument(block.content || diagramMarkup()),
+        style: normalizeBlockStyle(block.style),
+        animation: normalizeAnimation(block.animation)
       };
     }
     s.leftBlocks = (s.leftBlocks || []).map(convert);
@@ -53,26 +55,73 @@ export function createApi(deps){
   function slideForSnippet(slide){
     return expandDiagramSnippetChecked() ? expandDiagramBlocksForSnippet(slide) : normalizeSlide(slide);
   }
+  function safeNum(value, fallback){
+    var n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+  function normalizeLayout(layout){
+    var l = layout || {};
+    return {
+      x: Math.max(-2000, Math.min(4000, safeNum(l.x, 0))),
+      y: Math.max(-2000, Math.min(4000, safeNum(l.y, 0))),
+      w: Math.max(1, Math.min(4000, safeNum(l.w, 320))),
+      h: Math.max(1, Math.min(4000, safeNum(l.h, 80))),
+      z: Math.max(0, Math.min(999, Math.round(safeNum(l.z, 1)))),
+      rotate: Math.max(-360, Math.min(360, safeNum(l.rotate, 0)))
+    };
+  }
+  function normalizeImportRun(run){
+    var r = run || {};
+    var fs = Math.max(4, Math.min(240, safeNum(r.fontSize, 18)));
+    var color = /^#[0-9a-fA-F]{3,8}$/.test(String(r.fontColor || '')) ? String(r.fontColor) : '#111111';
+    var weight = /^(?:[1-9]00|bold|normal)$/i.test(String(r.fontWeight || '')) ? String(r.fontWeight) : '400';
+    var style = /^(?:normal|italic|oblique)$/i.test(String(r.fontStyle || '')) ? String(r.fontStyle) : 'normal';
+    var family = String(r.fontFamily || 'Arial, sans-serif').replace(/[<>";]/g, '').slice(0, 160) || 'Arial, sans-serif';
+    return { text: String(r.text || ''), fontSize: fs, fontFamily: family, fontColor: color, fontWeight: weight, fontStyle: style };
+  }
   function normalizeBlock(block){
     block = block || {};
     var mode = block.mode || 'panel';
+    var out;
     if(mode === 'diagram'){
-      return {
+      out = {
         mode: 'custom',
         title: block.title || 'Legacy diagram',
         content: diagramStandaloneDocument(block.content || diagramMarkup()),
         style: normalizeBlockStyle(block.style),
         animation: normalizeAnimation(block.animation)
       };
+    } else {
+      out = {
+        mode: mode,
+        title: block.title || '',
+        content: block.content || '',
+        style: normalizeBlockStyle(block.style),
+        animation: normalizeAnimation(block.animation)
+      };
     }
-    return {
-      mode: mode,
-      title: block.title || '',
-      content: block.content || '',
-      style: normalizeBlockStyle(block.style),
-      animation: normalizeAnimation(block.animation)
-    };
+    if(block.layout) out.layout = normalizeLayout(block.layout);
+    if(Array.isArray(block.importRuns)) out.importRuns = block.importRuns.map(normalizeImportRun);
+    if(block.importRole) out.importRole = String(block.importRole);
+    return out;
   }
+
+  function isTwoColumnSlideType(type){
+    var value = String(type || '').toLowerCase();
+    return value === 'two-col' || value === 'split' || value === 'split-slide';
+  }
+  function isFreeformSlideType(type){
+    var value = String(type || '').toLowerCase();
+    return value === 'freeform' || value === 'freeform-import' || value === 'pdf-import' || value === 'ppt-import';
+  }
+  function isFreeformSlide(slide){
+    var s = slide || {};
+    if(isFreeformSlideType(s.slideType)) return true;
+    if(s.importMeta && (s.importMeta.stage || s.importMeta.freeform)) return true;
+    var blocks = Array.isArray(s.leftBlocks) ? s.leftBlocks : [];
+    return blocks.some(function(b){ return b && b.layout && /^import-/.test(String(b.mode || '')); });
+  }
+
   function normalizeSlide(slide){
     var out = clone(slide || {});
     var leftBlocks = Array.isArray(out.leftBlocks) ? out.leftBlocks.map(normalizeBlock) : null;
@@ -81,7 +130,7 @@ export function createApi(deps){
       leftBlocks = [{ mode: out.leftMode || 'panel', title: '', content: out.leftHtml || '' }];
     }
     if(!rightBlocks){
-      rightBlocks = out.slideType === 'two-col'
+      rightBlocks = isTwoColumnSlideType(out.slideType)
         ? [{ mode: out.rightMode || 'panel', title: '', content: out.rightHtml || '' }]
         : [];
     }
@@ -114,6 +163,38 @@ export function createApi(deps){
     var list = blocks && blocks.length ? blocks : [{ mode:'placeholder', content: placeholder || 'Add a block' }];
     return '<div class="col-stack">' + list.map(function(block, idx){ return renderBlock(block, placeholder, { column: columnName || 'left', blockIndex: idx }); }).join('') + '</div>';
   }
+  function layoutStyle(layout){
+    var l = normalizeLayout(layout);
+    var rot = l.rotate ? ('transform:rotate(' + l.rotate + 'deg);transform-origin:top left;') : '';
+    return 'left:' + l.x + 'px;top:' + l.y + 'px;width:' + l.w + 'px;height:' + l.h + 'px;z-index:' + l.z + ';' + rot;
+  }
+  function runStyle(run){
+    var r = normalizeImportRun(run);
+    return 'font-size:' + r.fontSize + 'px;font-family:' + escapeAttr(r.fontFamily) + ';color:' + escapeAttr(r.fontColor) + ';font-weight:' + escapeAttr(r.fontWeight) + ';font-style:' + escapeAttr(r.fontStyle) + ';';
+  }
+  function renderRunText(text){
+    return escapeHtml(String(text || '')).replace(/\n/g, '<br>');
+  }
+  function renderImportText(block){
+    var runs = Array.isArray(block.importRuns) && block.importRuns.length ? block.importRuns : [{ text: block.content || '', fontSize: (block.style && parseFloat(block.style.fontSize)) || 18, fontFamily: block.style && block.style.fontFamily, fontColor: block.style && block.style.fontColor }];
+    return '<div class="freeform-text-content">' + runs.map(function(run){ return '<span style="' + runStyle(run) + '">' + renderRunText(run.text) + '</span>'; }).join('') + '</div>';
+  }
+  function renderFreeformBlock(block, idx){
+    var mode = String(block && block.mode || 'panel');
+    var roleClass = block && block.importRole ? ' import-role-' + escapeAttr(block.importRole) : '';
+    var outerAttrs = ' data-freeform-index="' + idx + '" style="' + layoutStyle(block && block.layout) + '"';
+    if(mode === 'import-text'){
+      return '<div class="freeform-block freeform-text-block' + roleClass + '"' + outerAttrs + '><div class="preview-block" data-column="left" data-block-index="' + idx + '" data-block-mode="import-text"' + animationDataAttrs(block.animation) + ' style="' + blockWrapperStyle(block) + '">' + renderImportText(block) + '</div></div>';
+    }
+    var rendered = renderBlock(block, '', { column: 'left', blockIndex: idx });
+    var klass = mode === 'import-image' ? 'freeform-image-block' : 'freeform-generic-block';
+    return '<div class="freeform-block ' + klass + roleClass + '"' + outerAttrs + '>' + rendered + '</div>';
+  }
+  function renderFreeformBlocks(blocks){
+    var list = blocks && blocks.length ? blocks : [];
+    if(!list.length) return '<div class="placeholder">No importable objects found on this slide.</div>';
+    return '<div class="freeform-layer">' + list.map(function(block, idx){ return renderFreeformBlock(block, idx); }).join('') + '</div>';
+  }
   function buildSlideInner(slide){
     slide = slide || {};
     var heading = slide.headingLevel || 'h2';
@@ -122,14 +203,15 @@ export function createApi(deps){
     var ledeHtml = slide.lede ? '<div class="lede">' + escapeHtml(slide.lede) + '</div>' : '';
     var s = normalizeSlide(slide);
     if(s.slideType === 'title-center') return '<div class="title-center">' + titleHtml + kickerHtml + '</div>';
-    if(s.slideType === 'two-col'){
+    if(isFreeformSlide(s)) return renderFreeformBlocks(s.leftBlocks);
+    if(isTwoColumnSlideType(s.slideType)){
       return titleHtml + kickerHtml + ledeHtml + '<div class="slide-body"><div class="col">' + renderBlocks(s.leftBlocks, 'Left column', 'left') + '</div><div class="col">' + renderBlocks(s.rightBlocks, 'Right column', 'right') + '</div></div>';
     }
     return titleHtml + kickerHtml + ledeHtml + '<div class="slide-body"><div class="col">' + renderBlocks(s.leftBlocks, 'Main content', 'left') + '</div></div>';
   }
   function buildSlideMarkup(slide){
     slide = slide || {};
-    var cls = slide.slideType === 'title-center' ? 'slide title-center' : (slide.slideType === 'two-col' ? 'slide two-col' : 'slide single');
+    var cls = slide.slideType === 'title-center' ? 'slide title-center' : (isFreeformSlide(slide) ? 'slide freeform-import' : (isTwoColumnSlideType(slide.slideType) ? 'slide two-col' : 'slide single'));
     return '<section class="' + cls + ' ' + currentStyleClass() + '" style="' + buildSlideStyle(slide) + '">' + buildSlideInner(slide).trim() + '</section>';
   }
 
@@ -140,9 +222,13 @@ export function createApi(deps){
     expandDiagramBlocksForSnippet: expandDiagramBlocksForSnippet,
     slideForSnippet: slideForSnippet,
     normalizeBlock: normalizeBlock,
+    isTwoColumnSlideType: isTwoColumnSlideType,
+    isFreeformSlideType: isFreeformSlideType,
+  isFreeformSlide: isFreeformSlide,
     normalizeSlide: normalizeSlide,
     renderBlock: renderBlock,
     renderBlocks: renderBlocks,
+    renderFreeformBlocks: renderFreeformBlocks,
     buildSlideInner: buildSlideInner,
     buildSlideMarkup: buildSlideMarkup
   };
