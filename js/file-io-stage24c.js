@@ -1,6 +1,6 @@
-/* Stage 41A file/import workflow helpers.
+/* Stage 41E file/import workflow helpers.
    Classic browser script; exposes window.LuminaFileIo.
-   Adds optional backend extraction for PDF/PPTX/PPT via /api/lumina/extract.
+   Adds backend extraction for all PDF/PPTX/PPT pages/slides via /api/lumina/extract.
 */
 (function(global){
   'use strict';
@@ -70,6 +70,8 @@
     const STORAGE_ENDPOINT = 'luminaExtractionEndpoint';
     const STORAGE_TOKEN = 'luminaExtractionToken';
     const STORAGE_ENABLED = 'luminaExtractionEnabled';
+    const DEFAULT_MAX_IMPORT_PAGES = 80;
+    const DEFAULT_MAX_IMPORT_SLIDES = 160;
 
     function doc(){ return typeof getDocument === 'function' ? getDocument() : global.document; }
     function readFileAsDataUrl(file){
@@ -143,6 +145,11 @@
       form.append('file', file, file.name || 'presentation');
       const kind = fileKind(file);
       if(kind) form.append('kind', kind);
+      // Stage 41E: explicitly request all pages/slides so a stale Cloud Run env
+      // such as LUMINA_EXTRACT_MAX_PDF_PAGES=1 cannot silently limit imports.
+      form.append('maxPdfPages', String(DEFAULT_MAX_IMPORT_PAGES));
+      form.append('maxPptxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
+      form.append('maxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
       const headers = {};
       const token = extractionTokenValue();
       if(token) headers.Authorization = 'Bearer ' + token;
@@ -202,7 +209,12 @@
             try{
               const payload = await extractPresentationFile(file);
               if(payload.deckTitle && !deckTitle) deckTitle = payload.deckTitle;
-              imported.push(...(payload.slides || []));
+              const payloadSlides = Array.isArray(payload.slides) ? payload.slides : [];
+              imported.push(...payloadSlides);
+              const expectedCount = payload && payload.source ? Number(payload.source.pageCount || payload.source.slideCount || 0) : 0;
+              if(expectedCount && payloadSlides.length < expectedCount){
+                warnings.push('Only ' + payloadSlides.length + ' of ' + expectedCount + ' pages/slides were returned by the extraction backend. Check /health for maxPdfPages/maxPptxSlides and redeploy Stage 41E if needed.');
+              }
               if(Array.isArray(payload.warnings)) warnings.push(...payload.warnings);
             } catch(err){
               if(/\.pdf$/i.test(lower) || file.type === 'application/pdf'){
