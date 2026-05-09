@@ -495,7 +495,7 @@
 .preview-title[style*="--block-font-size"] > h5,
 .preview-title[style*="--block-font-size"] > h6{font-size:var(--block-font-size) !important;}
 
-/* Stage 41D: high-fidelity freeform import rendering. */
+/* Stage 41H: aspect-preserving high-fidelity freeform import rendering. */
 .slide.freeform-import{
   position:relative!important;
   width:1600px!important;
