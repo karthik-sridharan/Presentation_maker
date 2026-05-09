@@ -1,4 +1,4 @@
-/* Stage 41E file/import workflow helpers.
+/* Stage 41F file/import workflow helpers.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction for all PDF/PPTX/PPT pages/slides via /api/lumina/extract.
 */
@@ -145,7 +145,7 @@
       form.append('file', file, file.name || 'presentation');
       const kind = fileKind(file);
       if(kind) form.append('kind', kind);
-      // Stage 41E: explicitly request all pages/slides so a stale Cloud Run env
+      // Stage 41F: explicitly request all pages/slides so a stale Cloud Run env
       // such as LUMINA_EXTRACT_MAX_PDF_PAGES=1 cannot silently limit imports.
       form.append('maxPdfPages', String(DEFAULT_MAX_IMPORT_PAGES));
       form.append('maxPptxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
@@ -163,10 +163,12 @@
         throw new Error(msg);
       }
       if(!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
+      try{ global.__LUMINA_STAGE41F_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '' }; }catch(_err){}
       return payload;
     }
     function applyImportedSlides(importedSlides, opts={}){
       const incoming = (importedSlides || []).map(normalizeSlide).filter(Boolean);
+      try{ global.__LUMINA_STAGE41F_LAST_IMPORT = { requestedSlides:(importedSlides||[]).length, normalizedSlides:incoming.length, mode:opts && opts.mode || 'append', at:new Date().toISOString() }; }catch(_err){}
       if(!incoming.length) throw new Error('No slides were imported.');
       syncPreviewFiguresToDraft(false);
       saveCurrentBlockToDraft();
@@ -213,17 +215,13 @@
               imported.push(...payloadSlides);
               const expectedCount = payload && payload.source ? Number(payload.source.pageCount || payload.source.slideCount || 0) : 0;
               if(expectedCount && payloadSlides.length < expectedCount){
-                warnings.push('Only ' + payloadSlides.length + ' of ' + expectedCount + ' pages/slides were returned by the extraction backend. Check /health for maxPdfPages/maxPptxSlides and redeploy Stage 41E if needed.');
+                const msg = 'Extraction backend returned only ' + payloadSlides.length + ' of ' + expectedCount + ' pages/slides. This usually means the frontend is still pointing to an old backend revision or the extraction response was too large. Check /health and redeploy Stage 41F.';
+                if(payloadSlides.length <= 1 && expectedCount > 1) throw new Error(msg);
+                warnings.push(msg);
               }
               if(Array.isArray(payload.warnings)) warnings.push(...payload.warnings);
             } catch(err){
-              if(/\.pdf$/i.test(lower) || file.type === 'application/pdf'){
-                warnings.push('PDF extraction failed for ' + (file.name || 'file') + '; imported it as a reference PDF instead. ' + (err && err.message ? err.message : ''));
-                const dataUrl = await readFileAsDataUrl(file);
-                imported.push(makeReferencePdfSlide(dataUrl, file.name));
-              } else {
-                throw new Error('Could not extract ' + (file.name || 'presentation') + '. PPT/PPTX imports require the Lumina extraction backend. ' + (err && err.message ? err.message : ''));
-              }
+              throw new Error('Could not extract ' + (file.name || 'presentation') + ' with the Lumina extraction backend. ' + (err && err.message ? err.message : ''));
             }
           } else if(/\.pdf$/i.test(lower) || file.type === 'application/pdf'){
             const dataUrl = await readFileAsDataUrl(file);
