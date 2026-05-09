@@ -1,4 +1,4 @@
-/* Stage 41F file/import workflow helpers.
+/* Stage 41G file/import workflow helpers.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction for all PDF/PPTX/PPT pages/slides via /api/lumina/extract.
 */
@@ -145,11 +145,15 @@
       form.append('file', file, file.name || 'presentation');
       const kind = fileKind(file);
       if(kind) form.append('kind', kind);
-      // Stage 41F: explicitly request all pages/slides so a stale Cloud Run env
+      // Stage 41G: explicitly request all pages/slides so a stale Cloud Run env
       // such as LUMINA_EXTRACT_MAX_PDF_PAGES=1 cannot silently limit imports.
       form.append('maxPdfPages', String(DEFAULT_MAX_IMPORT_PAGES));
       form.append('maxPptxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
       form.append('maxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
+      // Stage 41G: import PDF images as individual image blocks; do not include a full-page
+      // background bitmap unless explicitly added later. This prevents page 1 from becoming
+      // a repeated background across imported slides.
+      form.append('includePdfBackground', '0');
       const headers = {};
       const token = extractionTokenValue();
       if(token) headers.Authorization = 'Bearer ' + token;
@@ -163,12 +167,12 @@
         throw new Error(msg);
       }
       if(!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
-      try{ global.__LUMINA_STAGE41F_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '' }; }catch(_err){}
+      try{ global.__LUMINA_STAGE41G_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '' }; }catch(_err){}
       return payload;
     }
     function applyImportedSlides(importedSlides, opts={}){
       const incoming = (importedSlides || []).map(normalizeSlide).filter(Boolean);
-      try{ global.__LUMINA_STAGE41F_LAST_IMPORT = { requestedSlides:(importedSlides||[]).length, normalizedSlides:incoming.length, mode:opts && opts.mode || 'append', at:new Date().toISOString() }; }catch(_err){}
+      try{ global.__LUMINA_STAGE41G_LAST_IMPORT = { requestedSlides:(importedSlides||[]).length, normalizedSlides:incoming.length, mode:opts && opts.mode || 'append', at:new Date().toISOString() }; }catch(_err){}
       if(!incoming.length) throw new Error('No slides were imported.');
       syncPreviewFiguresToDraft(false);
       saveCurrentBlockToDraft();
@@ -215,7 +219,7 @@
               imported.push(...payloadSlides);
               const expectedCount = payload && payload.source ? Number(payload.source.pageCount || payload.source.slideCount || 0) : 0;
               if(expectedCount && payloadSlides.length < expectedCount){
-                const msg = 'Extraction backend returned only ' + payloadSlides.length + ' of ' + expectedCount + ' pages/slides. This usually means the frontend is still pointing to an old backend revision or the extraction response was too large. Check /health and redeploy Stage 41F.';
+                const msg = 'Extraction backend returned only ' + payloadSlides.length + ' of ' + expectedCount + ' pages/slides. This usually means the frontend is still pointing to an old backend revision or the extraction response was too large. Check /health and redeploy Stage 41G.';
                 if(payloadSlides.length <= 1 && expectedCount > 1) throw new Error(msg);
                 warnings.push(msg);
               }
