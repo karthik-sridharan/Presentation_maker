@@ -1,4 +1,4 @@
-/* Stage 41N: browser-compatible ES module version of file/import workflow helpers.
+/* Stage 41Q: browser-compatible ES module version of file/import workflow helpers.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -246,8 +246,9 @@ export function createApi(deps) {
       };
     });
   }
-  function aiDeckSystemPrompt(){
-    return String.raw`You are cleaning a raw Lumina Presentation Maker deck extracted from PDF/PPT/PPTX.
+  const AI_IMPORT_REVIEW_PROMPT_PATH = 'prompt/ai_import_review_prompt.txt';
+    const AI_IMPORT_REPAIR_PROMPT_PATH = 'prompt/ai_import_repair_prompt.txt';
+    const DEFAULT_AI_IMPORT_REVIEW_PROMPT = String.raw`You are cleaning a raw Lumina Presentation Maker deck extracted from PDF/PPT/PPTX.
 
 Your job is NOT to preserve the extracted deck literally. Your job is to produce a clean, teachable, editable Lumina JSON deck.
 
@@ -357,7 +358,45 @@ Core cleanup requirements:
    - Every custom HTML block is self-contained and iframe-safe.
    - Every animation has a clear pedagogical purpose stated in the slide notes.
    - The deck should look like a hand-authored lecture, not an imported PDF dump.`;
-  }
+    const DEFAULT_AI_IMPORT_REPAIR_PROMPT = String.raw`Your previous Lumina deck JSON had validation problems:
+{{PROBLEMS}}
+
+Repair the JSON only. Do not redesign the deck unless required to fix the listed problems.
+Return ONLY valid JSON. Do not wrap it in markdown.
+Ensure every LaTeX backslash is JSON-escaped: use "\\times", "\\text{}", "\\top", "\\operatorname{}" inside JSON strings.
+Ensure custom animations use responsive 100% height/width CSS, no external assets, no <script>, no iframes, and no fixed 720px two-column stage height.
+
+Previous output to repair:
+{{PREVIOUS_OUTPUT}}`;
+    const editableAiPromptCache = Object.create(null);
+    function editablePromptUrl(path){
+      const raw = String(path || '');
+      try{ return new URL(raw, (globalThis && globalThis.location && globalThis.location.href) || (document && document.baseURI) || '').toString(); }
+      catch(_err){ return raw; }
+    }
+    async function loadEditableAiPrompt(path, fallback){
+      const key = String(path || '');
+      const fallbackText = String(fallback || '');
+      if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
+      try{
+        const sep = key.indexOf('?') >= 0 ? '&' : '?';
+        const url = editablePromptUrl(key + sep + 'stage=stage41q-editable-ai-prompts-20260509-1&promptCacheBust=' + Date.now());
+        const res = await fetch(url, { cache:'no-store' });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        if(String(text || '').trim()){
+          editableAiPromptCache[key] = text;
+          try{ globalThis.__LUMINA_STAGE41Q_LAST_PROMPT_LOAD = Object.assign(globalThis.__LUMINA_STAGE41Q_LAST_PROMPT_LOAD || {}, { [key]: { ok:true, url, length:text.length, at:new Date().toISOString() } }); }catch(_err){}
+          return text;
+        }
+      }catch(err){
+        try{ globalThis.__LUMINA_STAGE41Q_LAST_PROMPT_LOAD = Object.assign(globalThis.__LUMINA_STAGE41Q_LAST_PROMPT_LOAD || {}, { [key]: { ok:false, error:err && err.message ? err.message : String(err), fallback:true, at:new Date().toISOString() } }); }catch(_err){}
+      }
+      return editableAiPromptCache[key] || fallbackText;
+    }
+    async function aiDeckSystemPrompt(){
+      return loadEditableAiPrompt(AI_IMPORT_REVIEW_PROMPT_PATH, DEFAULT_AI_IMPORT_REVIEW_PROMPT);
+    }
   function aiDeckUserPrompt(deckTitle, slides){
     const compact = {
       deckTitle: deckTitle || 'Imported deck',
@@ -458,22 +497,23 @@ Core cleanup requirements:
     });
     return Array.from(new Set(found)).slice(0, 30);
   }
-  function aiDeckRepairPrompt(previousText, problems){
-    const prior = String(previousText || '').slice(0, 180000);
-    return [
-      'Your previous Lumina deck JSON had validation problems:',
-      (problems || []).map(p => '- ' + p).join('\n'),
-      '',
-      'Repair the JSON only. Do not redesign the deck unless required to fix the listed problems.',
-      'Return ONLY valid JSON. Do not wrap it in markdown.',
-      'Ensure every LaTeX backslash is JSON-escaped: use "\\\\times", "\\\\text{}", "\\\\top", "\\\\operatorname{}" inside JSON strings.',
-      'Ensure custom animations use responsive 100% height/width CSS, no external assets, no <script>, no iframes, and no fixed 720px two-column stage height.',
-      '',
-      'Previous output to repair:',
-      prior
-    ].join('\n');
-  }
-  async function requestAiReviewText(endpoint, token, provider, model, system, input, temperature, maxOutputTokens){
+  function applyEditablePromptTemplate(template, values){
+      let out = String(template || '');
+      Object.keys(values || {}).forEach(function(key){
+        out = out.split('{{' + key + '}}').join(String(values[key] || ''));
+      });
+      return out;
+    }
+    async function aiDeckRepairPrompt(previousText, problems){
+      const prior = String(previousText || '').slice(0, 180000);
+      const problemText = (problems || []).map(p => '- ' + p).join('\n');
+      const template = await loadEditableAiPrompt(AI_IMPORT_REPAIR_PROMPT_PATH, DEFAULT_AI_IMPORT_REPAIR_PROMPT);
+      return applyEditablePromptTemplate(template, {
+        PROBLEMS: problemText,
+        PREVIOUS_OUTPUT: prior
+      });
+    }
+    async function requestAiReviewText(endpoint, token, provider, model, system, input, temperature, maxOutputTokens){
     const headers = { 'Content-Type':'application/json' };
     if(token) headers.Authorization = 'Bearer ' + token;
     let body;
@@ -536,7 +576,7 @@ Core cleanup requirements:
     const token = aiReviewTokenValue();
     const provider = aiReviewProviderValue();
     const model = aiReviewModelValue();
-    const system = aiDeckSystemPrompt();
+    const system = await aiDeckSystemPrompt();
     const input = aiDeckUserPrompt(deckTitle, slides);
     let text = await requestAiReviewText(endpoint, token, provider, model, system, input, 0.2, 36000);
     let deck;
@@ -549,7 +589,7 @@ Core cleanup requirements:
     }
     if(problems.length){
       showToast('AI cleanup needs one repair pass…');
-      text = await requestAiReviewText(endpoint, token, provider, model, system, aiDeckRepairPrompt(text, problems), 0.1, 36000);
+      text = await requestAiReviewText(endpoint, token, provider, model, system, await aiDeckRepairPrompt(text, problems), 0.1, 36000);
       deck = parseAiReviewResponseText(text, deckTitle);
       problems = findAiImportDeckProblems(deck, "");
       if(problems.length){
