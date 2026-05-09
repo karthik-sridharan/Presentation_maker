@@ -1,5 +1,5 @@
-/* Stage 41A: browser-compatible ES module version of file/import workflow helpers.
-   Adds optional backend extraction for PDF/PPTX/PPT via /api/lumina/extract. */
+/* Stage 41E: browser-compatible ES module version of file/import workflow helpers.
+   Adds backend extraction for all PDF/PPTX/PPT pages/slides via /api/lumina/extract. */
 
 export function createApi(deps) {
   deps = deps || {};
@@ -37,6 +37,8 @@ export function createApi(deps) {
   var STORAGE_ENDPOINT = 'luminaExtractionEndpoint';
   var STORAGE_TOKEN = 'luminaExtractionToken';
   var STORAGE_ENABLED = 'luminaExtractionEnabled';
+  var DEFAULT_MAX_IMPORT_PAGES = 80;
+  var DEFAULT_MAX_IMPORT_SLIDES = 160;
 
   function doc() { return typeof getDocument === 'function' ? getDocument() : globalThis.document; }
   function readFileAsDataUrl(file) {
@@ -112,6 +114,11 @@ export function createApi(deps) {
     form.append('file', file, file.name || 'presentation');
     var kind = fileKind(file);
     if (kind) form.append('kind', kind);
+    // Stage 41E: explicitly request all pages/slides so a stale Cloud Run env
+    // such as LUMINA_EXTRACT_MAX_PDF_PAGES=1 cannot silently limit imports.
+    form.append('maxPdfPages', String(DEFAULT_MAX_IMPORT_PAGES));
+    form.append('maxPptxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
+    form.append('maxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
@@ -174,7 +181,12 @@ export function createApi(deps) {
           if (extractionBackendEnabled()) {
             return extractPresentationFile(file).then(function (payload) {
               if (payload.deckTitle && !deckTitle) deckTitle = payload.deckTitle;
-              imported.push.apply(imported, payload.slides || []);
+              var payloadSlides = Array.isArray(payload.slides) ? payload.slides : [];
+              imported.push.apply(imported, payloadSlides);
+              var expectedCount = payload && payload.source ? Number(payload.source.pageCount || payload.source.slideCount || 0) : 0;
+              if (expectedCount && payloadSlides.length < expectedCount) {
+                warnings.push('Only ' + payloadSlides.length + ' of ' + expectedCount + ' pages/slides were returned by the extraction backend. Check /health for maxPdfPages/maxPptxSlides and redeploy Stage 41E if needed.');
+              }
               if (Array.isArray(payload.warnings)) warnings.push.apply(warnings, payload.warnings);
             }).catch(function (err) {
               if (/\.pdf$/i.test(lower) || file.type === 'application/pdf') {
