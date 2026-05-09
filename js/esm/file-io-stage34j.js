@@ -136,11 +136,52 @@ export function createApi(deps) {
     storageSet(STORAGE_AI_ENABLED, el.checked ? 'true' : 'false');
     return !!el.checked;
   }
+  function isDirectProviderAiEndpoint(endpoint){
+    return /(?:^|\/)api\.openai\.com\/v1\/(?:responses|chat\/completions)|api\.anthropic\.com\/v1\/messages|generativelanguage\.googleapis\.com/i.test(String(endpoint || ''));
+  }
+  function looksLikeExtractionEndpoint(endpoint){
+    return /\/api\/lumina\/extract\/?$/i.test(String(endpoint || '').trim());
+  }
+  function isRelativeEndpoint(endpoint){
+    return /^\//.test(String(endpoint || '').trim());
+  }
+  function isHostedOnStaticGithubPages(){
+    try{ return /(^|\.)github\.io$/i.test(global.location && global.location.hostname || ''); }catch(_err){ return false; }
+  }
+  function normalizeAiReviewEndpoint(raw, fallback){
+    let value = String(raw || '').trim();
+    const fb = String(fallback || '').trim();
+    if(!value) value = fb;
+    // Stage 41O: users sometimes paste the OpenAI endpoint here. Browser calls to
+    // OpenAI/Anthropic/Gemini are blocked by CORS and would expose keys. This field
+    // must point to the Lumina Cloud Run proxy instead.
+    if(isDirectProviderAiEndpoint(value) || looksLikeExtractionEndpoint(value)) value = fb;
+    return value;
+  }
+  function validateAiReviewEndpointForBrowser(endpoint){
+    const value = String(endpoint || '').trim();
+    if(!value) throw new Error('Set an AI review endpoint first. Use your Lumina backend URL ending in /api/lumina/ai.');
+    if(isDirectProviderAiEndpoint(value)){
+      throw new Error('AI review endpoint is set to a direct provider API. Use your Lumina backend endpoint instead, for example https://lumina-backend-y4piylmfja-ue.a.run.app/api/lumina/ai. Do not use https://api.openai.com/v1/responses in the browser.');
+    }
+    if(looksLikeExtractionEndpoint(value)){
+      throw new Error('AI review endpoint is pointing at the extraction endpoint. Change the ending from /api/lumina/extract to /api/lumina/ai.');
+    }
+    if(isHostedOnStaticGithubPages() && isRelativeEndpoint(value)){
+      throw new Error('AI review endpoint is relative (' + value + ') while the app is hosted on GitHub Pages. Use the full Cloud Run URL ending in /api/lumina/ai.');
+    }
+    if(!/\/api\/lumina\/ai\/?$/i.test(value)){
+      throw new Error('AI review endpoint should be your Lumina backend URL ending in /api/lumina/ai. Current value: ' + value);
+    }
+    return value;
+  }
   function aiReviewEndpointValue(){
     initExtractionFields();
     const el = doc().getElementById('importAiEndpointInput');
     const fallback = deriveAiEndpointFromExtractionEndpoint(extractionEndpointValue());
-    const value = String((el && el.value) || storageGet(STORAGE_AI_ENDPOINT, fallback) || fallback || '').trim();
+    const stored = storageGet(STORAGE_AI_ENDPOINT, fallback);
+    const value = normalizeAiReviewEndpoint((el && el.value) || stored || fallback, fallback);
+    if(el && el.value !== value) el.value = value;
     if(value) storageSet(STORAGE_AI_ENDPOINT, value);
     return value;
   }
@@ -307,6 +348,8 @@ Core cleanup requirements:
    - Use stepMode: "all" for equations and animations.
 
 8. Final self-check before returning JSON.
+   - Prefer standard LaTeX commands and avoid Unicode math glyphs when an escaped LaTeX command exists.
+   - For model variables use clean notation: f_w, W_Q, W_K, W_V, w_{\text{filter}}, \mathbb{R}^{n \times d}.
    - JSON parses successfully.
    - No markdown fences.
    - No malformed LaTeX remnants: " imes", " ext{", " op ", "</latexit>", "ﬁ", "⇥", "2 R".
@@ -451,7 +494,17 @@ Core cleanup requirements:
         store:false
       };
     }
-    const res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
+    validateAiReviewEndpointForBrowser(endpoint);
+    let res;
+    try{
+      res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
+    }catch(err){
+      const hint = isDirectProviderAiEndpoint(endpoint)
+        ? 'The AI review endpoint appears to be a direct provider API. Use your Lumina backend /api/lumina/ai endpoint instead.'
+        : 'The browser could not reach the AI review endpoint. Check that it is the full Cloud Run URL ending in /api/lumina/ai, that the service is public, and that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io.';
+      try{ global.__LUMINA_STAGE41O_LAST_AI_FETCH_ERROR = { endpoint, provider, model, error:err && err.message ? err.message : String(err), hint, at:new Date().toISOString() }; }catch(_err){}
+      throw new Error(hint + ' Browser error: ' + (err && err.message ? err.message : String(err)));
+    }
     const raw = await res.text();
     let data = null;
     try{ data = raw ? JSON.parse(raw) : null; }catch(_err){ data = { raw }; }
@@ -490,7 +543,7 @@ Core cleanup requirements:
     let problems = [];
     try{
       deck = parseAiReviewResponseText(text, deckTitle);
-      problems = findAiImportDeckProblems(deck, text);
+      problems = findAiImportDeckProblems(deck, "");
     }catch(err){
       problems = ['AI returned invalid JSON: ' + (err && err.message ? err.message : String(err))];
     }
@@ -498,12 +551,12 @@ Core cleanup requirements:
       showToast('AI cleanup needs one repair pass…');
       text = await requestAiReviewText(endpoint, token, provider, model, system, aiDeckRepairPrompt(text, problems), 0.1, 36000);
       deck = parseAiReviewResponseText(text, deckTitle);
-      problems = findAiImportDeckProblems(deck, text);
+      problems = findAiImportDeckProblems(deck, "");
       if(problems.length){
         throw new Error('AI deck still failed cleanup validation: ' + problems.join('; '));
       }
     }
-    try{ globalThis.__LUMINA_STAGE41N_LAST_AI_IMPORT_REVIEW = { ok:true, endpoint, provider, model, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, validation:'passed', at:new Date().toISOString() }; }catch(_err){}
+    try{ globalThis.__LUMINA_STAGE41P_LAST_AI_IMPORT_REVIEW = { ok:true, endpoint, provider, model, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, validation:'passed', at:new Date().toISOString() }; }catch(_err){}
     return deck;
   }
   async function maybeReviewImportedDeckWithAi(importedSlides, deckTitle){
@@ -514,7 +567,7 @@ Core cleanup requirements:
       showToast('AI cleaned import: ' + deck.slides.length + ' slide' + (deck.slides.length === 1 ? '' : 's') + ' ready.');
       return Object.assign({ aiReviewed:true }, deck);
     }catch(err){
-      try{ globalThis.__LUMINA_STAGE41N_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
+      try{ globalThis.__LUMINA_STAGE41P_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
       throw new Error('AI import review failed; raw extracted deck was not loaded. ' + (err && err.message ? err.message : String(err)));
     }
   }
