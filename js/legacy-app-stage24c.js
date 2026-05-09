@@ -353,7 +353,11 @@ const blockLibraryApi = LuminaBlockLibrary.createApi({
   loadSelectedBlockIntoEditor: () => loadSelectedBlockIntoEditor(),
   renderBlockList: () => renderBlockList(),
   buildPreview: () => buildPreview(),
-  scheduleAutosave: reason => scheduleAutosave(reason)
+  scheduleAutosave: reason => scheduleAutosave(reason),
+  setSelectedIndex: (name, idx) => setSelectedIndex(name, idx),
+  renderBlockList: () => renderBlockList(),
+  loadSelectedBlockIntoEditor: () => loadSelectedBlockIntoEditor(),
+  showToast
 });
 const {
   defaultReusableBlock,
@@ -756,6 +760,7 @@ const {
   bringSelectedFigures,
   toggleCropSelectedFigure,
   duplicateSelectedFigure,
+  deleteSelectedFigure,
   resetSelectedFigure,
   applyGuideSnapping,
   getInteractionScale,
@@ -2101,6 +2106,8 @@ document.getElementById('bringForwardBtn').addEventListener('click', ()=>bringSe
 document.getElementById('sendBackwardBtn').addEventListener('click', ()=>bringSelectedFigures(-1));
 document.getElementById('cropFigureBtn').addEventListener('click', toggleCropSelectedFigure);
 document.getElementById('duplicateFigureBtn').addEventListener('click', duplicateSelectedFigure);
+const deleteSelectedFigureBtn = document.getElementById('deleteSelectedFigureBtn');
+if(deleteSelectedFigureBtn) deleteSelectedFigureBtn.addEventListener('click', deleteSelectedFigure);
 document.getElementById('resetFigureBtn').addEventListener('click', resetSelectedFigure);
 // Stage 24C: Copilot UI event binding moved to js/copilot-stage24c.js.
 // The main app no longer calls Copilot setup during startup.
