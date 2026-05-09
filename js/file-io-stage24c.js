@@ -1,4 +1,4 @@
-/* Stage 41N file/import workflow helpers.
+/* Stage 41P file/import workflow helpers.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -167,11 +167,52 @@
       storageSet(STORAGE_AI_ENABLED, el.checked ? 'true' : 'false');
       return !!el.checked;
     }
+    function isDirectProviderAiEndpoint(endpoint){
+      return /(?:^|\/)api\.openai\.com\/v1\/(?:responses|chat\/completions)|api\.anthropic\.com\/v1\/messages|generativelanguage\.googleapis\.com/i.test(String(endpoint || ''));
+    }
+    function looksLikeExtractionEndpoint(endpoint){
+      return /\/api\/lumina\/extract\/?$/i.test(String(endpoint || '').trim());
+    }
+    function isRelativeEndpoint(endpoint){
+      return /^\//.test(String(endpoint || '').trim());
+    }
+    function isHostedOnStaticGithubPages(){
+      try{ return /(^|\.)github\.io$/i.test(global.location && global.location.hostname || ''); }catch(_err){ return false; }
+    }
+    function normalizeAiReviewEndpoint(raw, fallback){
+      let value = String(raw || '').trim();
+      const fb = String(fallback || '').trim();
+      if(!value) value = fb;
+      // Stage 41O: users sometimes paste the OpenAI endpoint here. Browser calls to
+      // OpenAI/Anthropic/Gemini are blocked by CORS and would expose keys. This field
+      // must point to the Lumina Cloud Run proxy instead.
+      if(isDirectProviderAiEndpoint(value) || looksLikeExtractionEndpoint(value)) value = fb;
+      return value;
+    }
+    function validateAiReviewEndpointForBrowser(endpoint){
+      const value = String(endpoint || '').trim();
+      if(!value) throw new Error('Set an AI review endpoint first. Use your Lumina backend URL ending in /api/lumina/ai.');
+      if(isDirectProviderAiEndpoint(value)){
+        throw new Error('AI review endpoint is set to a direct provider API. Use your Lumina backend endpoint instead, for example https://lumina-backend-y4piylmfja-ue.a.run.app/api/lumina/ai. Do not use https://api.openai.com/v1/responses in the browser.');
+      }
+      if(looksLikeExtractionEndpoint(value)){
+        throw new Error('AI review endpoint is pointing at the extraction endpoint. Change the ending from /api/lumina/extract to /api/lumina/ai.');
+      }
+      if(isHostedOnStaticGithubPages() && isRelativeEndpoint(value)){
+        throw new Error('AI review endpoint is relative (' + value + ') while the app is hosted on GitHub Pages. Use the full Cloud Run URL ending in /api/lumina/ai.');
+      }
+      if(!/\/api\/lumina\/ai\/?$/i.test(value)){
+        throw new Error('AI review endpoint should be your Lumina backend URL ending in /api/lumina/ai. Current value: ' + value);
+      }
+      return value;
+    }
     function aiReviewEndpointValue(){
       initExtractionFields();
       const el = doc().getElementById('importAiEndpointInput');
       const fallback = deriveAiEndpointFromExtractionEndpoint(extractionEndpointValue());
-      const value = String((el && el.value) || storageGet(STORAGE_AI_ENDPOINT, fallback) || fallback || '').trim();
+      const stored = storageGet(STORAGE_AI_ENDPOINT, fallback);
+      const value = normalizeAiReviewEndpoint((el && el.value) || stored || fallback, fallback);
+      if(el && el.value !== value) el.value = value;
       if(value) storageSet(STORAGE_AI_ENDPOINT, value);
       return value;
     }
@@ -338,6 +379,8 @@ Core cleanup requirements:
    - Use stepMode: "all" for equations and animations.
 
 8. Final self-check before returning JSON.
+   - Prefer standard LaTeX commands and avoid Unicode math glyphs when an escaped LaTeX command exists.
+   - For model variables use clean notation: f_w, W_Q, W_K, W_V, w_{\text{filter}}, \mathbb{R}^{n \times d}.
    - JSON parses successfully.
    - No markdown fences.
    - No malformed LaTeX remnants: " imes", " ext{", " op ", "</latexit>", "ﬁ", "⇥", "2 R".
@@ -412,6 +455,88 @@ Core cleanup requirements:
         slides: cleanSlides
       };
     }
+    function repairGarbledMathText(value){
+      let s = String(value == null ? '' : value);
+      if(!s) return s;
+      // Repair the most common PDF/OCR + JSON-escape failures that turn LaTeX into visible garbage.
+      // These are deliberately conservative and are applied only to deck text fields, not raw HTML/CSS.
+      s = s.replace(/[A-Za-z0-9+/]{18,}<\/latexit>/gi, '');
+      s = s.replace(/<\/latexit>/gi, '');
+      s = s.replace(/\uFB01/g, 'fi').replace(/ﬁ/g, 'fi');
+      s = s.replace(/⇥/g, '\\times');
+      s = s.replace(/\t+imes\b/g, '\\times');
+      s = s.replace(/\t+ext\s*\{/g, '\\text{');
+      s = s.replace(/\t+op\b/g, '\\top');
+      s = s.replace(/\t+operatorname\s*\{/g, '\\operatorname{');
+      s = s.replace(/\t+mathbb\s*\{/g, '\\mathbb{');
+      s = s.replace(/(^|[^A-Za-z])imes\b/g, '$1\\times');
+      s = s.replace(/(^|[^A-Za-z])ext\s*\{/g, '$1\\text{');
+      s = s.replace(/\^\s*op\b/g, '^\\top');
+      s = s.replace(/\bQK\^\s*op\b/g, 'QK^\\top');
+      s = s.replace(/(^|[^A-Za-z])operatorname\s*\{/g, '$1\\operatorname{');
+      s = s.replace(/(^|[^A-Za-z])mathbb\s*\{/g, '$1\\mathbb{');
+      s = s.replace(/(^|[^A-Za-z])frac\s*\{/g, '$1\\frac{');
+      s = s.replace(/\b2\s*\{/g, '\\in \\{');
+      s = s.replace(/\b2\s*R\s*(\d+|[nmdkr])\s*(?:\\times|×|x)\s*(\d+|[nmdkr])\b/g, '\\in \\mathbb{R}^{$1 \\times $2}');
+      s = s.replace(/\b2\s*R\s*\^\s*\{?\s*([^}\s]+)\s*\}?/g, '\\in \\mathbb{R}^{$1}');
+      s = s.replace(/\b2\s*R\s*(\d+|[nmdkr])\b/g, '\\in \\mathbb{R}^$1');
+      s = s.replace(/\b2\s*R\b/g, '\\in \\mathbb{R}');
+      s = s.replace(/(^|[\s({=,\[])(?:R|ℝ)\s*(\d+|[nmdkr])\s*(?:\\times|×|x)\s*(\d+|[nmdkr])\b/g, '$1\\mathbb{R}^{$2 \\times $3}');
+      s = s.replace(/(^|[\s({=,\[])(?:R|ℝ)\s*\^\s*\{?\s*(\d+|[nmdkr])\s*(?:\\times|×|x)\s*(\d+|[nmdkr])\s*\}?/g, '$1\\mathbb{R}^{$2 \\times $3}');
+      s = s.replace(/(^|[\s({=,\[])(?:R|ℝ)\s*\^\s*\{?\s*([^}\s]+)\s*\}?/g, '$1\\mathbb{R}^{$2}');
+      s = s.replace(/(^|[\s({=,\[])(?:R|ℝ)\s*(\d+|[nmdkr])\b/g, '$1\\mathbb{R}^$2');
+      s = s.replace(/\bfw\(([^)]*)\)/g, 'f_w($1)');
+      s = s.replace(/\bf\s*~\s*w/g, 'f_{\\tilde w}');
+      s = s.replace(/~\s*w/g, '\\tilde{w}');
+      s = s.replace(/wfilter/g, 'w_{\\text{filter}}');
+      s = s.replace(/w\s*filter/g, 'w_{\\text{filter}}');
+      s = s.replace(/filter\s+2\s+R/g, 'filter \\in \\mathbb{R}');
+      s = s.replace(/\bpositive\s*,\s*negative\b/g, '\\text{positive}, \\text{negative}');
+      s = s.replace(/\s{2,}/g, ' ');
+      return s.trim();
+    }
+    function repairCustomHtmlSizing(content){
+      let s = String(content == null ? '' : content);
+      if(!s) return s;
+      // Keep iframe animations responsive. Do not rewrite pedagogical labels inside SVG/HTML.
+      s = s.replace(/body\s*\{([^}]*)min-height\s*:\s*720px\s*;?/gi, 'body {$1height:100%;');
+      s = s.replace(/\.stage\s*\{([^}]*)height\s*:\s*720px\s*;?/gi, '.stage {$1height:100%;');
+      s = s.replace(/\.custom-frame\s*\{([^}]*)height\s*:\s*720px\s*;?/gi, '.custom-frame {$1height:100%;');
+      if(/<style[\s\S]*?>/i.test(s) && !/html\s*,\s*body\s*\{[^}]*height\s*:\s*100%/i.test(s)){
+        s = s.replace(/<style([\s\S]*?)>/i, '<style$1>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;}');
+      }
+      if(/<svg\b/i.test(s) && !/svg\s*\{[^}]*max-height\s*:\s*100%/i.test(s)){
+        s = s.replace(/<style([\s\S]*?)>/i, '<style$1>svg{width:100%;height:100%;max-width:100%;max-height:100%;}');
+      }
+      return s;
+    }
+    function repairAiImportDeckMath(deck){
+      if(!deck || !Array.isArray(deck.slides)) return deck;
+      let repairedCount = 0;
+      function repairField(obj, key){
+        if(!obj || typeof obj[key] !== 'string') return;
+        const before = obj[key];
+        const after = repairGarbledMathText(before);
+        if(after !== before){ obj[key] = after; repairedCount += 1; }
+      }
+      deck.deckTitle = repairGarbledMathText(deck.deckTitle || 'AI-cleaned imported deck');
+      deck.slides.forEach(slide=>{
+        repairField(slide, 'title'); repairField(slide, 'kicker'); repairField(slide, 'lede'); repairField(slide, 'notesTitle'); repairField(slide, 'notesBody');
+        const blocks = [].concat(Array.isArray(slide.leftBlocks) ? slide.leftBlocks : [], Array.isArray(slide.rightBlocks) ? slide.rightBlocks : []);
+        blocks.forEach(block=>{
+          repairField(block, 'title');
+          if(String(block && block.mode || '') === 'custom'){
+            const before = String(block.content || '');
+            const after = repairCustomHtmlSizing(before);
+            if(after !== before){ block.content = after; repairedCount += 1; }
+          } else {
+            repairField(block, 'content');
+          }
+        });
+      });
+      try{ global.__LUMINA_STAGE41P_LAST_MATH_REPAIR = { repairedCount, at:new Date().toISOString() }; }catch(_err){}
+      return deck;
+    }
     const AI_IMPORT_BAD_PATTERNS = [
       { label:'literal </latexit> fragment', re:/<\/latexit>/i },
       { label:'broken LaTeX \\times rendered as imes', re:/(^|[^a-zA-Z])imes\b/ },
@@ -482,8 +607,18 @@ Core cleanup requirements:
           store:false
         };
       }
-      const res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
-      const raw = await res.text();
+      validateAiReviewEndpointForBrowser(endpoint);
+    let res;
+    try{
+      res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body) });
+    }catch(err){
+      const hint = isDirectProviderAiEndpoint(endpoint)
+        ? 'The AI review endpoint appears to be a direct provider API. Use your Lumina backend /api/lumina/ai endpoint instead.'
+        : 'The browser could not reach the AI review endpoint. Check that it is the full Cloud Run URL ending in /api/lumina/ai, that the service is public, and that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io.';
+      try{ global.__LUMINA_STAGE41O_LAST_AI_FETCH_ERROR = { endpoint, provider, model, error:err && err.message ? err.message : String(err), hint, at:new Date().toISOString() }; }catch(_err){}
+      throw new Error(hint + ' Browser error: ' + (err && err.message ? err.message : String(err)));
+    }
+    const raw = await res.text();
       let data = null;
       try{ data = raw ? JSON.parse(raw) : null; }catch(_err){ data = { raw }; }
       if(!res.ok || (data && data.ok === false)){
@@ -506,7 +641,7 @@ Core cleanup requirements:
       let parsed;
       try{ parsed = JSON.parse(jsonText); }
       catch(err){ throw new Error('AI returned text that was not valid deck JSON: ' + String(text || '').slice(0, 300)); }
-      return normalizeAiReviewDeck(parsed, fallbackTitle);
+      return repairAiImportDeckMath(normalizeAiReviewDeck(parsed, fallbackTitle));
     }
     async function callImportAiReview(deckTitle, slides){
       const endpoint = aiReviewEndpointValue();
@@ -521,7 +656,7 @@ Core cleanup requirements:
       let problems = [];
       try{
         deck = parseAiReviewResponseText(text, deckTitle);
-        problems = findAiImportDeckProblems(deck, text);
+        problems = findAiImportDeckProblems(deck, "");
       }catch(err){
         problems = ['AI returned invalid JSON: ' + (err && err.message ? err.message : String(err))];
       }
@@ -529,12 +664,12 @@ Core cleanup requirements:
         showToast('AI cleanup needs one repair pass…');
         text = await requestAiReviewText(endpoint, token, provider, model, system, aiDeckRepairPrompt(text, problems), 0.1, 36000);
         deck = parseAiReviewResponseText(text, deckTitle);
-        problems = findAiImportDeckProblems(deck, text);
+        problems = findAiImportDeckProblems(deck, "");
         if(problems.length){
           throw new Error('AI deck still failed cleanup validation: ' + problems.join('; '));
         }
       }
-      try{ global.__LUMINA_STAGE41N_LAST_AI_IMPORT_REVIEW = { ok:true, endpoint, provider, model, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, validation:'passed', at:new Date().toISOString() }; }catch(_err){}
+      try{ global.__LUMINA_STAGE41P_LAST_AI_IMPORT_REVIEW = { ok:true, endpoint, provider, model, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, validation:'passed', at:new Date().toISOString() }; }catch(_err){}
       return deck;
     }
     async function maybeReviewImportedDeckWithAi(importedSlides, deckTitle){
@@ -545,7 +680,7 @@ Core cleanup requirements:
         showToast('AI cleaned import: ' + deck.slides.length + ' slide' + (deck.slides.length === 1 ? '' : 's') + ' ready.');
         return Object.assign({ aiReviewed:true }, deck);
       }catch(err){
-        try{ global.__LUMINA_STAGE41N_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
+        try{ global.__LUMINA_STAGE41P_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
         throw new Error('AI import review failed; raw extracted deck was not loaded. ' + (err && err.message ? err.message : String(err)));
       }
     }
