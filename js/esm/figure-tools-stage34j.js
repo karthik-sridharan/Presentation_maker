@@ -29,7 +29,11 @@ function createApi(deps){
       saveCurrentSlideToDeck,
       persistAutosaveNow,
       buildPreview,
-      scheduleAutosave
+      scheduleAutosave,
+      setSelectedIndex,
+      renderBlockList,
+      loadSelectedBlockIntoEditor,
+      showToast
     } = deps;
 
 function updatePreviewScale(){
@@ -328,6 +332,17 @@ function duplicateNthFigureHtml(blockContent, figIndex){
   });
   return { content: next, duplicated };
 }
+function deleteNthFigureHtml(blockContent, figIndex){
+  let seen = -1;
+  let deleted = false;
+  const next = String(blockContent || '').replace(/\\begin\{figurehtml\}[\r\n]*([\s\S]*?)[\r\n]*\\end\{figurehtml\}/g, m=>{
+    seen += 1;
+    if(seen !== figIndex) return m;
+    deleted = true;
+    return '';
+  }).replace(/\n{3,}/g, '\n\n').trim();
+  return { content: next, deleted };
+}
 function saveSelectedFigures(){
   getSelectedFigureBoxes().forEach(box=>{
     const embed = box.closest('.figure-embed[data-column]');
@@ -442,6 +457,56 @@ function duplicateSelectedFigure(){
   buildPreview();
   restoreFigureSelection([{ column, blockIndex, figureIndex: figureIndex + 1 }]);
   scheduleAutosave('Autosaved after figure duplicate.');
+}
+function deleteSelectedFigure(){
+  const boxes = getSelectedFigureBoxes();
+  if(!boxes.length){ if(showToast) showToast('Select a figure or block first.'); return false; }
+  const refs = boxes.map(figureRefFromBox).filter(ref => ref && Number.isFinite(ref.blockIndex) && Number.isFinite(ref.figureIndex));
+  if(!refs.length){ if(showToast) showToast('Could not find the selected figure in the slide data.'); return false; }
+  refs.sort((a,b)=>{
+    const ca = String(a.column || 'left'), cb = String(b.column || 'left');
+    if(ca !== cb) return ca < cb ? 1 : -1;
+    if(Number(a.blockIndex) !== Number(b.blockIndex)) return Number(b.blockIndex) - Number(a.blockIndex);
+    return Number(b.figureIndex) - Number(a.figureIndex);
+  });
+  const touchedColumns = new Set();
+  let deleted = 0;
+  refs.forEach(ref=>{
+    const column = ref.column || 'left';
+    const arr = blockArray(column);
+    const blockIndex = Number(ref.blockIndex);
+    const figureIndex = Number(ref.figureIndex);
+    const block = arr && arr[blockIndex];
+    if(!block) return;
+    const result = deleteNthFigureHtml(block.content, figureIndex);
+    if(!result.deleted) return;
+    deleted += 1;
+    touchedColumns.add(column);
+    if(String(result.content || '').trim()){
+      block.content = result.content;
+    }else{
+      arr.splice(blockIndex, 1);
+    }
+  });
+  if(!deleted){ if(showToast) showToast('No selected figure was deleted.'); return false; }
+  touchedColumns.forEach(column=>{
+    const arr = blockArray(column);
+    if(typeof setSelectedIndex === 'function'){
+      const current = selectedIndex(column);
+      const next = arr.length ? Math.max(0, Math.min(Number(current) || 0, arr.length - 1)) : -1;
+      setSelectedIndex(column, next);
+    }
+  });
+  if(typeof renderBlockList === 'function') renderBlockList();
+  if(typeof loadSelectedBlockIntoEditor === 'function') loadSelectedBlockIntoEditor();
+  if(snippetOutput){
+    snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2);
+  }
+  saveCurrentSlideToDeck();
+  buildPreview();
+  if(showToast) showToast(deleted === 1 ? 'Deleted selected figure/block.' : ('Deleted ' + deleted + ' selected figures/blocks.'));
+  scheduleAutosave('Autosaved after figure/block delete.');
+  return true;
 }
 function resetSelectedFigure(){
   getSelectedFigureBoxes().forEach(box=>{
@@ -710,6 +775,7 @@ function fitFiguresIn(root){
       bringSelectedFigures,
       toggleCropSelectedFigure,
       duplicateSelectedFigure,
+      deleteSelectedFigure,
       resetSelectedFigure,
       applyGuideSnapping,
       getInteractionScale,
