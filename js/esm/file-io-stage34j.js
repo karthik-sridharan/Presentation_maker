@@ -1,4 +1,4 @@
-/* Stage 41X: browser-compatible ES module file/import workflow helpers with AI preserve-and-merge import.
+/* Stage 41Y: browser-compatible ES module file/import workflow helpers with AI preserve-and-merge import.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -818,7 +818,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     try{ recovered = normalizeSlide(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide || {}))); }
     catch(_err){ recovered = Object.assign({ title:'Recovered source slide', slideType:'single', leftBlocks:[], rightBlocks:[] }, sourceSlide || {}); }
     recovered.title = String(recovered.title || ('Recovered source slide ' + (deck.slides.length + 1)));
-    recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41X appended this source slide because AI cleanup returned too few slides.';
+    recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41Y appended this source slide because AI cleanup returned too few slides.';
     recovered.__stage41vRecoveredSourceSlide = true;
     deck.slides.push(recovered);
     stats.rawSlidesAdded += 1;
@@ -842,10 +842,10 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     }
     if(touched){
       stats.touchedSlides += 1;
-      cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41X restored source math/figure content that AI cleanup dropped.';
+      cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41Y restored source math/figure content that AI cleanup dropped.';
     }
   });
-  // Stage 41X: preserve user-selected image alternatives exactly, even after AI cleanup.
+  // Stage 41Y: preserve user-selected image alternatives exactly, even after AI cleanup.
   sourceSlides.forEach(function(sourceSlide, i){
     if(sourceSlide && sourceSlide.importChoiceMode === 'image' && deck.slides[i]){
       try{ deck.slides[i] = normalizeSlide(stripImportReviewInternals(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide)))); stats.touchedSlides += 1; }catch(_err){}
@@ -972,7 +972,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
       return Object.assign({ aiReviewed:true }, deck);
     }catch(err){
       const message = err && err.message ? err.message : String(err);
-      // Stage 41X: do not leave the user with no slides when the AI review path
+      // Stage 41Y: do not leave the user with no slides when the AI review path
       // is too strict or the model drops equations/figures. Preserve the backend
       // extraction output and report the AI validation failure for diagnostics.
       const fallbackSlides = Array.isArray(importedSlides) ? importedSlides : [];
@@ -1127,7 +1127,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     function finish(extra) {
       var out = msg + ' — ' + hint + (extra || '');
       if (/Load failed|Failed to fetch|NetworkError/i.test(msg)) {
-        out += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits.';
+        out += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits, and that the extraction JSON response was not too large. Stage 41Y uses compact review images; if this persists, temporarily reduce Max PDF pages or set Include review alternates off.';
       }
       return out;
     }
@@ -1161,6 +1161,11 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     form.append('includePdfBackground', '0');
     form.append('includePdfReviewAlternates', '1');
     form.append('extractEngine', extractionEngineValue());
+    // Stage 41Y: keep rendered review alternatives small enough for Safari/Cloud Run.
+    form.append('reviewRenderZoom', '0.45');
+    form.append('reviewJpegQuality', '48');
+    form.append('vectorRenderZoom', '0.95');
+    form.append('vectorJpegQuality', '58');
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
