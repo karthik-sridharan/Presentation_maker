@@ -1,0 +1,6 @@
+Stage 41Y frontend install
+
+Unzip at the root of Presentation_maker. Open with:
+https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage41y-response-size-safe-hybrid-20260510-1
+
+This stage keeps the Stage 41W review chooser but sends compact review render settings to the backend to avoid Safari/Cloud Run Load failed errors.
