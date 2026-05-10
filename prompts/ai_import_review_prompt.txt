@@ -16,8 +16,14 @@ Output:
 
 Non-negotiable preservation requirements:
 
+Rendered-image review awareness:
+- Before AI cleanup, the user may review each imported page and choose either editable semantic extraction or an exact rendered image/background.
+- Slides marked importChoiceMode:"image" should be preserved as exact image/background slides. Do not rewrite those into text-only summaries.
+- Slides marked importChoiceMode:"semantic" should be cleaned pedagogically while preserving source math and visual explanations.
+
+
 Preserve-and-merge awareness:
-- The app will run a deterministic Stage 41V preservation merge after your output. If you omit source math or figures, the app may reinsert raw recovered source blocks. To avoid raw insertions, explicitly preserve or improve them yourself in the cleaned deck.
+- The app will run a deterministic Stage 41W preservation merge after your output. If you omit source math or figures, the app may reinsert raw recovered source blocks. To avoid raw insertions, explicitly preserve or improve them yourself in the cleaned deck.
 - When you cannot confidently reconstruct a source figure, keep a concise placeholder custom SVG diagram with labels matching the slide concept rather than dropping the figure.
 
 1. Do not produce a text-only outline if the source contains equations, figures, diagrams, or visual concepts.

@@ -5,7 +5,7 @@ Repair the JSON only. Do not redesign the deck unless required to fix the listed
 Return ONLY valid JSON. Do not wrap it in markdown.
 
 The original compacted import context is included below. Use it to recover missing math and missing figures/animations.
-If the previous output dropped equations or figures, add them back now as corrected LaTeX panels and self-contained SVG/HTML custom blocks. Stage 41V will otherwise merge recovered source blocks back into your deck, so preserve/improve the content yourself when possible.
+If the previous output dropped equations or figures, add them back now as corrected LaTeX panels and self-contained SVG/HTML custom blocks. Stage 41W will otherwise merge recovered source blocks back into your deck, so preserve/improve the content yourself when possible.
 
 Original import context:
 {{SOURCE_CONTEXT}}
