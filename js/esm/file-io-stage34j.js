@@ -1,4 +1,4 @@
-/* Stage 41V: browser-compatible ES module file/import workflow helpers with AI preserve-and-merge import.
+/* Stage 41W: browser-compatible ES module file/import workflow helpers with AI preserve-and-merge import.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -37,6 +37,7 @@ export function createApi(deps) {
   var STORAGE_ENDPOINT = 'luminaExtractionEndpoint';
   var STORAGE_TOKEN = 'luminaExtractionToken';
   var STORAGE_ENABLED = 'luminaExtractionEnabled';
+  var STORAGE_ENGINE = 'luminaExtractionEngine';
   var STORAGE_AI_ENABLED = 'luminaImportAiReviewEnabled';
   var STORAGE_AI_ENDPOINT = 'luminaImportAiEndpoint';
   var STORAGE_AI_TOKEN = 'luminaImportAiToken';
@@ -74,6 +75,7 @@ export function createApi(deps) {
     var token = d.getElementById('extractionTokenInput');
     var enabled = d.getElementById('useExtractionBackendCheckbox');
     var aiEnabled = d.getElementById('aiReviewAfterImportCheckbox');
+    var engine = d.getElementById('extractionEngineSelect');
     var aiEndpoint = d.getElementById('importAiEndpointInput');
     var aiToken = d.getElementById('importAiTokenInput');
     var aiProvider = d.getElementById('importAiProviderSelect');
@@ -84,6 +86,10 @@ export function createApi(deps) {
       var saved = storageGet(STORAGE_ENABLED, 'true');
       enabled.checked = saved !== 'false';
       enabled.__luminaExtractionInit = true;
+    }
+    if (engine && !engine.__luminaExtractionEngineInit) {
+      engine.value = storageGet(STORAGE_ENGINE, engine.value || 'hybrid') || 'hybrid';
+      engine.__luminaExtractionEngineInit = true;
     }
     if (aiEnabled && !aiEnabled.__luminaAiReviewInit) {
       aiEnabled.checked = storageGet(STORAGE_AI_ENABLED, 'true') !== 'false';
@@ -114,6 +120,14 @@ export function createApi(deps) {
     if (!el) return true;
     storageSet(STORAGE_ENABLED, el.checked ? 'true' : 'false');
     return !!el.checked;
+  }
+  function extractionEngineValue() {
+    initExtractionFields();
+    var el = doc().getElementById('extractionEngineSelect');
+    var value = String((el && el.value) || storageGet(STORAGE_ENGINE, 'hybrid') || 'hybrid').trim().toLowerCase();
+    if(['pymupdf','marker','hybrid'].indexOf(value) < 0) value = 'hybrid';
+    storageSet(STORAGE_ENGINE, value);
+    return value;
   }
   function extractionEndpointValue() {
     initExtractionFields();
@@ -446,7 +460,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage41v-preserve-merge-ai-import-20260509-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage41w-hybrid-review-import-20260510-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -804,7 +818,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     try{ recovered = normalizeSlide(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide || {}))); }
     catch(_err){ recovered = Object.assign({ title:'Recovered source slide', slideType:'single', leftBlocks:[], rightBlocks:[] }, sourceSlide || {}); }
     recovered.title = String(recovered.title || ('Recovered source slide ' + (deck.slides.length + 1)));
-    recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41V appended this source slide because AI cleanup returned too few slides.';
+    recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41W appended this source slide because AI cleanup returned too few slides.';
     recovered.__stage41vRecoveredSourceSlide = true;
     deck.slides.push(recovered);
     stats.rawSlidesAdded += 1;
@@ -828,11 +842,17 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     }
     if(touched){
       stats.touchedSlides += 1;
-      cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41V restored source math/figure content that AI cleanup dropped.';
+      cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41W restored source math/figure content that AI cleanup dropped.';
+    }
+  });
+  // Stage 41W: preserve user-selected image alternatives exactly, even after AI cleanup.
+  sourceSlides.forEach(function(sourceSlide, i){
+    if(sourceSlide && sourceSlide.importChoiceMode === 'image' && deck.slides[i]){
+      try{ deck.slides[i] = normalizeSlide(stripImportReviewInternals(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide)))); stats.touchedSlides += 1; }catch(_err){}
     }
   });
   repairAiImportDeckMath(deck);
-  try{ globalThis.__LUMINA_STAGE41V_LAST_PRESERVE_MERGE = stats; }catch(_err){}
+  try{ globalThis.__LUMINA_STAGE41V_LAST_PRESERVE_MERGE = stats; globalThis.__LUMINA_STAGE41W_LAST_PRESERVE_MERGE = stats; }catch(_err){}
   return deck;
 }
   function applyEditablePromptTemplate(template, values){
@@ -952,7 +972,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
       return Object.assign({ aiReviewed:true }, deck);
     }catch(err){
       const message = err && err.message ? err.message : String(err);
-      // Stage 41V: do not leave the user with no slides when the AI review path
+      // Stage 41W: do not leave the user with no slides when the AI review path
       // is too strict or the model drops equations/figures. Preserve the backend
       // extraction output and report the AI validation failure for diagnostics.
       const fallbackSlides = Array.isArray(importedSlides) ? importedSlides : [];
@@ -979,6 +999,105 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
       };
     }
   }
+  function hasImportReviewAlternates(slides){
+    return (slides || []).some(function(slide){ return !!(slide && slide.importAlternates && slide.importAlternates.imageSlide); });
+  }
+  function stripImportReviewInternals(slide){
+    var out;
+    try { out = clone ? clone(slide) : JSON.parse(JSON.stringify(slide || {})); }
+    catch(_err){ out = Object.assign({}, slide || {}); }
+    if(out){ delete out.importAlternates; }
+    return out;
+  }
+  function renderImportChoicePreview(slide, label){
+    var d = doc();
+    var html = '';
+    try{
+      var api = globalThis.LuminaRendererApi || globalThis.LuminaRenderer || null;
+      var normalized = normalizeSlide(stripImportReviewInternals(slide));
+      if(api && typeof api.buildSlideMarkup === 'function') html = api.buildSlideMarkup(normalized, { index:0, active:true });
+    }catch(_err){ html = ''; }
+    if(!html){
+      var title = String(slide && slide.title || label || 'Slide');
+      html = '<section class="slide single"><h2>' + title.replace(/[&<>]/g, function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]); }) + '</h2></section>';
+    }
+    return '<div class="stage41w-choice-preview-frame"><div class="stage41w-choice-preview-scale">' + html + '</div></div>';
+  }
+  function ensureImportReviewStyles(){
+    var d = doc();
+    if(d.getElementById('stage41w-import-review-styles')) return;
+    var style = d.createElement('style');
+    style.id = 'stage41w-import-review-styles';
+    style.textContent = '.stage41w-import-review-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.66);z-index:99998;display:grid;place-items:center;padding:18px}.stage41w-import-review-modal{width:min(1180px,96vw);max-height:92vh;background:#fff;color:#111827;border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden}.stage41w-import-review-head{padding:14px 18px;border-bottom:1px solid rgba(15,23,42,.12);display:flex;justify-content:space-between;gap:12px;align-items:center}.stage41w-import-review-head h2{font-size:1.05rem;margin:0}.stage41w-import-review-body{padding:14px 18px;overflow:auto}.stage41w-import-review-slide{border:1px solid rgba(15,23,42,.14);border-radius:16px;margin-bottom:14px;background:#f8fafc;overflow:hidden}.stage41w-import-review-slide-title{padding:10px 12px;font-weight:700;color:#10233b;border-bottom:1px solid rgba(15,23,42,.10);display:flex;justify-content:space-between;gap:12px}.stage41w-import-review-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}.stage41w-import-choice{border:2px solid rgba(15,23,42,.15);border-radius:14px;background:#fff;padding:10px;cursor:pointer;min-width:0}.stage41w-import-choice input{margin-right:.45rem}.stage41w-import-choice.stage41w-selected{border-color:#2f6fed;box-shadow:0 0 0 4px rgba(47,111,237,.12)}.stage41w-choice-preview-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;background:#e5e7eb;overflow:hidden;margin-top:8px;border:1px solid rgba(15,23,42,.10)}.stage41w-choice-preview-scale{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:top left;transform:scale(.26);pointer-events:none}.stage41w-choice-preview-scale .slide{width:1600px!important;height:900px!important;box-sizing:border-box}.stage41w-import-review-foot{padding:12px 18px;border-top:1px solid rgba(15,23,42,.12);display:flex;justify-content:flex-end;gap:10px}.stage41w-import-review-foot button{border-radius:999px;border:1px solid rgba(15,23,42,.18);background:#fff;color:#10233b;padding:.55rem .9rem;font-weight:700}.stage41w-import-review-foot button.primary{background:#17365d;color:#fff}@media (max-width:800px){.stage41w-import-review-choices{grid-template-columns:1fr}.stage41w-import-review-modal{width:98vw;max-height:94vh}}';
+    d.head.appendChild(style);
+  }
+  function reviewExtractedSlidesWithAlternates(slides, deckTitle){
+    slides = slides || [];
+    if(!hasImportReviewAlternates(slides)) return Promise.resolve(slides.map(stripImportReviewInternals));
+    ensureImportReviewStyles();
+    return new Promise(function(resolve){
+      var d = doc();
+      var choices = slides.map(function(slide){ return slide && slide.importAlternates && slide.importAlternates.imageSlide ? 'semantic' : 'semantic'; });
+      var backdrop = d.createElement('div');
+      backdrop.className = 'stage41w-import-review-backdrop';
+      var body = slides.map(function(slide, i){
+        var imageSlide = slide && slide.importAlternates && slide.importAlternates.imageSlide;
+        var title = String(slide && slide.title || ('Slide ' + (i + 1))).replace(/[&<>]/g, function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]); });
+        if(!imageSlide){
+          return '<div class="stage41w-import-review-slide" data-slide-index="'+i+'"><div class="stage41w-import-review-slide-title"><span>'+(i+1)+'. '+title+'</span><span>No rendered alternative</span></div><div class="stage41w-import-review-choices"><label class="stage41w-import-choice stage41w-selected"><input type="radio" checked disabled> Editable extraction'+renderImportChoicePreview(slide, 'Editable extraction')+'</label></div></div>';
+        }
+        return '<div class="stage41w-import-review-slide" data-slide-index="'+i+'"><div class="stage41w-import-review-slide-title"><span>'+(i+1)+'. '+title+'</span><span>Choose version</span></div><div class="stage41w-import-review-choices"><label class="stage41w-import-choice stage41w-selected" data-choice="semantic"><input name="stage41w-choice-'+i+'" type="radio" value="semantic" checked> Editable semantic extraction'+renderImportChoicePreview(slide, 'Editable extraction')+'</label><label class="stage41w-import-choice" data-choice="image"><input name="stage41w-choice-'+i+'" type="radio" value="image"> Rendered image/background'+renderImportChoicePreview(imageSlide, 'Rendered image')+'</label></div></div>';
+      }).join('');
+      backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
+      function refresh(){
+        Array.from(backdrop.querySelectorAll('.stage41w-import-review-slide')).forEach(function(row){
+          Array.from(row.querySelectorAll('.stage41w-import-choice')).forEach(function(choice){
+            var input = choice.querySelector('input[type="radio"]');
+            choice.classList.toggle('stage41w-selected', !!(input && input.checked));
+          });
+        });
+      }
+      backdrop.addEventListener('change', function(ev){
+        var input = ev.target && ev.target.matches && ev.target.matches('input[type="radio"]') ? ev.target : null;
+        if(input){
+          var m = String(input.name || '').match(/stage41w-choice-(\d+)/);
+          if(m) choices[Number(m[1])] = input.value === 'image' ? 'image' : 'semantic';
+          refresh();
+        }
+      });
+      backdrop.addEventListener('click', function(ev){
+        var close = ev.target && ev.target.closest && ev.target.closest('[data-stage41w-close]');
+        if(close){ backdrop.remove(); resolve(slides.map(stripImportReviewInternals)); return; }
+        if(ev.target && ev.target.closest && ev.target.closest('[data-stage41w-all-semantic]')){
+          choices = choices.map(function(){ return 'semantic'; });
+          Array.from(backdrop.querySelectorAll('input[value="semantic"]')).forEach(function(input){ input.checked = true; }); refresh(); return;
+        }
+        if(ev.target && ev.target.closest && ev.target.closest('[data-stage41w-all-image]')){
+          choices = choices.map(function(choice, i){ return slides[i] && slides[i].importAlternates && slides[i].importAlternates.imageSlide ? 'image' : 'semantic'; });
+          Array.from(backdrop.querySelectorAll('.stage41w-import-review-slide')).forEach(function(row){
+            var idx = Number(row.getAttribute('data-slide-index') || 0);
+            var input = row.querySelector('input[value="' + choices[idx] + '"]');
+            if(input) input.checked = true;
+          }); refresh(); return;
+        }
+        if(ev.target && ev.target.closest && ev.target.closest('[data-stage41w-continue]')){
+          var selected = slides.map(function(slide, i){
+            var imageSlide = slide && slide.importAlternates && slide.importAlternates.imageSlide;
+            var chosen = choices[i] === 'image' && imageSlide ? imageSlide : slide;
+            var out = stripImportReviewInternals(chosen);
+            out.importChoiceMode = choices[i] === 'image' && imageSlide ? 'image' : 'semantic';
+            out.importChoiceSourceIndex = i;
+            return out;
+          });
+          try{ globalThis.__LUMINA_STAGE41W_IMPORT_REVIEW_CHOICES = { deckTitle:deckTitle || '', slideCount:selected.length, choices:choices.slice(), at:new Date().toISOString() }; }catch(_err){}
+          backdrop.remove(); resolve(selected);
+        }
+      });
+      d.body.appendChild(backdrop);
+      refresh();
+    });
+  }
+
   function isExtractablePresentationFile(file) {
     var name = String(file && file.name || '').toLowerCase();
     return /\.(pdf|pptx|ppt)$/i.test(name) || file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || file.type === 'application/vnd.ms-powerpoint';
@@ -1006,6 +1125,8 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     // Stage 41J: import PDF images as individual image blocks; do not include a full-page
     // background bitmap unless explicitly added later.
     form.append('includePdfBackground', '0');
+    form.append('includePdfReviewAlternates', '1');
+    form.append('extractEngine', extractionEngineValue());
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
@@ -1107,7 +1228,10 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     return chain.then(function () {
       var importDeck = { deckTitle:deckTitle, slides:imported, theme:null, presentationOptions:null, aiReviewed:false };
       if (!usedExtractionBackend) return importDeck;
-      return maybeReviewImportedDeckWithAi(imported, deckTitle);
+      return reviewExtractedSlidesWithAlternates(imported, deckTitle).then(function(reviewedSlides){
+        imported = reviewedSlides;
+        return maybeReviewImportedDeckWithAi(reviewedSlides, deckTitle);
+      });
     }).then(function (importDeck) {
       imported = importDeck.slides || imported;
       deckTitle = importDeck.deckTitle || deckTitle;
@@ -1159,7 +1283,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage41v-preserve-merge-ai-import-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage41w-hybrid-review-import-20260510-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
