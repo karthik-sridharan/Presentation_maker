@@ -1,0 +1,3 @@
+Stage 41Z frontend: resilient extraction fallback.
+Install at the root of the Presentation_maker GitHub repo.
+Open: https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage41z-resilient-extract-fallback-20260510-1
