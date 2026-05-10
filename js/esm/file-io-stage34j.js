@@ -1,4 +1,4 @@
-/* Stage 41Q: browser-compatible ES module version of file/import workflow helpers.
+/* Stage 41S: browser-compatible ES module version of file/import workflow helpers.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -988,7 +988,14 @@ Previous output to repair:
     });
   }
   setTimeout(initExtractionFields, 0);
-  return { importModeValue:importModeValue, applyImportedSlides:applyImportedSlides, importSelectedFiles:importSelectedFiles, loadDeckFromFile:loadDeckFromFile, loadPresentationJsonFromFile:loadPresentationJsonFromFile, extractPresentationFile:extractPresentationFile, maybeReviewImportedDeckWithAi:maybeReviewImportedDeckWithAi };
+  var api = { importModeValue:importModeValue, applyImportedSlides:applyImportedSlides, importSelectedFiles:importSelectedFiles, loadDeckFromFile:loadDeckFromFile, loadPresentationJsonFromFile:loadPresentationJsonFromFile, extractPresentationFile:extractPresentationFile, maybeReviewImportedDeckWithAi:maybeReviewImportedDeckWithAi };
+  try {
+    global.__LUMINA_FILE_IO_API = api;
+    global.__LUMINA_STAGE41S_FILE_IO_API = api;
+    global.LuminaStage41SFileIoApi = api;
+    global.__LUMINA_STAGE41S_FILE_IO_READY = { stage:'stage41s-import-button-rescue-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+  } catch (_err) {}
+  return api;
 }
 
 export default { createApi:createApi };
