@@ -359,123 +359,61 @@
     }
     const AI_IMPORT_REVIEW_PROMPT_PATH = 'prompt/ai_import_review_prompt.txt';
     const AI_IMPORT_REPAIR_PROMPT_PATH = 'prompt/ai_import_repair_prompt.txt';
-    const DEFAULT_AI_IMPORT_REVIEW_PROMPT = String.raw`You are cleaning a raw Lumina Presentation Maker deck extracted from PDF/PPT/PPTX.
+    const DEFAULT_AI_IMPORT_REVIEW_PROMPT = String.raw`You are repairing a raw Lumina Presentation Maker deck that was already extracted from a PDF/PPT/PPTX by the backend.
 
-Your job is NOT to preserve the extracted deck literally. Your job is to produce a clean, teachable, editable Lumina JSON deck.
+IMPORTANT: This is a conservative repair pass, not a redesign pass.
+Do not summarize the deck. Do not create a new lecture outline. Do not remove slides. Do not drop figures/images. Do not add decorative animations.
 
 Input:
-- raw Lumina JSON deck from slide extraction
-- extracted text/image blocks may be fragmented, duplicated, malformed, or poorly positioned
-- math may have OCR/PDF glyph errors
+- A source Lumina deck with one source slide per imported slide.
+- Each slide has blocks with stable __aiSourceBlockId values.
+- Some block content has PDF/OCR math corruption.
+- Some blocks/images may need small layout or sizing adjustments.
 
 Output:
 - Return ONLY valid JSON.
 - Do not wrap in markdown.
-- Do not include explanations outside the JSON.
-- The output must be a complete Lumina deck object with deckTitle, theme, presentationOptions, and slides.
+- Return a complete Lumina deck object with deckTitle, theme, presentationOptions, and slides.
+- Preserve the number and order of slides unless the input is impossible to parse.
+- Preserve block order and __aiSourceBlockId values whenever possible.
 
-Core cleanup requirements:
-1. Rebuild the deck pedagogically.
-   - Combine fragmented PDF text blocks into coherent slides.
-   - Remove junk PDF artifacts, base64 page backgrounds, malformed glyph fragments, and repeated imported fragments.
-   - Keep the lecture's original conceptual sequence.
-   - Prefer clean editable text blocks over many tiny positioned import-text fragments.
-   - Use 16:9 slide-friendly layouts.
+Your task for each slide:
+1. Go over each block one by one.
+2. If a text/math block contains possible math, repair the math.
+3. Put math into clear containers:
+   - Inline math must use: $ math goes here $
+   - Displayed equations must use: \[ math goes here \]
+   - Do not leave math as broken plain text.
+4. Fix common extraction/OCR math errors:
+   - " imes" or "⇥" -> "\\times"
+   - " ext{" -> "\\text{"
+   - " op" used as transpose -> "\\top"
+   - "2 R" or "2 ℝ" used as membership -> "\\in \\mathbb{R}"
+   - "QK^ op" -> "QK^\\top"
+   - "ﬁ" -> "fi"
+   - remove "</latexit>" fragments and base64/LaTeX debris
+5. Preserve figures and images:
+   - Do not remove image/figure blocks.
+   - Do not replace image src/data with placeholders.
+   - You may adjust layout x/y/w/h or figure data-box-w/data-box-h only when it clearly improves similarity to the source slide.
+   - Keep images sized proportionally; do not stretch them.
+6. Preserve layout:
+   - Keep freeform imported slide placement when available.
+   - Make only small placement/resizing repairs to avoid overlaps, clipped equations, or tiny images.
+   - Prefer preserving original layout/importSourceLayout over creating a new stacked layout.
+7. Preserve all custom fields used by the app when you can: layout, importSourceLayout, importMeta, importRuns, style, animation, __aiSourceBlockId.
 
-2. Fix all math.
-   - All LaTeX in JSON strings MUST escape every backslash.
-   - Correct examples:
-     "\\(X \\in \\mathbb{R}^{n \\times d}\\)"
-     "\\(f_w(X) \\in \\{\\text{positive},\\text{negative}\\}\\)"
-     "\\(QK^\\top\\)"
-     "\\(\\operatorname{softmax}(QK^\\top)V\\)"
-     "\\(w_{\\text{filter}} \\in \\mathbb{R}^{r \\times d}\\)"
-   - Never output malformed math such as:
-     "n imes d", "ext{text}", "op", "2 R", "⇥", "ﬁlter", "</latexit>", or random base64/LaTeX extraction debris.
-   - Before finalizing, scan every text field and repair these errors:
-     " imes" -> "\\times"
-     " ext{" -> "\\text{"
-     " op" when used as transpose -> "\\top"
-     "2 R" when used as membership -> "\\in \\mathbb{R}"
-     "⇥" -> "\\times"
-     "ﬁ" -> "fi"
-
-3. Use custom HTML/SVG animations only when they clarify a concept better than static text.
-   Good candidates:
-   - tokenization and embedding
-   - pooling
-   - convolutional window scanning
-   - attention as fuzzy lookup
-   - self-attention matrix computation
-   - multi-head attention
-   - residual connection
-   - layer normalization
-   - transformer block
-
-4. Animation correctness rules.
-   - Do not merely decorate diagrams with motion; animate the mathematical operation being explained.
-   - Tokenization animation: show sentence -> tokens -> embedding vectors.
-   - Pooling animation: show many token vectors collapsing into one pooled vector.
-   - Convolution animation: show a window moving across adjacent tokens.
-   - Attention animation: show query-to-key scores, softmax weights, and weighted sum of values.
-   - Self-attention matrix animation: show Q, K, V, QK^T, row-wise softmax, then multiply by V.
-   - Multi-head attention: show several heads in parallel, then concat/project.
-   - Residual animation: show both the layer path and skip path meeting at addition.
-   - LayerNorm animation: show unequal coordinates normalized to centered/scaled coordinates.
-   - Transformer block animation: show attention, add+norm, FFN, add+norm.
-
-5. Custom HTML/SVG block rules.
-   - Use mode: "custom".
-   - The custom block content must be a complete iframe-safe HTML document.
-   - Use only inline HTML, CSS, and SVG.
-   - Do NOT use external scripts, external fonts, external images, remote URLs, iframes, canvas, or JavaScript unless absolutely necessary.
-   - Prefer CSS-only SVG animations.
-   - Do not use huge base64 images.
-   - Use aria-label on the main SVG.
-   - Keep all animation readable even if CSS animation is paused.
-   - Use a 16:9 SVG viewBox such as "0 0 960 540" or "0 0 1000 560".
-   - CSS should include:
-     html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#fff; }
-     .stage { width:100%; height:100%; display:grid; place-items:center; padding:18px; box-sizing:border-box; }
-     svg { width:100%; height:100%; max-width:100%; max-height:100%; }
-   - Avoid body min-height:720px for two-column slides.
-   - Avoid fixed custom animation heights like height:720px unless the slide is a full single-slide animation.
-   - If the animation needs a large full-slide area, make that slide slideType: "single" instead of putting the animation in a two-column right block.
-
-6. Layout rules.
-   - Prefer 18-26 slides for a full lecture cleanup unless the source deck is much shorter.
-   - Use two-col for explanation + small figure.
-   - Use single or title-center for section breaks and large animations.
-   - Do not put a 720px-tall custom animation beside a large left column; use a single-slide animation instead.
-   - Keep each slide visually sparse: at most 5 bullets, at most 2 equations, and at most 1 major animation/figure.
-
-7. Lumina block style rules.
-   - Use "panel" for clean editable text and equations.
-   - Use "custom" for animations.
-   - Use "title-center" for section dividers.
-   - Avoid "import-text" unless preserving exact source layout is necessary.
-   - Avoid raw PDF-positioned fragments unless the user explicitly requested exact visual import.
-   - Use buildIn: "fade", buildOut: "none".
-   - Use stepMode: "by-item" for bullet lists.
-   - Use stepMode: "all" for equations and animations.
-
-8. Final self-check before returning JSON.
-   - Prefer standard LaTeX commands and avoid Unicode math glyphs when an escaped LaTeX command exists.
-   - For model variables use clean notation: f_w, W_Q, W_K, W_V, w_{\text{filter}}, \mathbb{R}^{n \times d}.
-   - JSON parses successfully.
-   - No markdown fences.
-   - No malformed LaTeX remnants: " imes", " ext{", " op ", "</latexit>", "ﬁ", "⇥", "2 R".
-   - No giant base64 page screenshots unless explicitly necessary.
-   - Every custom HTML block is self-contained and iframe-safe.
-   - Every animation has a clear pedagogical purpose stated in the slide notes.
-   - The deck should look like a hand-authored lecture, not an imported PDF dump.`;
-    const DEFAULT_AI_IMPORT_REPAIR_PROMPT = String.raw`Your previous Lumina deck JSON had validation problems:
+Return the repaired Lumina JSON deck only.`;
+    const DEFAULT_AI_IMPORT_REPAIR_PROMPT = String.raw`Your previous Lumina import repair JSON had these problems:
 {{PROBLEMS}}
 
-Repair the JSON only. Do not redesign the deck unless required to fix the listed problems.
-Return ONLY valid JSON. Do not wrap it in markdown.
+Repair the JSON only. Do not redesign the deck. Preserve source slide count, source block ids, images, and layout.
+Return ONLY valid JSON. Do not wrap in markdown.
+Use inline math as $ math goes here $ and displayed equations as \[ math goes here \].
 Ensure every LaTeX backslash is JSON-escaped: use "\\times", "\\text{}", "\\top", "\\operatorname{}" inside JSON strings.
-Ensure custom animations use responsive 100% height/width CSS, no external assets, no <script>, no iframes, and no fixed 720px two-column stage height.
+
+Source context:
+{{SOURCE_CONTEXT}}
 
 Previous output to repair:
 {{PREVIOUS_OUTPUT}}`;
@@ -491,7 +429,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage41w-hybrid-review-import-20260510-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42d-displaymath-brackets-import-repair-20260510-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -997,10 +935,10 @@ Previous output to repair:
     }
     async function maybeReviewImportedDeckWithAi(importedSlides, deckTitle){
       if(!aiReviewAfterImportEnabled()) return { deckTitle, slides:importedSlides, theme:null, presentationOptions:null, aiReviewed:false };
-      showToast('Asking AI Copilot to clean the imported deck…');
+      showToast('Asking AI Copilot to repair math/layout in the imported deck…');
       try{
         const deck = await callImportAiReview(deckTitle, importedSlides);
-        showToast('AI cleaned import: ' + deck.slides.length + ' slide' + (deck.slides.length === 1 ? '' : 's') + ' ready.');
+        showToast('AI repaired import: ' + deck.slides.length + ' slide' + (deck.slides.length === 1 ? '' : 's') + ' ready.');
         return Object.assign({ aiReviewed:true }, deck);
       }catch(err){
         const message = err && err.message ? err.message : String(err);
@@ -1448,7 +1386,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage41w-hybrid-review-import-20260510-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42d-displaymath-brackets-import-repair-20260510-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
