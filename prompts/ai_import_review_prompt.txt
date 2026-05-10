@@ -1,6 +1,6 @@
 You are cleaning a raw Lumina Presentation Maker deck extracted from PDF/PPT/PPTX.
 
-Your job is NOT to preserve the extracted deck literally. Your job is to first review the JSON file given to you, correct errors, formatting errors and polish the content and rearrange the sizes to fit within the output slide aspect ratio. Go over each slide, make sure to correct the math if there are import errors. For each figure, if necessary replace the figure by either a better SVG or, preferably,  if it makes sense, by an html animation or demo block. 
+Your job is NOT to preserve the extracted deck literally. Your job is to produce a clean, teachable, editable Lumina JSON deck that preserves the source deck's mathematical content and visual explanations.
 
 Input:
 - raw Lumina JSON deck from slide extraction
@@ -15,6 +15,11 @@ Output:
 - The output must be a complete Lumina deck object with deckTitle, theme, presentationOptions, and slides.
 
 Non-negotiable preservation requirements:
+
+Preserve-and-merge awareness:
+- The app will run a deterministic Stage 41V preservation merge after your output. If you omit source math or figures, the app may reinsert raw recovered source blocks. To avoid raw insertions, explicitly preserve or improve them yourself in the cleaned deck.
+- When you cannot confidently reconstruct a source figure, keep a concise placeholder custom SVG diagram with labels matching the slide concept rather than dropping the figure.
+
 1. Do not produce a text-only outline if the source contains equations, figures, diagrams, or visual concepts.
 2. For every slide summary with mathCandidates, include the corresponding corrected mathematical statement in the cleaned deck, unless it is genuinely redundant with a nearby slide.
 3. For every slide summary with figureCandidates, reconstruct the visual as either:
@@ -22,6 +27,7 @@ Non-negotiable preservation requirements:
    - a clean custom HTML/SVG static diagram, or
    - a concise editable figure block.
 4. If a source figure is omitted because it was a raw screenshot/base64 image, replace it with a semantically equivalent hand-authored SVG/HTML figure. Do not simply drop it.
+5. If the raw source is a lecture on attention/transformers/text models, include several visual explanations: tokenization/embedding, pooling or convolution, attention lookup, self-attention matrix form, multi-head attention, residual connections, and transformer block when relevant.
 
 Core cleanup requirements:
 1. Rebuild the deck pedagogically.
@@ -34,25 +40,44 @@ Core cleanup requirements:
 2. Fix all math.
    - All LaTeX in JSON strings MUST escape every backslash.
    - Correct examples:
-     "\(X \in \mathbb{R}^{n \times d}\)"
-     "\(f_w(X) \in \{\text{positive},\text{negative}\}\)"
-     "\(QK^\top\)"
-     "\(\operatorname{softmax}(QK^\top)V\)"
-     "\(w_{\text{filter}} \in \mathbb{R}^{r \times d}\)"
+     "\\(X \\in \\mathbb{R}^{n \\times d}\\)"
+     "\\(f_w(X) \\in \\{\\text{positive},\\text{negative}\\}\\)"
+     "\\(QK^\\top\\)"
+     "\\(\\operatorname{softmax}(QK^\\top)V\\)"
+     "\\(w_{\\text{filter}} \\in \\mathbb{R}^{r \\times d}\\)"
    - Never output malformed math such as:
      "n imes d", "ext{text}", "op", "2 R", "⇥", "ﬁlter", "</latexit>", or random base64/LaTeX extraction debris.
    - Before finalizing, scan every text field and repair these errors:
-     " imes" -> "\times"
-     " ext{" -> "\text{"
-     " op" when used as transpose -> "\top"
-     "2 R" when used as membership -> "\in \mathbb{R}"
-     "⇥" -> "\times"
+     " imes" -> "\\times"
+     " ext{" -> "\\text{"
+     " op" when used as transpose -> "\\top"
+     "2 R" when used as membership -> "\\in \\mathbb{R}"
+     "⇥" -> "\\times"
      "ﬁ" -> "fi"
 
-3. Use custom HTML/SVG animations when they clarify a concept better than static text. Feel free to add buttons for html animations and make them demos.
-  
+3. Use custom HTML/SVG animations when they clarify a concept better than static text.
+   Good candidates:
+   - tokenization and embedding
+   - pooling
+   - convolutional window scanning
+   - attention as fuzzy lookup
+   - self-attention matrix computation
+   - multi-head attention
+   - residual connection
+   - layer normalization
+   - transformer block
+
 4. Animation correctness rules.
    - Do not merely decorate diagrams with motion; animate the mathematical operation being explained.
+   - Tokenization animation: show sentence -> tokens -> embedding vectors.
+   - Pooling animation: show many token vectors collapsing into one pooled vector.
+   - Convolution animation: show a window moving across adjacent tokens.
+   - Attention animation: show query-to-key scores, softmax weights, and weighted sum of values.
+   - Self-attention matrix animation: show Q, K, V, QK^T, row-wise softmax, then multiply by V.
+   - Multi-head attention: show several heads in parallel, then concat/project.
+   - Residual animation: show both the layer path and skip path meeting at addition.
+   - LayerNorm animation: show unequal coordinates normalized to centered/scaled coordinates.
+   - Transformer block animation: show attention, add+norm, FFN, add+norm.
 
 5. Custom HTML/SVG block rules.
    - Use mode: "custom".
@@ -72,6 +97,13 @@ Core cleanup requirements:
    - Avoid fixed custom animation heights like height:720px unless the slide is a full single-slide animation.
    - If the animation needs a large full-slide area, make that slide slideType: "single" instead of putting the animation in a two-column right block.
 
+6. Layout rules.
+   - Prefer 18-28 slides for a full lecture cleanup unless the source deck is much shorter.
+   - Use two-col for explanation + small figure.
+   - Use single or title-center for section breaks and large animations.
+   - Do not put a 720px-tall custom animation beside a large left column; use a single-slide animation instead.
+   - Keep each slide visually sparse: at most 5 bullets, at most 2 equations, and at most 1 major animation/figure.
+
 7. Lumina block style rules.
    - Use "panel" for clean editable text and equations.
    - Use "custom" for animations and reconstructed figures.
@@ -86,7 +118,7 @@ Core cleanup requirements:
    - The number of math/equation blocks should be consistent with the source mathCandidates.
    - The number of visual/custom blocks should be consistent with source figureCandidates and visual concepts.
    - Prefer standard LaTeX commands and avoid Unicode math glyphs when an escaped LaTeX command exists.
-   - For model variables use clean notation: f_w, W_Q, W_K, W_V, w_{\text{filter}}, \mathbb{R}^{n \times d}.
+   - For model variables use clean notation: f_w, W_Q, W_K, W_V, w_{\\text{filter}}, \\mathbb{R}^{n \\times d}.
    - JSON parses successfully.
    - No markdown fences.
    - No malformed LaTeX remnants: " imes", " ext{", " op ", "</latexit>", "ﬁ", "⇥", "2 R".
