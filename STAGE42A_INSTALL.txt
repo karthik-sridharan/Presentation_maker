@@ -1,0 +1,9 @@
+Stage 42A: freeform export parity
+
+Fixes generated/exported HTML so imported PDF/PPT freeform slides preserve the same positioned layout used in Presentation Maker preview.
+
+Install at the root of your Presentation_maker GitHub repo, replacing files.
+Open with:
+https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42a-freeform-export-parity-20260510-1
+
+Then re-export the deck. Previously exported HTML files will not change automatically.
