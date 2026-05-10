@@ -1,21 +1,13 @@
-Your previous Lumina deck JSON had validation problems:
+Your previous Lumina import repair JSON had these problems:
 {{PROBLEMS}}
 
-Repair the JSON only. Do not redesign the deck unless required to fix the listed problems.
-Return ONLY valid JSON. Do not wrap it in markdown.
+Repair the JSON only. Do not redesign the deck. Preserve source slide count, source block ids, images, and layout.
+Return ONLY valid JSON. Do not wrap in markdown.
+Use inline math as $ math goes here $ and displayed equations as \[ math goes here \].
+Ensure every LaTeX backslash is JSON-escaped: use "\\times", "\\text{}", "\\top", "\\operatorname{}" inside JSON strings.
 
-The original compacted import context is included below. Use it to recover missing math and missing figures/animations.
-If the previous output dropped equations or figures, add them back now as corrected LaTeX panels and self-contained SVG/HTML custom blocks. Stage 41W will otherwise merge recovered source blocks back into your deck, so preserve/improve the content yourself when possible.
-
-Original import context:
+Source context:
 {{SOURCE_CONTEXT}}
-
-Strict repair rules:
-- Preserve/reconstruct math listed in mathCandidates.
-- Preserve/reconstruct figures listed in figureCandidates as custom SVG/HTML diagrams or animations.
-- Ensure every LaTeX backslash is JSON-escaped: use "\\times", "\\text{}", "\\top", "\\operatorname{}" inside JSON strings.
-- Ensure custom animations use responsive 100% height/width CSS, no external assets, no <script>, no iframes, and no fixed 720px two-column stage height.
-- No malformed remnants: " imes", " ext{", " op ", "</latexit>", "ﬁ", "⇥", "2 R".
 
 Previous output to repair:
 {{PREVIOUS_OUTPUT}}

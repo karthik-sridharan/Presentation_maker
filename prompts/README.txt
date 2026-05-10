@@ -1,13 +1,8 @@
-Stage 41X editable AI import prompts
+Stage 42C editable AI import prompts
 
-The AI-assisted import prompt lives in:
-  prompt/ai_import_review_prompt.txt
+ai_import_review_prompt.txt is now a conservative import-repair prompt.
+It tells the AI to preserve slide count, block ids, image assets, and freeform layout, and only repair garbled math plus small placement/sizing issues.
 
-The repair prompt lives in:
-  prompt/ai_import_repair_prompt.txt
+ai_import_repair_prompt.txt is the one-pass retry prompt used if the first response is invalid JSON or still contains obvious broken math artifacts.
 
-Stage 41X keeps the Stage 41R math/figure preservation prompt, fixes the external prompt examples so JSON-visible LaTeX backslashes are shown as double backslashes, and adds a safe fallback: if AI cleanup still drops equations/figures after one repair pass, the app loads the source-extracted backend slides instead of leaving the user with no slides.
-
-Do not put API keys or bearer tokens in prompt files.
-
-Stage 41X note: AI-assisted import now includes a deterministic preserve-and-merge pass. The prompt should still ask the AI to preserve source math/figures, but the app will reinsert missing source math/figure blocks if validation detects that they were dropped.
+These files are loaded by the frontend at import time, so users can edit them without rebuilding the app.
