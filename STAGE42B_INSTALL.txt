@@ -1,0 +1,16 @@
+Stage 42B: freeform export parity EOF fix
+
+Install:
+1. Unzip this package at the root of your GitHub Presentation_maker repo.
+2. Replace the included files:
+   - index.html
+   - js/export-stage24c.js
+   - js/esm/export-stage34j.js
+3. Open with cache busting:
+   https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42b-freeform-export-parity-eof-fix-20260510-1
+4. Re-export the deck. Previously exported HTML files still contain the old renderer.
+
+Fix:
+- Removes the Stage 42A status script that was accidentally inserted inside the SVG editor popup template literal.
+- Keeps the Stage 42A freeform export renderer changes.
+- Inline scripts and changed JS files were syntax checked.
