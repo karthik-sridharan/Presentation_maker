@@ -244,36 +244,102 @@
         .replace(/<img\b[^>]*>/gi, '[image omitted]')
         .replace(/<svg[\s\S]*?<\/svg>/gi, '[svg/custom figure omitted]');
     }
+    function stripHtmlForAi(text){
+      return String(text || '')
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
     function trunc(text, n){
-      const s = String(text || '');
-      return s.length > n ? s.slice(0, n) + '…' : s;
+      const st = String(text || '');
+      return st.length > n ? st.slice(0, n) + '…' : st;
+    }
+    function blockLooksLikeFigure(block){
+      const b = block || {};
+      const mode = String(b.mode || '').toLowerCase();
+      const content = String(b.content || '');
+      return /image|figure|diagram|custom/.test(mode) || /<img\b|<svg\b|data:image\//i.test(content) || /\\begin\{figurehtml\}/i.test(content);
+    }
+    function blockLooksLikeMath(block){
+      const b = block || {};
+      const content = String(b.content || '') + ' ' + String(b.title || '');
+      const styleFamily = String((b.style && b.style.fontFamily) || '');
+      if(/CMR|CMMI|CMSY|CMBX|MSBM|CMEX|Latin Modern|KaTeX|MathJax/i.test(styleFamily)) return true;
+      if(/\\\(|\\\[|\$[^$]+\$|\\mathbb|\\operatorname|\\frac|\\sum|\\sigma|\\alpha|\\beta|\\gamma|\\top|\\times|softmax|LayerNorm|W_Q|W_K|W_V|QK|f_w|w_\{|\bR\^|ℝ|∑|σ|α|β|γ|μ|⇥|\b2\s*R\b|(^|[^A-Za-z])imes\b|(^|[^A-Za-z])ext\{|\^\s*op\b|<\/latexit>/i.test(content)) return true;
+      if(Array.isArray(b.importRuns) && b.importRuns.some(r => /CMR|CMMI|CMSY|CMBX|MSBM|CMEX/i.test(String(r && r.fontFamily || '')))) return true;
+      return false;
     }
     function compactBlockForAi(block){
       const b = block || {};
-      const raw = stripHugeInlineAssets(b.content || '');
+      const raw = String(b.content || '');
+      const isFigure = blockLooksLikeFigure(b);
+      const isMath = blockLooksLikeMath(b);
+      const stripped = stripHugeInlineAssets(raw);
+      const readable = stripHtmlForAi(stripped) || stripped;
+      const repaired = isMath ? repairGarbledMathText(readable) : readable;
+      const layout = b.layout || b.importSourceLayout || null;
       return {
         mode: String(b.mode || 'panel'),
         title: String(b.title || ''),
-        content: trunc(raw, 900),
-        hasLayout: !!b.layout,
+        content: trunc(repaired, isFigure ? 650 : 1200),
+        isFigure,
+        isMath,
+        hasLayout: !!layout,
+        layout: layout ? { x:layout.x, y:layout.y, w:layout.w, h:layout.h } : null,
         role: b.importRole || '',
         fontSize: b.style && b.style.fontSize || '',
         fontColor: b.style && b.style.fontColor || ''
       };
     }
+    function slideSourceTextForAi(blocks){
+      const parts = [];
+      (blocks || []).forEach(block => {
+        if(blockLooksLikeFigure(block)) return;
+        const raw = stripHugeInlineAssets(block && block.content || '');
+        const readable = stripHtmlForAi(raw) || raw;
+        if(readable) parts.push(repairGarbledMathText(readable));
+      });
+      return trunc(parts.join('\n'), 3600);
+    }
     function compactSlidesForAi(slides){
       return (slides || []).map((slide, idx)=>{
         const left = Array.isArray(slide.leftBlocks) ? slide.leftBlocks : [];
         const right = Array.isArray(slide.rightBlocks) ? slide.rightBlocks : [];
-        const blocks = left.concat(right).slice(0, 18).map(compactBlockForAi);
+        const allBlocks = left.concat(right);
+        const compactBlocks = allBlocks.slice(0, 24).map(compactBlockForAi);
+        const mathCandidates = allBlocks.filter(blockLooksLikeMath).slice(0, 12).map((b, i)=>({
+          index:i + 1,
+          title:String(b.title || ''),
+          suggested:trunc(repairGarbledMathText(stripHtmlForAi(stripHugeInlineAssets(b.content || '')) || stripHugeInlineAssets(b.content || '')), 900),
+          raw:trunc(stripHtmlForAi(stripHugeInlineAssets(b.content || '')) || stripHugeInlineAssets(b.content || ''), 700)
+        })).filter(x => x.suggested || x.raw);
+        const figureCandidates = allBlocks.filter(blockLooksLikeFigure).slice(0, 8).map((b, i)=>({
+          index:i + 1,
+          mode:String(b.mode || ''),
+          title:String(b.title || ''),
+          contentHint:trunc(stripHtmlForAi(stripHugeInlineAssets(b.content || '')) || '[visual/figure content omitted; reconstruct as clean SVG/HTML if useful]', 700),
+          layout:b.layout ? { x:b.layout.x, y:b.layout.y, w:b.layout.w, h:b.layout.h } : null
+        }));
         return {
           index: idx + 1,
           slideType: slide.slideType || 'single',
           title: String(slide.title || ''),
           kicker: String(slide.kicker || ''),
-          lede: trunc(slide.lede || '', 500),
-          blocks,
-          notes: trunc((slide.notesTitle ? slide.notesTitle + ': ' : '') + (slide.notesBody || ''), 500)
+          lede: trunc(slide.lede || '', 700),
+          sourceText: slideSourceTextForAi(allBlocks),
+          originalBlockCount: allBlocks.length,
+          mathCandidateCount: mathCandidates.length,
+          figureCandidateCount: figureCandidates.length,
+          mathCandidates,
+          figureCandidates,
+          blocks: compactBlocks,
+          notes: trunc((slide.notesTitle ? slide.notesTitle + ': ' : '') + (slide.notesBody || ''), 700)
         };
       });
     }
@@ -411,7 +477,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage41q-editable-ai-prompts-20260509-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage41r-preserve-math-figures-ai-import-20260509-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -428,17 +494,32 @@ Previous output to repair:
     async function aiDeckSystemPrompt(){
       return loadEditableAiPrompt(AI_IMPORT_REVIEW_PROMPT_PATH, DEFAULT_AI_IMPORT_REVIEW_PROMPT);
     }
+    function sourceExpectationsForAi(slides){
+      const compactSlides = compactSlidesForAi(slides);
+      const conceptKeywords = /attention|transformer|self-attention|token|embed|embedding|pool|convolution|convnet|residual|normalization|layernorm|feed-forward|multi-head/i;
+      return {
+        sourceSlideCount: compactSlides.length,
+        slidesWithMath: compactSlides.filter(sl => sl.mathCandidateCount > 0).length,
+        slidesWithFigures: compactSlides.filter(sl => sl.figureCandidateCount > 0).length,
+        totalMathCandidates: compactSlides.reduce((n, sl) => n + (sl.mathCandidateCount || 0), 0),
+        totalFigureCandidates: compactSlides.reduce((n, sl) => n + (sl.figureCandidateCount || 0), 0),
+        conceptSlides: compactSlides.filter(sl => conceptKeywords.test([sl.title, sl.sourceText].join(' '))).length
+      };
+    }
     function aiDeckUserPrompt(deckTitle, slides){
       const compact = {
         deckTitle: deckTitle || 'Imported deck',
         sourceSlideCount: (slides || []).length,
+        expectations: sourceExpectationsForAi(slides),
         importedSlides: compactSlidesForAi(slides)
       };
       return [
         'Review this imported deck, clean it up, add or edit blocks within slides, and wherever useful replace figures with better editable diagrams or custom HTML/SVG animations.',
+        'CRITICAL: The cleaned deck must preserve or reconstruct the source deck\'s mathematical content and visual explanations. Do not make a text-only outline when the source has equations, figures, diagrams, or visual concepts.',
+        'For every slide summary that has mathCandidates, include the corresponding corrected equation(s) in the cleaned output using escaped LaTeX. For every slide summary that has figureCandidates or a visual concept, include either a clean figure/custom SVG animation or a clear replacement diagram.',
         'Make the output look like a hand-authored lecture deck, not a raw PDF import.',
         'Only return the cleaned Lumina deck JSON. Do not wrap it in markdown.',
-        'The raw imported deck has been compacted below to avoid embedding large base64 images:',
+        'The raw imported deck has been compacted below to avoid embedding large base64 images, but the summary explicitly lists mathCandidates and figureCandidates that must not be dropped:',
         JSON.stringify(compact, null, 2)
       ].join('\n\n');
     }
@@ -573,7 +654,7 @@ Previous output to repair:
           }
         });
       });
-      try{ global.__LUMINA_STAGE41P_LAST_MATH_REPAIR = { repairedCount, at:new Date().toISOString() }; }catch(_err){}
+      try{ global.__LUMINA_STAGE41R_LAST_MATH_REPAIR = { repairedCount, at:new Date().toISOString() }; }catch(_err){}
       return deck;
     }
     const AI_IMPORT_BAD_PATTERNS = [
@@ -610,6 +691,46 @@ Previous output to repair:
       });
       return Array.from(new Set(found)).slice(0, 30);
     }
+    function deckBlockLooksLikeMath(block){
+      return blockLooksLikeMath(block) || /\\\(|\\\[|\\mathbb|\\times|\\top|\\operatorname|\\frac|\\sum|\$[^$]+\$|EQ:/i.test(String(block && block.content || ''));
+    }
+    function deckBlockLooksLikeVisual(block){
+      const mode = String(block && block.mode || '').toLowerCase();
+      const content = String(block && block.content || '');
+      return mode === 'custom' || mode === 'diagram' || /figure|image/.test(mode) || /<svg\b|<img\b|\\begin\{figurehtml\}/i.test(content);
+    }
+    function deckFeatureSummary(deck){
+      const slides = deck && Array.isArray(deck.slides) ? deck.slides : [];
+      let mathBlockCount = 0;
+      let visualBlockCount = 0;
+      let customBlockCount = 0;
+      const slidesWithMath = new Set();
+      const slidesWithVisuals = new Set();
+      slides.forEach((slide, si)=>{
+        const blocks = [].concat(Array.isArray(slide.leftBlocks) ? slide.leftBlocks : [], Array.isArray(slide.rightBlocks) ? slide.rightBlocks : []);
+        blocks.forEach(block=>{
+          if(deckBlockLooksLikeMath(block)){ mathBlockCount += 1; slidesWithMath.add(si); }
+          if(deckBlockLooksLikeVisual(block)){ visualBlockCount += 1; slidesWithVisuals.add(si); }
+          if(String(block && block.mode || '').toLowerCase() === 'custom') customBlockCount += 1;
+        });
+      });
+      return { slideCount:slides.length, mathBlockCount, visualBlockCount, customBlockCount, slidesWithMath:slidesWithMath.size, slidesWithVisuals:slidesWithVisuals.size };
+    }
+    function findAiImportMissingSourceProblems(deck, sourceSlides){
+      const expectations = sourceExpectationsForAi(sourceSlides || []);
+      const features = deckFeatureSummary(deck);
+      const problems = [];
+      if(expectations.totalMathCandidates >= 2 && features.mathBlockCount < Math.min(4, expectations.slidesWithMath)){
+        problems.push('source deck had ' + expectations.totalMathCandidates + ' math candidates across ' + expectations.slidesWithMath + ' slides, but cleaned deck has only ' + features.mathBlockCount + ' math/equation blocks; preserve or reconstruct the equations');
+      }
+      if(expectations.totalFigureCandidates >= 1 && features.visualBlockCount < Math.min(3, expectations.slidesWithFigures)){
+        problems.push('source deck had ' + expectations.totalFigureCandidates + ' figure/image candidates, but cleaned deck has only ' + features.visualBlockCount + ' visual/custom blocks; reconstruct figures as clean SVG/HTML diagrams or animations');
+      }
+      if(expectations.conceptSlides >= 4 && features.customBlockCount < 3){
+        problems.push('source deck contains multiple visual ML concepts, but cleaned deck has fewer than 3 custom SVG/HTML animations; add pedagogically correct animations for key concepts such as embedding, pooling/convolution, attention, or transformer blocks');
+      }
+      return problems;
+    }
     function applyEditablePromptTemplate(template, values){
       let out = String(template || '');
       Object.keys(values || {}).forEach(function(key){
@@ -617,12 +738,13 @@ Previous output to repair:
       });
       return out;
     }
-    async function aiDeckRepairPrompt(previousText, problems){
+    async function aiDeckRepairPrompt(previousText, problems, sourceContext){
       const prior = String(previousText || '').slice(0, 180000);
       const problemText = (problems || []).map(p => '- ' + p).join('\n');
       const template = await loadEditableAiPrompt(AI_IMPORT_REPAIR_PROMPT_PATH, DEFAULT_AI_IMPORT_REPAIR_PROMPT);
       return applyEditablePromptTemplate(template, {
         PROBLEMS: problemText,
+        SOURCE_CONTEXT: String(sourceContext || '').slice(0, 90000),
         PREVIOUS_OUTPUT: prior
       });
     }
@@ -689,27 +811,27 @@ Previous output to repair:
       const token = aiReviewTokenValue();
       const provider = aiReviewProviderValue();
       const model = aiReviewModelValue();
-      const system = await aiDeckSystemPrompt();
+    const system = await aiDeckSystemPrompt();
       const input = aiDeckUserPrompt(deckTitle, slides);
-      let text = await requestAiReviewText(endpoint, token, provider, model, system, input, 0.2, 36000);
+    let text = await requestAiReviewText(endpoint, token, provider, model, system, input, 0.15, 42000);
       let deck;
       let problems = [];
       try{
         deck = parseAiReviewResponseText(text, deckTitle);
-        problems = findAiImportDeckProblems(deck, "");
+      problems = findAiImportDeckProblems(deck, "").concat(findAiImportMissingSourceProblems(deck, slides));
       }catch(err){
         problems = ['AI returned invalid JSON: ' + (err && err.message ? err.message : String(err))];
       }
       if(problems.length){
-        showToast('AI cleanup needs one repair pass…');
-        text = await requestAiReviewText(endpoint, token, provider, model, system, await aiDeckRepairPrompt(text, problems), 0.1, 36000);
+      showToast('AI cleanup needs one repair pass for math/figures…');
+      text = await requestAiReviewText(endpoint, token, provider, model, system, await aiDeckRepairPrompt(text, problems, input), 0.05, 42000);
         deck = parseAiReviewResponseText(text, deckTitle);
-        problems = findAiImportDeckProblems(deck, "");
+      problems = findAiImportDeckProblems(deck, "").concat(findAiImportMissingSourceProblems(deck, slides));
         if(problems.length){
           throw new Error('AI deck still failed cleanup validation: ' + problems.join('; '));
         }
       }
-      try{ global.__LUMINA_STAGE41P_LAST_AI_IMPORT_REVIEW = { ok:true, endpoint, provider, model, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, validation:'passed', at:new Date().toISOString() }; }catch(_err){}
+      try{ global.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = { ok:true, endpoint, provider, model, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, validation:'passed', at:new Date().toISOString() }; }catch(_err){}
       return deck;
     }
     async function maybeReviewImportedDeckWithAi(importedSlides, deckTitle){
@@ -720,7 +842,7 @@ Previous output to repair:
         showToast('AI cleaned import: ' + deck.slides.length + ' slide' + (deck.slides.length === 1 ? '' : 's') + ' ready.');
         return Object.assign({ aiReviewed:true }, deck);
       }catch(err){
-        try{ global.__LUMINA_STAGE41P_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
+        try{ global.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
         throw new Error('AI import review failed; raw extracted deck was not loaded. ' + (err && err.message ? err.message : String(err)));
       }
     }
