@@ -1828,8 +1828,8 @@ const {
 } = fileIoApi;
 try{
   window.__LUMINA_FILE_IO_API = fileIoApi;
-  window.__LUMINA_STAGE41S_FILE_IO_API = fileIoApi;
-  window.LuminaStage41SFileIoApi = fileIoApi;
+  window.__LUMINA_STAGE41T_FILE_IO_API = fileIoApi;
+  window.LuminaStage41TFileIoApi = fileIoApi;
 }catch(_err){}
 
 const LuminaPresets = window.LuminaPresets || {};
@@ -2026,7 +2026,7 @@ document.getElementById('importFilesBtn')?.addEventListener('click', async ()=>{
   try{
     const btn = document.getElementById('importFilesBtn');
     if(btn && btn.__luminaStage41SBound) return;
-    window.__LUMINA_STAGE41S_LEGACY_IMPORT_CLICK = { at:new Date().toISOString(), fileCount:(document.getElementById('importFilesInput')?.files || []).length };
+    window.__LUMINA_STAGE41T_LEGACY_IMPORT_CLICK = { at:new Date().toISOString(), fileCount:(document.getElementById('importFilesInput')?.files || []).length }; window.__LUMINA_STAGE41S_LEGACY_IMPORT_CLICK = window.__LUMINA_STAGE41T_LEGACY_IMPORT_CLICK;
     await importSelectedFiles(document.getElementById('importFilesInput')?.files || []);
   }catch(err){
     alert(err.message || 'Could not import selected files.');

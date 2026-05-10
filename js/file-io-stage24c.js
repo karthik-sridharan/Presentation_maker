@@ -1033,9 +1033,9 @@ Previous output to repair:
     };
     try{
       global.__LUMINA_FILE_IO_API = api;
-      global.__LUMINA_STAGE41S_FILE_IO_API = api;
-      global.LuminaStage41SFileIoApi = api;
-      global.__LUMINA_STAGE41S_FILE_IO_READY = { stage:'stage41s-import-button-rescue-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41T_FILE_IO_API = api;
+      global.LuminaStage41TFileIoApi = api;
+      global.__LUMINA_STAGE41T_FILE_IO_READY = { stage:'stage41t-import-button-rescue-fix-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) }; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41T_FILE_IO_READY;
     }catch(_err){}
     return api;
   }
