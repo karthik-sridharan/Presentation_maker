@@ -1,6 +1,6 @@
 You are cleaning a raw Lumina Presentation Maker deck extracted from PDF/PPT/PPTX.
 
-Your job is NOT to preserve the extracted deck literally. Your job is to produce a clean, teachable, editable Lumina JSON deck that preserves the source deck's mathematical content and visual explanations.
+Your job is NOT to preserve the extracted deck literally. Your job is to first review the JSON file given to you, correct errors, formatting errors and polish the content and rearrange the sizes to fit within the output slide aspect ratio. Go over each slide, make sure to correct the math if there are import errors. For each figure, if necessary replace the figure by either a better SVG or, preferably,  if it makes sense, by an html animation or demo block. 
 
 Input:
 - raw Lumina JSON deck from slide extraction
@@ -22,7 +22,6 @@ Non-negotiable preservation requirements:
    - a clean custom HTML/SVG static diagram, or
    - a concise editable figure block.
 4. If a source figure is omitted because it was a raw screenshot/base64 image, replace it with a semantically equivalent hand-authored SVG/HTML figure. Do not simply drop it.
-5. If the raw source is a lecture on attention/transformers/text models, include several visual explanations: tokenization/embedding, pooling or convolution, attention lookup, self-attention matrix form, multi-head attention, residual connections, and transformer block when relevant.
 
 Core cleanup requirements:
 1. Rebuild the deck pedagogically.
@@ -50,29 +49,10 @@ Core cleanup requirements:
      "⇥" -> "\times"
      "ﬁ" -> "fi"
 
-3. Use custom HTML/SVG animations when they clarify a concept better than static text.
-   Good candidates:
-   - tokenization and embedding
-   - pooling
-   - convolutional window scanning
-   - attention as fuzzy lookup
-   - self-attention matrix computation
-   - multi-head attention
-   - residual connection
-   - layer normalization
-   - transformer block
-
+3. Use custom HTML/SVG animations when they clarify a concept better than static text. Feel free to add buttons for html animations and make them demos.
+  
 4. Animation correctness rules.
    - Do not merely decorate diagrams with motion; animate the mathematical operation being explained.
-   - Tokenization animation: show sentence -> tokens -> embedding vectors.
-   - Pooling animation: show many token vectors collapsing into one pooled vector.
-   - Convolution animation: show a window moving across adjacent tokens.
-   - Attention animation: show query-to-key scores, softmax weights, and weighted sum of values.
-   - Self-attention matrix animation: show Q, K, V, QK^T, row-wise softmax, then multiply by V.
-   - Multi-head attention: show several heads in parallel, then concat/project.
-   - Residual animation: show both the layer path and skip path meeting at addition.
-   - LayerNorm animation: show unequal coordinates normalized to centered/scaled coordinates.
-   - Transformer block animation: show attention, add+norm, FFN, add+norm.
 
 5. Custom HTML/SVG block rules.
    - Use mode: "custom".
@@ -91,13 +71,6 @@ Core cleanup requirements:
    - Avoid body min-height:720px for two-column slides.
    - Avoid fixed custom animation heights like height:720px unless the slide is a full single-slide animation.
    - If the animation needs a large full-slide area, make that slide slideType: "single" instead of putting the animation in a two-column right block.
-
-6. Layout rules.
-   - Prefer 18-28 slides for a full lecture cleanup unless the source deck is much shorter.
-   - Use two-col for explanation + small figure.
-   - Use single or title-center for section breaks and large animations.
-   - Do not put a 720px-tall custom animation beside a large left column; use a single-slide animation instead.
-   - Keep each slide visually sparse: at most 5 bullets, at most 2 equations, and at most 1 major animation/figure.
 
 7. Lumina block style rules.
    - Use "panel" for clean editable text and equations.
