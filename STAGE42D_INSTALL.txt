@@ -1,0 +1,15 @@
+Stage 42D — simple AI import repair
+
+Install by unzipping this package at the root of the GitHub Presentation_maker repo, replacing files.
+
+Open:
+https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42d-displaymath-brackets-import-repair-20260510-1
+
+What changed:
+- Import AI no longer asks for a full deck redesign.
+- It sends the backend-extracted source deck as a conservative per-block repair job.
+- The prompt asks AI to repair math, keep images, preserve block ids, and make small layout/size fixes only.
+- The frontend restores original image assets and missing source blocks after AI output using __aiSourceBlockId.
+- Existing Stage 42B export freeform parity is preserved.
+
+No backend update is required.
