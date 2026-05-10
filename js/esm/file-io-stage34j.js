@@ -1,4 +1,4 @@
-/* Stage 41W: browser-compatible ES module file/import workflow helpers with AI preserve-and-merge import.
+/* Stage 41X: browser-compatible ES module file/import workflow helpers with AI preserve-and-merge import.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -818,7 +818,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     try{ recovered = normalizeSlide(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide || {}))); }
     catch(_err){ recovered = Object.assign({ title:'Recovered source slide', slideType:'single', leftBlocks:[], rightBlocks:[] }, sourceSlide || {}); }
     recovered.title = String(recovered.title || ('Recovered source slide ' + (deck.slides.length + 1)));
-    recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41W appended this source slide because AI cleanup returned too few slides.';
+    recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41X appended this source slide because AI cleanup returned too few slides.';
     recovered.__stage41vRecoveredSourceSlide = true;
     deck.slides.push(recovered);
     stats.rawSlidesAdded += 1;
@@ -842,10 +842,10 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     }
     if(touched){
       stats.touchedSlides += 1;
-      cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41W restored source math/figure content that AI cleanup dropped.';
+      cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41X restored source math/figure content that AI cleanup dropped.';
     }
   });
-  // Stage 41W: preserve user-selected image alternatives exactly, even after AI cleanup.
+  // Stage 41X: preserve user-selected image alternatives exactly, even after AI cleanup.
   sourceSlides.forEach(function(sourceSlide, i){
     if(sourceSlide && sourceSlide.importChoiceMode === 'image' && deck.slides[i]){
       try{ deck.slides[i] = normalizeSlide(stripImportReviewInternals(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide)))); stats.touchedSlides += 1; }catch(_err){}
@@ -972,7 +972,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
       return Object.assign({ aiReviewed:true }, deck);
     }catch(err){
       const message = err && err.message ? err.message : String(err);
-      // Stage 41W: do not leave the user with no slides when the AI review path
+      // Stage 41X: do not leave the user with no slides when the AI review path
       // is too strict or the model drops equations/figures. Preserve the backend
       // extraction output and report the AI validation failure for diagnostics.
       const fallbackSlides = Array.isArray(importedSlides) ? importedSlides : [];
@@ -1109,6 +1109,40 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     if (/\.ppt$/i.test(name)) return 'ppt';
     return '';
   }
+  function extractionHealthEndpoint(endpoint) {
+    var raw = String(endpoint || '').trim();
+    if (!raw) return '';
+    try {
+      var url = new URL(raw, globalThis.location && globalThis.location.href || undefined);
+      url.pathname = url.pathname.replace(/\/api\/lumina\/extract\/?$/, '/health');
+      url.search = '';
+      url.hash = '';
+      return url.toString();
+    } catch (_err) { return ''; }
+  }
+  function describeExtractionFetchFailure(endpoint, err) {
+    var msg = err && err.message ? String(err.message) : String(err || 'Load failed');
+    var health = extractionHealthEndpoint(endpoint);
+    var hint = 'The browser could not complete the upload request.';
+    function finish(extra) {
+      var out = msg + ' — ' + hint + (extra || '');
+      if (/Load failed|Failed to fetch|NetworkError/i.test(msg)) {
+        out += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits.';
+      }
+      return out;
+    }
+    if (!health || typeof fetch !== 'function') return Promise.resolve(finish(''));
+    return fetch(health, { method:'GET', cache:'no-store', mode:'cors' }).then(function (res) {
+      return res.text().then(function (text) {
+        var extra = ' Backend /health is reachable (HTTP ' + res.status + ').';
+        if (text && /stage41w|stage41v|stage41q|stage40d/i.test(text)) extra += ' Health looks like an older backend/frontend stage may still be deployed.';
+        return finish(extra);
+      });
+    }).catch(function () {
+      return finish(' The browser also could not reach ' + health + ', which usually means the endpoint URL is wrong, Cloud Run is not public, CORS is blocked, or the service is down.');
+    });
+  }
+
   function extractPresentationFile(file) {
     if (typeof fetch !== 'function' || typeof FormData !== 'function') return Promise.reject(new Error('This browser does not support fetch/FormData upload.'));
     var endpoint = extractionEndpointValue();
@@ -1130,7 +1164,9 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
-    return fetch(endpoint, { method:'POST', headers:headers, body:form }).then(function (res) {
+    return fetch(endpoint, { method:'POST', headers:headers, body:form, cache:'no-store', mode:'cors' }).catch(function (fetchErr) {
+      return describeExtractionFetchFailure(endpoint, fetchErr).then(function (message) { throw new Error(message); });
+    }).then(function (res) {
       return res.text().then(function (text) {
         var payload = null;
         try { payload = text ? JSON.parse(text) : null; }
