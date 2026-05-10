@@ -1,4 +1,4 @@
-/* Stage 41Y file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
+/* Stage 41Z file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -850,7 +850,7 @@ Previous output to repair:
         try{ recovered = normalizeSlide(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide || {}))); }
         catch(_err){ recovered = Object.assign({ title:'Recovered source slide', slideType:'single', leftBlocks:[], rightBlocks:[] }, sourceSlide || {}); }
         recovered.title = String(recovered.title || ('Recovered source slide ' + (deck.slides.length + 1)));
-        recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41Y appended this source slide because AI cleanup returned too few slides.';
+        recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41Z appended this source slide because AI cleanup returned too few slides.';
         recovered.__stage41vRecoveredSourceSlide = true;
         deck.slides.push(recovered);
         stats.rawSlidesAdded += 1;
@@ -874,10 +874,10 @@ Previous output to repair:
         }
         if(touched){
           stats.touchedSlides += 1;
-          cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41Y restored source math/figure content that AI cleanup dropped.';
+          cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41Z restored source math/figure content that AI cleanup dropped.';
         }
       });
-      // Stage 41Y: preserve user-selected image alternatives exactly, even after AI cleanup.
+      // Stage 41Z: preserve user-selected image alternatives exactly, even after AI cleanup.
       sourceSlides.forEach((sourceSlide, i)=>{
         if(sourceSlide && sourceSlide.importChoiceMode === 'image' && deck.slides[i]){
           try{ deck.slides[i] = normalizeSlide(stripImportReviewInternals(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide)))); stats.touchedSlides += 1; }catch(_err){}
@@ -1004,7 +1004,7 @@ Previous output to repair:
         return Object.assign({ aiReviewed:true }, deck);
       }catch(err){
         const message = err && err.message ? err.message : String(err);
-        // Stage 41Y: do not leave the user with no slides when the AI preserve-merge path
+        // Stage 41Z: do not leave the user with no slides when the AI preserve-merge path
         // is too strict or the model drops equations/figures. Preserve the backend
         // extraction output and report the AI validation failure for diagnostics.
         const fallbackSlides = Array.isArray(importedSlides) ? importedSlides : [];
@@ -1168,38 +1168,82 @@ Previous output to repair:
         }
       }
       if(/Load failed|Failed to fetch|NetworkError/i.test(msg)){
-        hint += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits, and that the extraction JSON response was not too large. Stage 41Y uses compact review images; if this persists, temporarily reduce Max PDF pages or set Include review alternates off.';
+        hint += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits, and that the extraction JSON response was not too large. Stage 41Z uses compact review images; if this persists, temporarily reduce Max PDF pages or set Include review alternates off.';
       }
       return msg + ' — ' + hint;
     }
 
-    async function extractPresentationFile(file){
-      if(typeof fetch !== 'function' || typeof FormData !== 'function') throw new Error('This browser does not support fetch/FormData upload.');
-      const endpoint = extractionEndpointValue();
-      if(!endpoint) throw new Error('Set an extraction backend endpoint first.');
+    function buildExtractionForm(file, attempt){
       const form = new FormData();
       form.append('file', file, file.name || 'presentation');
       const kind = fileKind(file);
       if(kind) form.append('kind', kind);
-      // Stage 41J: explicitly request all pages/slides so a stale Cloud Run env
-      // such as LUMINA_EXTRACT_MAX_PDF_PAGES=1 cannot silently limit imports.
-      form.append('maxPdfPages', String(DEFAULT_MAX_IMPORT_PAGES));
+      form.append('maxPdfPages', String(attempt.maxPdfPages || DEFAULT_MAX_IMPORT_PAGES));
       form.append('maxPptxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
       form.append('maxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
-      // Stage 41J: import PDF images as individual image blocks; do not include a full-page
-      // background bitmap unless explicitly added later. This prevents page 1 from becoming
-      // a repeated background across imported slides.
-      form.append('includePdfBackground', '0');
-    form.append('includePdfReviewAlternates', '1');
-    form.append('extractEngine', extractionEngineValue());
-    // Stage 41Y: keep rendered review alternatives small enough for Safari/Cloud Run.
-    form.append('reviewRenderZoom', '0.45');
-    form.append('reviewJpegQuality', '48');
-    form.append('vectorRenderZoom', '0.95');
-    form.append('vectorJpegQuality', '58');
-      const headers = {};
-      const token = extractionTokenValue();
-      if(token) headers.Authorization = 'Bearer ' + token;
+      form.append('maxImagesPerSlide', String(attempt.maxImagesPerSlide || 24));
+      form.append('includePdfBackground', String(attempt.includePdfBackground || '0'));
+      form.append('includePdfReviewAlternates', String(attempt.includePdfReviewAlternates));
+      form.append('includePdfRender', String(attempt.includePdfRender));
+      form.append('extractEngine', String(attempt.extractEngine || extractionEngineValue()));
+      form.append('reviewRenderZoom', String(attempt.reviewRenderZoom));
+      form.append('reviewJpegQuality', String(attempt.reviewJpegQuality));
+      form.append('vectorRenderZoom', String(attempt.vectorRenderZoom));
+      form.append('vectorJpegQuality', String(attempt.vectorJpegQuality));
+      form.append('httpSafeMb', String(attempt.httpSafeMb || 16));
+      form.append('attemptLabel', String(attempt.label || 'extract'));
+      return form;
+    }
+    function extractionAttemptsForFile(file){
+      const engine = extractionEngineValue();
+      return [
+        {
+          label:'full hybrid extraction with review alternates',
+          extractEngine: engine,
+          includePdfReviewAlternates:'1',
+          includePdfRender:'1',
+          includePdfBackground:'0',
+          maxImagesPerSlide:24,
+          reviewRenderZoom:0.45,
+          reviewJpegQuality:48,
+          vectorRenderZoom:0.95,
+          vectorJpegQuality:58,
+          httpSafeMb:16
+        },
+        {
+          label:'lean retry: hybrid without rendered review alternates',
+          extractEngine: engine,
+          includePdfReviewAlternates:'0',
+          includePdfRender:'1',
+          includePdfBackground:'0',
+          maxImagesPerSlide:10,
+          reviewRenderZoom:0.30,
+          reviewJpegQuality:42,
+          vectorRenderZoom:0.65,
+          vectorJpegQuality:45,
+          httpSafeMb:10
+        },
+        {
+          label:'rescue retry: PyMuPDF only, no review alternates',
+          extractEngine:'pymupdf',
+          includePdfReviewAlternates:'0',
+          includePdfRender:'0',
+          includePdfBackground:'0',
+          maxImagesPerSlide:6,
+          reviewRenderZoom:0.25,
+          reviewJpegQuality:38,
+          vectorRenderZoom:0.50,
+          vectorJpegQuality:40,
+          httpSafeMb:8
+        }
+      ];
+    }
+    function extractionErrorLooksRetryable(errOrMessage){
+      const msg = String(errOrMessage && errOrMessage.message || errOrMessage || '');
+      if(/Unauthorized proxy request|Set an extraction backend endpoint|Unsupported extraction file type/i.test(msg)) return false;
+      return /Load failed|Failed to fetch|NetworkError|response.*too large|too large|413|429|500|502|503|504|timeout|socket|interrupted|Empty response/i.test(msg) || !msg;
+    }
+    async function postExtractionAttempt(endpoint, headers, form, attempt){
       let res;
       try{
         res = await fetch(endpoint, { method:'POST', headers, body:form, cache:'no-store', mode:'cors' });
@@ -1212,11 +1256,47 @@ Previous output to repair:
       catch(_err){ payload = { ok:false, error:{ message: text ? text.slice(0, 500) : 'Empty response from extraction backend.' } }; }
       if(!res.ok || !payload || payload.ok === false){
         const msg = payload && payload.error && payload.error.message ? payload.error.message : ('Extraction backend failed with HTTP ' + res.status + '.');
-        throw new Error(msg);
+        const err = new Error(msg);
+        err.status = res.status;
+        err.attemptLabel = attempt && attempt.label || '';
+        throw err;
       }
       if(!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
-      try{ global.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '' }; }catch(_err){}
+      payload.warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
+      if(attempt && attempt.label && !/^full/i.test(attempt.label)){
+        payload.warnings.push('Stage 41Z used ' + attempt.label + ' after the larger extraction attempt could not complete. The deck is loaded, but rendered image-review alternatives may be unavailable for some slides.');
+      }
+      payload.meta = Object.assign({}, payload.meta || {}, { stage41zAttempt: attempt && attempt.label || 'extract' });
       return payload;
+    }
+    async function extractPresentationFile(file){
+      if(typeof fetch !== 'function' || typeof FormData !== 'function') throw new Error('This browser does not support fetch/FormData upload.');
+      const endpoint = extractionEndpointValue();
+      if(!endpoint) throw new Error('Set an extraction backend endpoint first.');
+      const headers = {};
+      const token = extractionTokenValue();
+      if(token) headers.Authorization = 'Bearer ' + token;
+      const attempts = extractionAttemptsForFile(file);
+      const errors = [];
+      for(let i=0;i<attempts.length;i++){
+        const attempt = attempts[i];
+        try{
+          try{ global.__LUMINA_STAGE41Z_EXTRACTION_ATTEMPT = { index:i + 1, count:attempts.length, label:attempt.label, at:new Date().toISOString() }; }catch(_err){}
+          const payload = await postExtractionAttempt(endpoint, headers, buildExtractionForm(file, attempt), attempt);
+          try{ global.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '', attempt:attempt.label, previousErrors:errors.slice() }; }catch(_err){}
+          return payload;
+        }catch(err){
+          const msg = err && err.message ? err.message : String(err || 'Extraction failed.');
+          errors.push(attempt.label + ': ' + msg);
+          try{ global.__LUMINA_STAGE41Z_EXTRACTION_ERRORS = errors.slice(); }catch(_err){}
+          if(i >= attempts.length - 1 || !extractionErrorLooksRetryable(msg)){
+            const finalErr = new Error(msg + (errors.length > 1 ? '\\n\\nTried extraction modes:\\n- ' + errors.join('\\n- ') : ''));
+            finalErr.cause = err;
+            throw finalErr;
+          }
+        }
+      }
+      throw new Error(errors.join('\\n'));
     }
     function applyImportedSlides(importedSlides, opts={}){
       const incoming = (importedSlides || []).map(normalizeSlide).filter(Boolean);
