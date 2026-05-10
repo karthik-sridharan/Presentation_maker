@@ -20,15 +20,6 @@
       slideForSnippet
     } = deps;
 
-    if(typeof window !== 'undefined'){
-      window.LuminaExportPdfStatus = {
-        stage: 'stage41j-custom-html-pdf-visible-snapshot-20260429-1',
-        skipCustomSlides: false,
-        customHtmlVisibleSnapshot: true,
-        note: 'PDF export includes custom HTML slides and snapshots the visible custom-frame area when possible.'
-      };
-    }
-
 function buildStandaloneViewer(payload){
   const deckJson = JSON.stringify(payload).replace(/<\/script>/gi, '<\\/script>');
   return `<!DOCTYPE html>
@@ -91,6 +82,22 @@ body{color:var(--deck-text);overflow:hidden}
 .laser-select{font:inherit;border:1px solid rgba(17,17,17,.18);border-radius:999px;background:#fff;color:#111;padding:.28rem .48rem;cursor:pointer;max-width:8.5rem}
 .laser-select:focus{outline:2px solid rgba(47,111,237,.35);outline-offset:2px}
 .slide-number{position:absolute;bottom:1.15rem;right:1.4rem;font-size:1rem;color:rgba(17,17,17,.62)}
+
+/* Stage 42A: standalone/generated HTML preserves freeform import positioning. */
+.deck-slide.freeform-import{padding:0!important;overflow:hidden!important;background:#fff!important;}
+.deck-slide.freeform-import .freeform-layer{position:absolute;left:0;top:0;width:1600px;height:900px;overflow:hidden;background:transparent;transform-origin:top left;}
+.slide.freeform-import{position:absolute!important;width:1600px!important;height:900px!important;min-height:900px!important;padding:0!important;overflow:hidden!important;background:#fff!important;}
+.slide.freeform-import .freeform-layer{position:absolute;left:0;top:0;width:1600px;height:900px;overflow:hidden;background:transparent;transform-origin:top left;}
+.deck-slide.freeform-import .freeform-block,.slide.freeform-import .freeform-block{position:absolute;box-sizing:border-box;overflow:visible;margin:0!important;padding:0!important;background:transparent!important;}
+.deck-slide.freeform-import .freeform-block > .preview-block,.slide.freeform-import .freeform-block > .preview-block{width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;border:0!important;}
+.deck-slide.freeform-import .freeform-text-content,.slide.freeform-import .freeform-text-content{width:100%;height:100%;white-space:pre-wrap;line-height:1.08;letter-spacing:normal;overflow:visible;transform-origin:top left;}
+.deck-slide.freeform-import .freeform-text-content span,.slide.freeform-import .freeform-text-content span{white-space:pre-wrap;letter-spacing:normal;}
+.deck-slide.freeform-import .freeform-image-block .rich,.deck-slide.freeform-import .freeform-image-block .figure-embed,.slide.freeform-import .freeform-image-block .rich,.slide.freeform-import .freeform-image-block .figure-embed{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;display:block!important;}
+.deck-slide.freeform-import .freeform-image-block .figure-embed figure,.slide.freeform-import .freeform-image-block .figure-embed figure{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;display:block!important;margin:0!important;}
+.deck-slide.freeform-import .freeform-image-block .figure-box,.slide.freeform-import .freeform-image-block .figure-box{padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;}
+.deck-slide.freeform-import .freeform-image-block .figure-box > img,.deck-slide.freeform-import .freeform-image-block .figure-box > figure,.deck-slide.freeform-import .freeform-image-block .figure-box > figure > img,.slide.freeform-import .freeform-image-block .figure-box > img,.slide.freeform-import .freeform-image-block .figure-box > figure,.slide.freeform-import .freeform-image-block .figure-box > figure > img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;display:block!important;}
+.deck-slide.freeform-import .freeform-image-block.import-role-background,.slide.freeform-import .freeform-image-block.import-role-background{pointer-events:none;}
+
 .pdf-modal[hidden]{display:none !important}
 .pdf-modal{position:fixed;inset:0;background:rgba(7,11,23,.46);display:grid;place-items:center;z-index:58;padding:1rem}
 .pdf-dialog{width:min(420px,92vw);background:#fff;color:#111;border-radius:18px;border:1px solid rgba(17,17,17,.14);box-shadow:0 24px 70px rgba(0,0,0,.28);padding:1rem;display:grid;gap:.85rem}
@@ -161,7 +168,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <div class="pdf-modal" id="pdfModal" hidden>
   <div class="pdf-dialog">
     <h3>Generate PDF</h3>
-    <p>Choose how many slides to place on each page. Custom HTML blocks are included as visible-area snapshots when possible.</p>
+    <p>Choose how many slides to place on each page. Slides containing custom HTML blocks will be skipped.</p>
     <label>
       <div style="font-weight:700;margin-bottom:.35rem">Slides per page</div>
       <select id="pdfSlidesPerPage">
@@ -182,7 +189,6 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$'
 <div class="deck" id="deck"></div>
 <script>
 const deckPayload=JSON.parse(document.getElementById('deck-source').textContent);
-window.luminaStandalonePdfStatus={stage:'stage41j-custom-html-pdf-visible-snapshot-20260429-1', skipCustomSlides:false, customHtmlVisibleSnapshot:true, customHtmlSnapshotCount:0, lastRenderedSlideCount:0, lastError:''};
 function normalizeExportControls(options){const src=(options&&options.exportControls)||{};const legacy=!!(options&&options.enableLiveDraw);return {slides:src.slides!==false,draw:legacy||!!src.draw,exportAnnotated:legacy||!!src.exportAnnotated,pointerMenu:src.pointerMenu!==false,generatePdf:src.generatePdf!==false};}
 const exportControls=normalizeExportControls(deckPayload.presentationOptions||{});
 const liveDrawEnabled=!!(exportControls.draw||exportControls.exportAnnotated);
@@ -208,16 +214,15 @@ function parseStructuredText(raw){const text=String(raw??'').replace(/\\r\\n/g,'
 for(let i=0;i<lines.length;i+=1){const line=lines[i].trim();if(!line){flushParagraph();flushList();continue;}const paragraphMatch=line.match(/^\\\\paragraph\\{([\\s\\S]*)\\}$/);if(paragraphMatch){flushParagraph();flushList();parts.push('<p>'+safeWithMath(paragraphMatch[1].trim())+'</p>');continue;}if(/^\\\\begin\\{itemize\\}$/i.test(line)){flushParagraph();flushList();const items=[];i+=1;while(i<lines.length&&!/^\\\\end\\{itemize\\}$/i.test(lines[i].trim())){const itemLine=lines[i].trim();if(itemLine){const itemMatch=itemLine.match(/^\\\\item\\s+([\\s\\S]*)$/);if(itemMatch)items.push(itemMatch[1].trim());}i+=1;}parts.push('<ul>'+items.map(item=>'<li>'+safeWithMath(item)+'</li>').join('')+'</ul>');continue;}if(/^\\\\begin\\{enumerate\\}$/i.test(line)){flushParagraph();flushList();const items=[];i+=1;while(i<lines.length&&!/^\\\\end\\{enumerate\\}$/i.test(lines[i].trim())){const itemLine=lines[i].trim();if(itemLine){const itemMatch=itemLine.match(/^\\\\item\\s+([\\s\\S]*)$/);if(itemMatch)items.push(itemMatch[1].trim());}i+=1;}parts.push('<ol>'+items.map(item=>'<li>'+safeWithMath(item)+'</li>').join('')+'</ol>');continue;}if(/^\\\\begin\\{equation\\}$/i.test(line)){flushParagraph();flushList();const collected=collectUntil(/^\\\\end\\{equation\\}$/i,i+1);parts.push('<div class="display-math">\\\\[\\\\begin{aligned}'+escapeHtml(collected.body)+'\\\\end{aligned}\\\\]</div>');i=collected.endIndex;continue;}const cardBegin=line.match(/^\\\\begin\\{card\\}\\{([\\s\\S]*)\\}$/i);if(cardBegin){flushParagraph();flushList();const collected=collectUntil(/^\\\\end\\{card\\}$/i,i+1);parts.push('<div class="bullet-card"><b>'+safeWithMath(cardBegin[1].trim())+'</b><div>'+simpleCardBody(collected.body)+'</div></div>');i=collected.endIndex;continue;}if(/^\\\\begin\\{figurehtml\\}$/i.test(line)){flushParagraph();flushList();const collected=collectUntil(/^\\\\end\\{figurehtml\\}$/i,i+1);parts.push('<div class="figure-embed">'+collected.body+'</div>');i=collected.endIndex;continue;}if(/^UL:/i.test(line)){flushParagraph();if(listType&&listType!=='itemize')flushList();listType='itemize';listItems.push(line.replace(/^UL:/i,'').trim());continue;}if(line.startsWith('- ')){flushParagraph();if(listType&&listType!=='itemize')flushList();listType='itemize';listItems.push(line.slice(2).trim());continue;}flushList();if(line.startsWith('### ')){flushParagraph();parts.push('<h3>'+safeWithMath(line.slice(4).trim())+'</h3>');continue;}if(/^P:/i.test(line)){flushParagraph();parts.push('<p>'+safeWithMath(line.replace(/^P:/i,'').trim())+'</p>');continue;}if(/^EQ:/i.test(line)){flushParagraph();parts.push('<div class="display-math">'+safeWithMath(line.replace(/^EQ:/i,'').trim())+'</div>');continue;}if(/^CARD:/i.test(line)){flushParagraph();const payload=line.replace(/^CARD:/i,'').trim();const pieces=payload.split('|');const cardTitle=pieces.shift()||'';const cardBody=pieces.join('|');parts.push('<div class="bullet-card"><b>'+safeWithMath(cardTitle)+'</b><div><p>'+safeWithMath(cardBody)+'</p></div></div>');continue;}paragraph.push(line);}flushParagraph();flushList();return parts.join('\\n');}
 function diagramMarkup(){return '<div class="diag"><svg class="diagram" viewBox="0 0 760 430" role="img" aria-label="Tiny neural network diagram placeholder"><line x1="145" y1="145" x2="355" y2="125" class="edge"/><line x1="145" y1="145" x2="355" y2="295" class="edge"/><line x1="145" y1="285" x2="355" y2="125" class="edge"/><line x1="145" y1="285" x2="355" y2="295" class="edge"/><line x1="405" y1="125" x2="615" y2="215" class="edge"/><line x1="405" y1="295" x2="615" y2="215" class="edge"/><circle cx="115" cy="145" r="34" class="node"/><circle cx="115" cy="285" r="34" class="node"/><circle cx="375" cy="125" r="34" class="node"/><circle cx="375" cy="295" r="34" class="node"/><circle cx="645" cy="215" r="34" class="node"/><text x="88" y="153" class="label">x₁</text><text x="88" y="293" class="label">x₂</text><text x="350" y="133" class="label">h₁</text><text x="350" y="303" class="label">h₂</text><text x="632" y="223" class="label">ŷ</text></svg></div>';}
 function customFrameMarkup(raw){const html=String(raw||'').trim();if(!html)return '<div class="placeholder">Paste custom HTML here.</div>';return '<div class="custom-frame-wrap"><iframe class="custom-frame" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads" referrerpolicy="no-referrer" srcdoc="'+escapeAttr(html)+'"></iframe></div>';}
-function normalizeFontSize(value){if(value===undefined||value===null||value==='')return '';const raw=String(value).trim();const n=Number(raw.replace(/px$/i,''));if(Number.isFinite(n))return Math.max(8,Math.min(120,n))+'px';if(/^\d+(?:\.\d+)?(?:px|rem|em|pt)$/i.test(raw))return raw;return '';}function normalizeBlockStyle(style){const s=style||{};const fontScale=Number.isFinite(Number(s.fontScale))?Number(s.fontScale):1;return {fontScale:Math.max(.6,Math.min(2.5,fontScale)),fontSize:normalizeFontSize(s.fontSize),fontFamily:s.fontFamily||'inherit',fontColor:s.fontColor||'#111111',bulletType:s.bulletType||'disc'};}function normalizeAnimation(anim){const a=anim||{};const buildIn=['none','appear','fade'].includes(a.buildIn)?a.buildIn:'none';const buildOut=['none','disappear','fade'].includes(a.buildOut)?a.buildOut:'none';const stepMode=['all','by-item'].includes(a.stepMode)?a.stepMode:'all';const order=Number.isFinite(Number(a.order))?Number(a.order):0;return {buildIn,buildOut,stepMode,order};}function animationDataAttrs(anim){const a=normalizeAnimation(anim);return ' data-build-in="'+escapeAttr(a.buildIn)+'" data-build-out="'+escapeAttr(a.buildOut)+'" data-step-mode="'+escapeAttr(a.stepMode)+'" data-anim-order="'+escapeAttr(String(a.order))+'"';}function blockWrapperStyle(block){const s=normalizeBlockStyle((block&&block.style)||{});return '--block-font-scale:'+s.fontScale+';'+(s.fontSize?'--block-font-size:'+escapeAttr(s.fontSize)+';font-size:'+escapeAttr(s.fontSize)+';':'')+'--block-font-family:'+escapeAttr(s.fontFamily)+';--block-font-color:'+s.fontColor+';--block-bullet-type:'+s.bulletType+';';}function titleWrapperStyle(style,heading){const s=normalizeBlockStyle(style||{});const baseMap={h1:'5.6rem',h2:'3.1rem',h3:'2.45rem',h4:'2.1rem',h5:'1.8rem',h6:'1.55rem'};return '--block-font-scale:'+s.fontScale+';'+(s.fontSize?'--block-font-size:'+escapeAttr(s.fontSize)+';font-size:'+escapeAttr(s.fontSize)+';':'')+'--block-font-family:'+escapeAttr(s.fontFamily)+';--block-font-color:'+s.fontColor+';--title-base-size:'+(baseMap[String(heading||'h2').toLowerCase()]||'3.1rem')+';';}function normalizeBlock(block){const mode=block.mode||'panel';if(mode==='diagram'){return {mode:'custom',title:block.title||'Legacy diagram',content:'<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Inter,Arial,sans-serif}*{box-sizing:border-box}.diag{display:grid;place-items:center;padding:.9rem}.diagram{width:100%;max-width:680px;height:auto}.diagram .edge{stroke:currentColor;stroke-opacity:.32;stroke-width:6;stroke-linecap:round}.diagram .node{fill:none;stroke:currentColor;stroke-width:6}.diagram .label{fill:currentColor;font:700 28px Inter,system-ui,sans-serif}</style></head><body>'+(block.content||diagramMarkup())+'</body></html>',style:normalizeBlockStyle(block.style),animation:normalizeAnimation(block.animation)};}return {mode:mode,title:block.title||'',content:block.content||'',style:normalizeBlockStyle(block.style),animation:normalizeAnimation(block.animation)};}
-function normalizeSlide(slide){const out=JSON.parse(JSON.stringify(slide||{}));let leftBlocks=Array.isArray(out.leftBlocks)?out.leftBlocks.map(normalizeBlock):null;let rightBlocks=Array.isArray(out.rightBlocks)?out.rightBlocks.map(normalizeBlock):null;if(!leftBlocks){leftBlocks=[{mode:out.leftMode||'panel',title:'',content:out.leftHtml||''}];}if(!rightBlocks){rightBlocks=isTwoColType(out.slideType)?[{mode:out.rightMode||'panel',title:'',content:out.rightHtml||''}]:[];}out.leftBlocks=leftBlocks;out.rightBlocks=rightBlocks;out.titleStyle=normalizeBlockStyle(out.titleStyle);out.titleAnimation=normalizeAnimation(out.titleAnimation);out.inheritTheme=out.inheritTheme!==false;return out;}
+function normalizeFontSize(value){if(value===undefined||value===null||value==='')return '';const raw=String(value).trim();const n=Number(raw.replace(/px$/i,''));if(Number.isFinite(n))return Math.max(8,Math.min(120,n))+'px';if(/^\d+(?:\.\d+)?(?:px|rem|em|pt)$/i.test(raw))return raw;return '';}function normalizeBlockStyle(style){const s=style||{};const fontScale=Number.isFinite(Number(s.fontScale))?Number(s.fontScale):1;return {fontScale:Math.max(.6,Math.min(2.5,fontScale)),fontSize:normalizeFontSize(s.fontSize),fontFamily:s.fontFamily||'inherit',fontColor:s.fontColor||'#111111',bulletType:s.bulletType||'disc'};}function normalizeAnimation(anim){const a=anim||{};const buildIn=['none','appear','fade'].includes(a.buildIn)?a.buildIn:'none';const buildOut=['none','disappear','fade'].includes(a.buildOut)?a.buildOut:'none';const stepMode=['all','by-item'].includes(a.stepMode)?a.stepMode:'all';const order=Number.isFinite(Number(a.order))?Number(a.order):0;return {buildIn,buildOut,stepMode,order};}function animationDataAttrs(anim){const a=normalizeAnimation(anim);return ' data-build-in="'+escapeAttr(a.buildIn)+'" data-build-out="'+escapeAttr(a.buildOut)+'" data-step-mode="'+escapeAttr(a.stepMode)+'" data-anim-order="'+escapeAttr(String(a.order))+'"';}function blockWrapperStyle(block){const s=normalizeBlockStyle((block&&block.style)||{});return '--block-font-scale:'+s.fontScale+';'+(s.fontSize?'--block-font-size:'+escapeAttr(s.fontSize)+';font-size:'+escapeAttr(s.fontSize)+';':'')+'--block-font-family:'+escapeAttr(s.fontFamily)+';--block-font-color:'+s.fontColor+';--block-bullet-type:'+s.bulletType+';';}function titleWrapperStyle(style,heading){const s=normalizeBlockStyle(style||{});const baseMap={h1:'5.6rem',h2:'3.1rem',h3:'2.45rem',h4:'2.1rem',h5:'1.8rem',h6:'1.55rem'};return '--block-font-scale:'+s.fontScale+';'+(s.fontSize?'--block-font-size:'+escapeAttr(s.fontSize)+';font-size:'+escapeAttr(s.fontSize)+';':'')+'--block-font-family:'+escapeAttr(s.fontFamily)+';--block-font-color:'+s.fontColor+';--title-base-size:'+(baseMap[String(heading||'h2').toLowerCase()]||'3.1rem')+';';}function safeNum(value,fallback){const n=Number(value);return Number.isFinite(n)?n:fallback;}function decodeLiteralNewlines(value){const nl=String.fromCharCode(10);return String(value||'').replace(/\\r\\n/g,nl).replace(/\\n/g,nl).replace(/\\r/g,nl).replace(/\\t/g,' ');}function normalizeLayout(layout){const l=layout||{};return {x:Math.max(-2000,Math.min(4000,safeNum(l.x,0))),y:Math.max(-2000,Math.min(4000,safeNum(l.y,0))),w:Math.max(1,Math.min(4000,safeNum(l.w,320))),h:Math.max(1,Math.min(4000,safeNum(l.h,80))),z:Math.max(0,Math.min(999,Math.round(safeNum(l.z,1)))),rotate:Math.max(-360,Math.min(360,safeNum(l.rotate,0)))};}function normalizeImportRun(run){const r=run||{};const fs=Math.max(4,Math.min(240,safeNum(r.fontSize,18)));const color=/^#[0-9a-fA-F]{3,8}$/.test(String(r.fontColor||''))?String(r.fontColor):'#111111';const weight=/^(?:[1-9]00|bold|normal)$/i.test(String(r.fontWeight||''))?String(r.fontWeight):'400';const style=/^(?:normal|italic|oblique)$/i.test(String(r.fontStyle||''))?String(r.fontStyle):'normal';const family=String(r.fontFamily||'Arial, sans-serif').replace(/[<>";]/g,'').slice(0,160)||'Arial, sans-serif';return {text:decodeLiteralNewlines(r.text||''),fontSize:fs,fontFamily:family,fontColor:color,fontWeight:weight,fontStyle:style};}function normalizeBlock(block){block=block||{};const mode=block.mode||'panel';let out;if(mode==='diagram'){out={mode:'custom',title:block.title||'Legacy diagram',content:'<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><style>html,body{margin:0;padding:0;background:#fff;color:#111;font-family:Inter,Arial,sans-serif}*{box-sizing:border-box}.diag{display:grid;place-items:center;padding:.9rem}.diagram{width:100%;max-width:680px;height:auto}.diagram .edge{stroke:currentColor;stroke-opacity:.32;stroke-width:6;stroke-linecap:round}.diagram .node{fill:none;stroke:currentColor;stroke-width:6}.diagram .label{fill:currentColor;font:700 28px Inter,system-ui,sans-serif}</style></head><body>'+(block.content||diagramMarkup())+'</body></html>',style:normalizeBlockStyle(block.style),animation:normalizeAnimation(block.animation)};}else{out={mode:mode,title:block.title||'',content:decodeLiteralNewlines(block.content||''),style:normalizeBlockStyle(block.style),animation:normalizeAnimation(block.animation)};}if(block.layout)out.layout=normalizeLayout(block.layout);if(Array.isArray(block.importRuns))out.importRuns=block.importRuns.map(normalizeImportRun);if(block.importSourceLayout)out.importSourceLayout=normalizeLayout(block.importSourceLayout);if(block.importRole)out.importRole=String(block.importRole);return out;}function normalizeSlide(slide){const out=JSON.parse(JSON.stringify(slide||{}));let leftBlocks=Array.isArray(out.leftBlocks)?out.leftBlocks.map(normalizeBlock):null;let rightBlocks=Array.isArray(out.rightBlocks)?out.rightBlocks.map(normalizeBlock):null;if(!leftBlocks){leftBlocks=[{mode:out.leftMode||'panel',title:'',content:out.leftHtml||''}];}if(!rightBlocks){rightBlocks=isTwoColType(out.slideType)?[{mode:out.rightMode||'panel',title:'',content:out.rightHtml||''}]:[];}out.leftBlocks=leftBlocks;out.rightBlocks=rightBlocks;out.titleStyle=normalizeBlockStyle(out.titleStyle);out.titleAnimation=normalizeAnimation(out.titleAnimation);out.inheritTheme=out.inheritTheme!==false;return out;}
 function renderBlock(block,placeholderText){const resolvedMode=block.mode||'panel';const raw=block.content||'';let inner='';if(resolvedMode==='diagram')inner=diagramMarkup();else if(resolvedMode==='custom')inner=customFrameMarkup(raw);else if(resolvedMode==='placeholder')inner='<div class="placeholder">'+escapeHtml(raw||placeholderText||'Placeholder')+'</div>';else if(resolvedMode==='pseudocode')inner='<pre class="pseudo-block">'+escapeHtml(raw)+'</pre>';else if(resolvedMode==='pseudocode-latex'){const p=preserveMathTokens(raw);inner='<div class="pseudo-latex-block">'+restoreMathTokens(escapeHtml(p.out),p.tokens)+'</div>';}else inner='<div class="rich">'+parseStructuredText(raw)+'</div>';return '<div class="preview-block"'+animationDataAttrs(block.animation)+' style="'+blockWrapperStyle(block)+'">'+inner+'</div>';}
 function renderBlocks(blocks,placeholder){const list=blocks&&blocks.length?blocks:[{mode:'placeholder',content:placeholder||'Add a block'}];return '<div class="col-stack">'+list.map(block=>renderBlock(block,placeholder)).join('')+'</div>';}
-function buildSlideInner(slide){const heading=slide.headingLevel||'h2';const titleHtml='<div class="preview-title" data-preview-role="title"'+animationDataAttrs(slide.titleAnimation)+' style="'+titleWrapperStyle(slide.titleStyle,heading)+'"><'+heading+'>'+escapeHtml(slide.title||'Untitled slide').replace(/\\n/g,'<br>')+'</'+heading+'></div>';const kickerHtml=slide.kicker?'<div class="kicker">'+escapeHtml(slide.kicker)+'</div>':'';const ledeHtml=slide.lede?'<div class="lede">'+escapeHtml(slide.lede)+'</div>':'';const s=normalizeSlide(slide);if(s.slideType==='title-center')return '<div class="title-center">'+titleHtml+kickerHtml+'</div>';if(s.slideType==='section-divider')return '<div class="section-divider-wrap"><div><div class="divider-kicker">'+escapeHtml(s.kicker||'Section')+'</div>'+titleHtml+'<div class="divider-line"></div><div class="divider-lede">'+escapeHtml(s.lede||'')+'</div></div></div>';if(['two-col','title-two-callouts','title-figure-explanation','comparison','image-left-text-right'].includes(s.slideType)){const layoutClass={ 'two-col':'layout-two-col','title-two-callouts':'layout-two-callouts','title-figure-explanation':'layout-figure-explanation','comparison':'layout-comparison','image-left-text-right':'layout-image-left-text-right'}[s.slideType]||'layout-two-col';const leftHead=s.slideType==='comparison'?'<div class="comparison-head">'+escapeHtml((s.leftBlocks[0]&&s.leftBlocks[0].title)||'Left')+'</div>':'';const rightHead=s.slideType==='comparison'?'<div class="comparison-head">'+escapeHtml((s.rightBlocks[0]&&s.rightBlocks[0].title)||'Right')+'</div>':'';return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body '+layoutClass+'"><div class="col">'+leftHead+renderBlocks(s.leftBlocks,'Left column')+'</div><div class="col">'+rightHead+renderBlocks(s.rightBlocks,'Right column')+'</div></div>';}if(s.slideType==='theorem-proof'){const theorem=s.leftBlocks[0]||{mode:'panel',content:'\\paragraph{Theorem} State the result here.'};const proof=s.leftBlocks[1]||{mode:'panel',content:'\\paragraph{Proof sketch} Add the argument here.'};return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col theorem-proof-wrap"><div class="named-box"><div class="named-box-head">'+escapeHtml(theorem.title||'Theorem')+'</div><div class="named-box-body">'+renderBlock({...theorem,title:''},'Theorem')+'</div></div><div class="named-box"><div class="named-box-head">'+escapeHtml(proof.title||'Proof')+'</div><div class="named-box-body">'+renderBlock({...proof,title:''},'Proof')+'</div></div></div></div>';}if(s.slideType==='algorithm-layout'){const algo=s.leftBlocks[0]||{mode:'pseudocode',content:'Algorithm goes here'};const notes=s.leftBlocks.slice(1);return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col algorithm-wrap">'+renderBlock(algo,'Algorithm')+(notes.length?renderBlocks(notes,'Notes'):'')+'</div></div>';}if(s.slideType==='full-width-figure-caption'){const fig=s.leftBlocks[0]||{mode:'placeholder',content:'Add a figure block'};const captionBlocks=s.leftBlocks.slice(1);return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col full-figure-wrap">'+renderBlock(fig,'Figure')+(captionBlocks.length?'<div class="figure-caption">'+renderBlocks(captionBlocks,'Caption')+'</div>':'')+'</div></div>';}return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col">'+renderBlocks(s.leftBlocks,'Main content')+'</div></div>';}
+function isFreeformSlideType(type){const value=String(type||'').toLowerCase();return value==='freeform'||value==='freeform-import'||value==='pdf-import'||value==='ppt-import';}function isFreeformSlide(slide){const s=slide||{};if(isFreeformSlideType(s.slideType))return true;if(s.importMeta&&(s.importMeta.stage||s.importMeta.freeform))return true;const blocks=Array.isArray(s.leftBlocks)?s.leftBlocks:[];return blocks.some(b=>b&&b.layout&&/^import-/.test(String(b.mode||'')));}function layoutStyle(layout){const l=normalizeLayout(layout);const rot=l.rotate?('transform:rotate('+l.rotate+'deg);transform-origin:top left;'):'';return 'left:'+l.x+'px;top:'+l.y+'px;width:'+l.w+'px;height:'+l.h+'px;z-index:'+l.z+';'+rot;}function freeformFitMeta(slide){const meta=slide&&slide.importMeta?slide.importMeta:{};const sw=safeNum(meta.sourceWidth,0);const sh=safeNum(meta.sourceHeight,0);const tw=safeNum(meta.targetWidth||meta.canvasWidth,1600);const th=safeNum(meta.targetHeight||meta.canvasHeight,900);if(!(sw>0&&sh>0&&tw>0&&th>0))return null;const scale=Math.min(tw/sw,th/sh);return {scale:scale,ox:(tw-sw*scale)/2,oy:(th-sh*scale)/2,tw:tw,th:th,sw:sw,sh:sh};}function sourceProjectedLayout(block,slide){const src=block&&block.importSourceLayout;const fit=freeformFitMeta(slide);if(!src||!fit)return block&&block.layout;const l=normalizeLayout(src);return {x:fit.ox+l.x*fit.scale,y:fit.oy+l.y*fit.scale,w:l.w*fit.scale,h:l.h*fit.scale,z:block&&block.layout?block.layout.z:l.z,rotate:block&&block.layout?block.layout.rotate:l.rotate};}function runStyle(run){const r=normalizeImportRun(run);return 'font-size:'+r.fontSize+'px;font-family:'+escapeAttr(r.fontFamily)+';color:'+escapeAttr(r.fontColor)+';font-weight:'+escapeAttr(r.fontWeight)+';font-style:'+escapeAttr(r.fontStyle)+';';}function renderRunText(text){return escapeHtml(decodeLiteralNewlines(text)).split(String.fromCharCode(10)).join('<br>');}function renderImportText(block){const runs=Array.isArray(block.importRuns)&&block.importRuns.length?block.importRuns:[{text:block.content||'',fontSize:(block.style&&parseFloat(block.style.fontSize))||18,fontFamily:block.style&&block.style.fontFamily,fontColor:block.style&&block.style.fontColor}];return '<div class="freeform-text-content">'+runs.map(run=>'<span style="'+runStyle(run)+'">'+renderRunText(run.text)+'</span>').join('')+'</div>';}function renderFreeformBlock(block,idx,slide){const mode=String(block&&block.mode||'panel');const roleClass=block&&block.importRole?' import-role-'+escapeAttr(block.importRole):'';const outerAttrs=' data-freeform-index="'+idx+'" style="'+layoutStyle(sourceProjectedLayout(block,slide))+'"';if(mode==='import-text'){return '<div class="freeform-block freeform-text-block'+roleClass+'"'+outerAttrs+'><div class="preview-block" data-column="left" data-block-index="'+idx+'" data-block-mode="import-text"'+animationDataAttrs(block.animation)+' style="'+blockWrapperStyle(block)+'">'+renderImportText(block)+'</div></div>';}const rendered=renderBlock(block,'');const klass=mode==='import-image'?'freeform-image-block':'freeform-generic-block';return '<div class="freeform-block '+klass+roleClass+'"'+outerAttrs+'>'+rendered+'</div>';}function renderFreeformBlocks(blocks,slide){const list=blocks&&blocks.length?blocks:[];if(!list.length)return '<div class="placeholder">No importable objects found on this slide.</div>';return '<div class="freeform-layer">'+list.map((block,idx)=>renderFreeformBlock(block,idx,slide)).join('')+'</div>';}function fitFreeformSlides(){const vw=window.innerWidth||document.documentElement.clientWidth||1600;const vh=window.innerHeight||document.documentElement.clientHeight||900;document.querySelectorAll('.deck-slide.freeform-import .freeform-layer').forEach(layer=>{const scale=Math.min(vw/1600,vh/900);const x=(vw-1600*scale)/2;const y=(vh-900*scale)/2;layer.style.transform='translate('+x+'px,'+y+'px) scale('+scale+')';});window.luminaStandaloneFreeformExportStatus={stage:'stage42a-freeform-export-parity-20260510-1',fittedCount:document.querySelectorAll('.deck-slide.freeform-import .freeform-layer').length,lastFitAt:new Date().toISOString()};}function buildSlideInner(slide){const heading=slide.headingLevel||'h2';const titleHtml='<div class="preview-title" data-preview-role="title"'+animationDataAttrs(slide.titleAnimation)+' style="'+titleWrapperStyle(slide.titleStyle,heading)+'"><'+heading+'>'+escapeHtml(slide.title||'Untitled slide').replace(/\\n/g,'<br>')+'</'+heading+'></div>';const kickerHtml=slide.kicker?'<div class="kicker">'+escapeHtml(slide.kicker)+'</div>':'';const ledeHtml=slide.lede?'<div class="lede">'+escapeHtml(slide.lede)+'</div>':'';const s=normalizeSlide(slide);if(s.slideType==='title-center')return '<div class="title-center">'+titleHtml+kickerHtml+'</div>';if(isFreeformSlide(s))return renderFreeformBlocks(s.leftBlocks,s);if(s.slideType==='section-divider')return '<div class="section-divider-wrap"><div><div class="divider-kicker">'+escapeHtml(s.kicker||'Section')+'</div>'+titleHtml+'<div class="divider-line"></div><div class="divider-lede">'+escapeHtml(s.lede||'')+'</div></div></div>';if(['two-col','title-two-callouts','title-figure-explanation','comparison','image-left-text-right'].includes(s.slideType)){const layoutClass={ 'two-col':'layout-two-col','title-two-callouts':'layout-two-callouts','title-figure-explanation':'layout-figure-explanation','comparison':'layout-comparison','image-left-text-right':'layout-image-left-text-right'}[s.slideType]||'layout-two-col';const leftHead=s.slideType==='comparison'?'<div class="comparison-head">'+escapeHtml((s.leftBlocks[0]&&s.leftBlocks[0].title)||'Left')+'</div>':'';const rightHead=s.slideType==='comparison'?'<div class="comparison-head">'+escapeHtml((s.rightBlocks[0]&&s.rightBlocks[0].title)||'Right')+'</div>':'';return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body '+layoutClass+'"><div class="col">'+leftHead+renderBlocks(s.leftBlocks,'Left column')+'</div><div class="col">'+rightHead+renderBlocks(s.rightBlocks,'Right column')+'</div></div>';}if(s.slideType==='theorem-proof'){const theorem=s.leftBlocks[0]||{mode:'panel',content:'\\paragraph{Theorem} State the result here.'};const proof=s.leftBlocks[1]||{mode:'panel',content:'\\paragraph{Proof sketch} Add the argument here.'};return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col theorem-proof-wrap"><div class="named-box"><div class="named-box-head">'+escapeHtml(theorem.title||'Theorem')+'</div><div class="named-box-body">'+renderBlock({...theorem,title:''},'Theorem')+'</div></div><div class="named-box"><div class="named-box-head">'+escapeHtml(proof.title||'Proof')+'</div><div class="named-box-body">'+renderBlock({...proof,title:''},'Proof')+'</div></div></div></div>';}if(s.slideType==='algorithm-layout'){const algo=s.leftBlocks[0]||{mode:'pseudocode',content:'Algorithm goes here'};const notes=s.leftBlocks.slice(1);return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col algorithm-wrap">'+renderBlock(algo,'Algorithm')+(notes.length?renderBlocks(notes,'Notes'):'')+'</div></div>';}if(s.slideType==='full-width-figure-caption'){const fig=s.leftBlocks[0]||{mode:'placeholder',content:'Add a figure block'};const captionBlocks=s.leftBlocks.slice(1);return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col full-figure-wrap">'+renderBlock(fig,'Figure')+(captionBlocks.length?'<div class="figure-caption">'+renderBlocks(captionBlocks,'Caption')+'</div>':'')+'</div></div>';}return titleHtml+kickerHtml+ledeHtml+'<div class="slide-body"><div class="col">'+renderBlocks(s.leftBlocks,'Main content')+'</div></div>';}
 const deck=document.getElementById('deck');const slideMap=document.getElementById('slideMap');const slideMapList=document.getElementById('slideMapList');const laserPointer=document.getElementById('laserPointer');document.getElementById('deckTitle').textContent=deckPayload.deckTitle||'Slides';
 const deckActions=document.getElementById('deckActions');
 function buildDeckActionControls(){const laserControl='<label class="laser-control">Pointer <select class="laser-select" aria-label="Laser pointer color"><option value="red" selected>Red</option><option value="blue">Blue</option><option value="green">Green</option><option value="pointer">Pointer</option><option value="none">None</option></select></label>';const actions=[];if(exportControls.slides)actions.push('<button class="slides-button" type="button">Slides</button>');if(exportControls.draw)actions.push('<button class="draw-button" type="button">Draw</button>');if(exportControls.exportAnnotated)actions.push('<button class="export-annotated-button" type="button">Export annotated slides</button>');if(exportControls.generatePdf)actions.push('<button class="pdf-button" type="button">Generate PDF</button>');if(exportControls.pointerMenu)actions.push(laserControl);return actions.join('');}
 if(deckActions){const actionHtml=buildDeckActionControls();deckActions.innerHTML=actionHtml;deckActions.hidden=!actionHtml;}
-deck.innerHTML=deckPayload.slides.map((slide,idx)=>{const cls=slide.slideType==='title-center'?'deck-slide title-center':(slide.slideType==='two-col'?'deck-slide two-col':'deck-slide single');const styleCls=' style-'+String((deckPayload.theme&&deckPayload.theme.beamerStyle)||'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();return '<section class="'+cls+styleCls+'" data-index="'+idx+'" style="'+buildSlideStyle(slide)+'"><div class="slide-number">'+(idx+1)+' / '+deckPayload.slides.length+'</div>'+buildSlideInner(slide).trim()+'<div class="slide-annotation-layer" data-annotation-layer="'+idx+'"><svg class="slide-draw-surface" data-draw-surface="'+idx+'" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-label="Slide annotation layer"></svg></div></section>';}).join('\\n');
+deck.innerHTML=deckPayload.slides.map((slide,idx)=>{const normalized=normalizeSlide(slide);const cls=normalized.slideType==='title-center'?'deck-slide title-center':(isFreeformSlide(normalized)?'deck-slide freeform-import':(isTwoColType(normalized.slideType)?'deck-slide two-col':'deck-slide single'));const styleCls=' style-'+String((deckPayload.theme&&deckPayload.theme.beamerStyle)||'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();return '<section class="'+cls+styleCls+'" data-index="'+idx+'" style="'+buildSlideStyle(slide)+'"><div class="slide-number">'+(idx+1)+' / '+deckPayload.slides.length+'</div>'+buildSlideInner(normalized).trim()+'<div class="slide-annotation-layer" data-annotation-layer="'+idx+'"><svg class="slide-draw-surface" data-draw-surface="'+idx+'" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-label="Slide annotation layer"></svg></div></section>';}).join('\\n');
 slideMapList.innerHTML=deckPayload.slides.map((slide,idx)=>'<button type="button" class="slide-map-item" data-go="'+idx+'"><span>'+(idx+1)+'.</span><span>'+escapeHtml(slide.title||('Slide '+(idx+1)))+'</span></button>').join('\\n');
 let active=0;
 let drawingMode=false;
@@ -335,57 +340,7 @@ function slideHasCustomHtml(slide){
   return all.some(block => String((block && block.mode) || 'panel') === 'custom');
 }
 function getEligiblePdfSlideIndices(){
-  return (deckPayload.slides || []).map((slide, idx) => idx).filter(idx => idx !== null);
-}
-function decodeHtmlEntitiesForPdfSnapshot(value){
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = String(value || '');
-  return textarea.value;
-}
-function stripUnsafeCustomSnapshotNodes(root){
-  if(!root) return;
-  root.querySelectorAll('script, iframe, frame, object, embed').forEach(el => el.remove());
-  root.querySelectorAll('*').forEach(el => {
-    Array.from(el.attributes || []).forEach(attr => {
-      const name = String(attr.name || '').toLowerCase();
-      const val = String(attr.value || '');
-      if(name.startsWith('on')) el.removeAttribute(attr.name);
-      if((name === 'src' || name === 'href' || name === 'xlink:href') && /^javascript:/i.test(val.trim())) el.removeAttribute(attr.name);
-    });
-  });
-}
-function prepareCustomHtmlVisibleSnapshots(clone, slideIndex){
-  const frames = Array.from(clone.querySelectorAll('.custom-frame-wrap'));
-  if(!frames.length) return 0;
-  let snapshotCount = 0;
-  frames.forEach((wrap, frameIndex) => {
-    const iframe = wrap.querySelector('iframe.custom-frame');
-    const rawSrcdoc = iframe ? (iframe.getAttribute('srcdoc') || iframe.srcdoc || '') : '';
-    const snapshot = document.createElement('div');
-    snapshot.className = 'custom-frame custom-frame-pdf-snapshot';
-    snapshot.setAttribute('data-pdf-custom-snapshot', '1');
-    snapshot.setAttribute('data-slide-index', String(slideIndex));
-    snapshot.setAttribute('data-custom-frame-index', String(frameIndex));
-    snapshot.style.width = '100%';
-    snapshot.style.height = '100%';
-    snapshot.style.minHeight = '260px';
-    snapshot.style.overflow = 'hidden';
-    snapshot.style.background = '#fff';
-    snapshot.style.position = 'relative';
-    const decoded = decodeHtmlEntitiesForPdfSnapshot(rawSrcdoc);
-    if(decoded.trim()){
-      snapshot.innerHTML = decoded;
-      stripUnsafeCustomSnapshotNodes(snapshot);
-    } else {
-      snapshot.innerHTML = '<div style="display:grid;place-items:center;width:100%;height:100%;min-height:260px;color:#555;font:16px system-ui,sans-serif;text-align:center;padding:1rem;">Custom HTML block</div>';
-    }
-    wrap.innerHTML = '';
-    wrap.appendChild(snapshot);
-    wrap.setAttribute('data-pdf-custom-visible-snapshot', '1');
-    snapshotCount += 1;
-  });
-  if(window.luminaStandalonePdfStatus) window.luminaStandalonePdfStatus.customHtmlSnapshotCount += snapshotCount;
-  return snapshotCount;
+  return (deckPayload.slides || []).map((slide, idx) => slideHasCustomHtml(slide) ? null : idx).filter(idx => idx !== null);
 }
 function getPdfLayout(slidesPerPage){
   const n = Number(slidesPerPage) || 1;
@@ -412,7 +367,7 @@ async function generatePdfFromSlides(slidesPerPage){
   if(!ok){ alert('PDF libraries did not load. Check your internet connection and try again.'); return; }
 
   const eligible = getEligiblePdfSlideIndices();
-  if(!eligible.length){ alert('No slides are available for PDF export.'); return; }
+  if(!eligible.length){ alert('No slides are eligible for PDF export. Slides with custom HTML blocks are skipped.'); return; }
 
   renderLiveDrawAnnotations();
   if(window.MathJax && typeof window.MathJax.typesetPromise === 'function'){
@@ -447,7 +402,6 @@ async function generatePdfFromSlides(slidesPerPage){
       clone.style.overflow = 'hidden';
       clone.querySelectorAll('.slide-actions,.slide-map,.deck-toolbar,.laser-pointer,.draw-session-toolbar,.pdf-modal').forEach(el => el.remove());
       clone.querySelectorAll('.slide-draw-surface').forEach(el => el.classList.remove('active'));
-      prepareCustomHtmlVisibleSnapshots(clone, slideIndex);
       stage.innerHTML = '';
       stage.appendChild(clone);
       if(window.MathJax && typeof window.MathJax.typesetPromise === 'function'){
@@ -456,14 +410,13 @@ async function generatePdfFromSlides(slidesPerPage){
           await window.MathJax.typesetPromise([clone]);
         }catch(err){ console.error(err); }
       }
-      const canvas = await window.html2canvas(clone, {backgroundColor:'#ffffff', scale:2, useCORS:true, allowTaint:true});
+      const canvas = await window.html2canvas(clone, {backgroundColor:'#ffffff', scale:2, useCORS:true});
       canvases.push(canvas);
     }
   } finally {
     stage.remove();
   }
 
-  if(window.luminaStandalonePdfStatus) window.luminaStandalonePdfStatus.lastRenderedSlideCount = canvases.length;
   setPdfStatus('Building PDF…');
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'landscape', unit:'pt', format:'letter', compress:true });
@@ -540,7 +493,7 @@ function setVisibleSlideState(){
   });
   document.querySelectorAll('[data-go]').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.go)===active));
 }
-function render(){setVisibleSlideState();renderLiveDrawAnnotations();const initActive=()=>{initializeSlideAnimations(slideEls[active]);hideLaserPointer();fitFiguresIn(slideEls[active]||document);};if(window.MathJax&&typeof window.MathJax.typesetPromise==='function'){if(typeof window.MathJax.typesetClear==='function')window.MathJax.typesetClear(slideEls);window.MathJax.typesetPromise(slideEls.filter(el=>el.classList.contains('active'))).then(initActive).catch(initActive);}else{initActive();}}
+function render(){setVisibleSlideState();renderLiveDrawAnnotations();const initActive=()=>{initializeSlideAnimations(slideEls[active]);hideLaserPointer();fitFiguresIn(slideEls[active]||document);fitFreeformSlides();};if(window.MathJax&&typeof window.MathJax.typesetPromise==='function'){if(typeof window.MathJax.typesetClear==='function')window.MathJax.typesetClear(slideEls);window.MathJax.typesetPromise(slideEls.filter(el=>el.classList.contains('active'))).then(initActive).catch(initActive);}else{initActive();}}
 function go(i){const target=Number(i);if(!Number.isFinite(target)||target<0||target>=slideEls.length)return;active=target;if(drawingMode) drawingSlideIndex=active;render();if(slideEls[active]){try{slideEls[active].scrollTop=0;}catch(_){}}if(slideMap)slideMap.classList.remove('open');}
 function advanceOrGoNext(){ if(activeSlideHasPendingAnimations()){ advanceSlideAnimation(slideEls[active]); return; } go(active+1); }
 window.LuminaStandaloneDeckGo=go;
@@ -602,6 +555,7 @@ deck.addEventListener('pointerdown',evt=>{
   if(evt.target.closest('.slide-actions') || evt.target.closest('.deck-toolbar') || evt.target.closest('.pdf-modal')) return;
   maybeAdvanceFromSlidePointer(evt, slideEls[active]);
 });
+window.addEventListener('resize',fitFreeformSlides);
 window.addEventListener('pointermove',evt=>{ notePointerControlsActivity(evt); if(drawingMode && drawingState.drawing){ updateShape(evt); return; } updateLaserPointer(evt); });
 window.addEventListener('pointerup',()=>endShape());
 window.addEventListener('pointercancel',()=>endShape());
@@ -697,9 +651,15 @@ function currentPayload(){
 }
 
 function sanitizeBlockForPdf(block){
-  // Stage 41J: keep custom HTML blocks for PDF/export rendering instead of replacing them.
-  // The rasterizer will snapshot the visible custom-frame area when possible.
-  return clone(block || {});
+  const b = clone(block || {});
+  if((b.mode || 'panel') === 'custom'){
+    return {
+      mode: 'panel',
+      title: b.title || 'Custom HTML',
+      content: '\\begin{card}{Custom HTML block}\\nHad custom HTML\\n\\end{card}'
+    };
+  }
+  return b;
 }
 
 function sanitizeSlideForPdf(slide){
@@ -727,7 +687,7 @@ function buildPrintableViewer(payload, slidesPerPage){
   for(let i = 0; i < slidesNormalized.length; i += perPage){
     const chunk = slidesNormalized.slice(i, i + perPage);
     const cells = chunk.map(slide => {
-      const cls = slide.slideType === 'title-center' ? 'slide title-center' : (slide.slideType === 'two-col' ? 'slide two-col' : 'slide single');
+      const cls = slide.slideType === 'title-center' ? 'slide title-center' : (isFreeformSlide(slide) ? 'slide freeform-import' : (isTwoColType(slide.slideType) ? 'slide two-col' : 'slide single'));
       const styleCls = ' style-' + String(currentThemeFromFields().beamerStyle || 'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();
       return '<div class="print-cell"><div class="print-shell"><section class="' + cls + styleCls + '" style="' + buildSlideStyle(slide) + '">' + buildSlideInner(slide).trim() + '</section></div></div>';
     });
@@ -972,7 +932,7 @@ function withTimeout(promise, ms, label){
 async function renderSlideForPdf(slide, rasterScale){
   const root = document.createElement('div');
   root.className = 'pdf-render-root';
-  const cls = slide.slideType === 'title-center' ? 'slide title-center' : (slide.slideType === 'two-col' ? 'slide two-col' : 'slide single');
+  const cls = slide.slideType === 'title-center' ? 'slide title-center' : (isFreeformSlide(slide) ? 'slide freeform-import' : (isTwoColType(slide.slideType) ? 'slide two-col' : 'slide single'));
   const styleCls = ' style-' + String(currentThemeFromFields().beamerStyle || 'classic').replace(/[^a-z0-9_-]/gi,'').toLowerCase();
   root.innerHTML = `<section class="${cls}${styleCls}" style="${buildSlideStyle(slide)}">${buildSlideInner(slide).trim()}</section>`;
   document.body.appendChild(root);
@@ -984,39 +944,8 @@ async function renderSlideForPdf(slide, rasterScale){
     }
     if(typeof fitFiguresIn === 'function') fitFiguresIn(root);
 
-    // Stage 41J: preserve custom HTML blocks by replacing sandboxed srcdoc iframes
-    // with a static visible-area snapshot before rasterization.
-    root.querySelectorAll('.custom-frame-wrap').forEach((wrap, frameIndex)=>{
-      const frame = wrap.querySelector('iframe.custom-frame');
-      if(!frame) return;
-      const rawSrcdoc = frame.getAttribute('srcdoc') || frame.srcdoc || '';
-      const snapshot = document.createElement('div');
-      snapshot.className = 'custom-frame custom-frame-pdf-snapshot';
-      snapshot.setAttribute('data-pdf-custom-snapshot', '1');
-      snapshot.setAttribute('data-custom-frame-index', String(frameIndex));
-      snapshot.style.cssText = 'width:100%;height:100%;min-height:260px;overflow:hidden;background:#fff;position:relative;';
-      const textarea = document.createElement('textarea');
-      textarea.innerHTML = rawSrcdoc;
-      const decoded = textarea.value;
-      if(decoded.trim()){
-        snapshot.innerHTML = decoded;
-        snapshot.querySelectorAll('script, iframe, frame, object, embed').forEach(el => el.remove());
-        snapshot.querySelectorAll('*').forEach(el => {
-          Array.from(el.attributes || []).forEach(attr => {
-            const name = String(attr.name || '').toLowerCase();
-            const val = String(attr.value || '');
-            if(name.startsWith('on')) el.removeAttribute(attr.name);
-            if((name === 'src' || name === 'href' || name === 'xlink:href') && /^javascript:/i.test(val.trim())) el.removeAttribute(attr.name);
-          });
-        });
-      }else{
-        snapshot.innerHTML = '<div style="display:grid;place-items:center;width:100%;height:100%;min-height:260px;color:#555;font:16px system-ui,sans-serif;text-align:center;padding:1rem;">Custom HTML block</div>';
-      }
-      wrap.innerHTML = '';
-      wrap.appendChild(snapshot);
-      wrap.setAttribute('data-pdf-custom-visible-snapshot', '1');
-    });
-    root.querySelectorAll('iframe:not(.custom-frame)').forEach((frame)=>{
+    // Replace heavy embedded blocks with lightweight placeholders for PDF rendering.
+    root.querySelectorAll('iframe').forEach((frame)=>{
       const ph = document.createElement('div');
       ph.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:180px;border:1px solid rgba(17,17,17,.14);border-radius:14px;background:#fff;color:#555;font:600 18px Inter,Arial,sans-serif;';
       ph.textContent = 'Embedded HTML block';
