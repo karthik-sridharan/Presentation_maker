@@ -1,0 +1,3 @@
+Stage 41W frontend: hybrid extraction review chooser.
+Install by unzipping at the root of the Presentation_maker GitHub repo.
+Open with: index.html?v=stage41w-hybrid-review-import-20260510-1
