@@ -811,8 +811,32 @@ Previous output to repair:
       showToast('AI cleaned import: ' + deck.slides.length + ' slide' + (deck.slides.length === 1 ? '' : 's') + ' ready.');
       return Object.assign({ aiReviewed:true }, deck);
     }catch(err){
-      try{ globalThis.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = { ok:false, error:err && err.message ? err.message : String(err), inputSlides:(importedSlides||[]).length, at:new Date().toISOString() }; }catch(_err){}
-      throw new Error('AI import review failed; raw extracted deck was not loaded. ' + (err && err.message ? err.message : String(err)));
+      const message = err && err.message ? err.message : String(err);
+      // Stage 41U: do not leave the user with no slides when the AI review path
+      // is too strict or the model drops equations/figures. Preserve the backend
+      // extraction output and report the AI validation failure for diagnostics.
+      const fallbackSlides = Array.isArray(importedSlides) ? importedSlides : [];
+      try{
+        globalThis.__LUMINA_STAGE41U_LAST_AI_IMPORT_FALLBACK = {
+          ok:false,
+          loadedRawExtractedDeck:true,
+          reason:message,
+          inputSlides:fallbackSlides.length,
+          sourceFeatures:sourceExpectationsForAi(fallbackSlides),
+          at:new Date().toISOString()
+        };
+        globalThis.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = Object.assign({}, globalThis.__LUMINA_STAGE41U_LAST_AI_IMPORT_FALLBACK);
+      }catch(_err){}
+      showToast('AI cleanup failed validation; loaded the source-extracted slides instead.');
+      return {
+        deckTitle,
+        slides:fallbackSlides,
+        theme:null,
+        presentationOptions:null,
+        aiReviewed:false,
+        aiReviewFailed:true,
+        aiReviewError:message
+      };
     }
   }
   function isExtractablePresentationFile(file) {
@@ -993,7 +1017,7 @@ Previous output to repair:
     global.__LUMINA_FILE_IO_API = api;
     global.__LUMINA_STAGE41T_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
-    global.__LUMINA_STAGE41T_FILE_IO_READY = { stage:'stage41t-import-button-rescue-fix-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) }; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41T_FILE_IO_READY;
+    global.__LUMINA_STAGE41T_FILE_IO_READY = { stage:'stage41u-safe-ai-import-fallback-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) }; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41T_FILE_IO_READY;
   } catch (_err) {}
   return api;
 }
