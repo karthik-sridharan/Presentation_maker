@@ -353,11 +353,7 @@ const blockLibraryApi = LuminaBlockLibrary.createApi({
   loadSelectedBlockIntoEditor: () => loadSelectedBlockIntoEditor(),
   renderBlockList: () => renderBlockList(),
   buildPreview: () => buildPreview(),
-  scheduleAutosave: reason => scheduleAutosave(reason),
-  setSelectedIndex: (name, idx) => setSelectedIndex(name, idx),
-  renderBlockList: () => renderBlockList(),
-  loadSelectedBlockIntoEditor: () => loadSelectedBlockIntoEditor(),
-  showToast
+  scheduleAutosave: reason => scheduleAutosave(reason)
 });
 const {
   defaultReusableBlock,
@@ -760,7 +756,6 @@ const {
   bringSelectedFigures,
   toggleCropSelectedFigure,
   duplicateSelectedFigure,
-  deleteSelectedFigure,
   resetSelectedFigure,
   applyGuideSnapping,
   getInteractionScale,
@@ -1831,6 +1826,11 @@ const {
   loadDeckFromFile,
   loadPresentationJsonFromFile
 } = fileIoApi;
+try{
+  window.__LUMINA_FILE_IO_API = fileIoApi;
+  window.__LUMINA_STAGE41S_FILE_IO_API = fileIoApi;
+  window.LuminaStage41SFileIoApi = fileIoApi;
+}catch(_err){}
 
 const LuminaPresets = window.LuminaPresets || {};
 const presets = LuminaPresets.presets || {};
@@ -1841,11 +1841,7 @@ function applyPreset(name){
   scheduleAutosave('Autosaved after preset apply.');
 }
 
-Object.entries(fields).forEach(([fieldName, el])=>{
-  if(!el){
-    window.LuminaDiagnostics && window.LuminaDiagnostics.warn && window.LuminaDiagnostics.warn('Missing form field: '+fieldName);
-    return;
-  }
+Object.values(fields).forEach(el=>{
   el.addEventListener('input', ()=>{ syncFields(); buildPreview(); scheduleAutosave(); });
   el.addEventListener('change', ()=>{ syncFields(); buildPreview(); scheduleAutosave(); });
 });
@@ -1937,11 +1933,7 @@ document.getElementById('applyThemeToAllBtn').addEventListener('click', ()=>{
   buildPreview();
   scheduleAutosave('Autosaved after applying theme to all slides.');
 });
-Object.entries(themeFields).forEach(([fieldName, el])=>{
-  if(!el){
-    window.LuminaDiagnostics && window.LuminaDiagnostics.warn && window.LuminaDiagnostics.warn('Missing theme field: '+fieldName);
-    return;
-  }
+Object.values(themeFields).forEach(el=>{
   el.addEventListener('input', ()=>{ buildPreview(); renderDeckList(); scheduleAutosave(); });
   el.addEventListener('change', ()=>{ buildPreview(); renderDeckList(); scheduleAutosave(); });
 });
@@ -2032,6 +2024,9 @@ document.getElementById('importPptBtn')?.addEventListener('click', ()=>{
 });
 document.getElementById('importFilesBtn')?.addEventListener('click', async ()=>{
   try{
+    const btn = document.getElementById('importFilesBtn');
+    if(btn && btn.__luminaStage41SBound) return;
+    window.__LUMINA_STAGE41S_LEGACY_IMPORT_CLICK = { at:new Date().toISOString(), fileCount:(document.getElementById('importFilesInput')?.files || []).length };
     await importSelectedFiles(document.getElementById('importFilesInput')?.files || []);
   }catch(err){
     alert(err.message || 'Could not import selected files.');
@@ -2106,8 +2101,6 @@ document.getElementById('bringForwardBtn').addEventListener('click', ()=>bringSe
 document.getElementById('sendBackwardBtn').addEventListener('click', ()=>bringSelectedFigures(-1));
 document.getElementById('cropFigureBtn').addEventListener('click', toggleCropSelectedFigure);
 document.getElementById('duplicateFigureBtn').addEventListener('click', duplicateSelectedFigure);
-const deleteSelectedFigureBtn = document.getElementById('deleteSelectedFigureBtn');
-if(deleteSelectedFigureBtn) deleteSelectedFigureBtn.addEventListener('click', deleteSelectedFigure);
 document.getElementById('resetFigureBtn').addEventListener('click', resetSelectedFigure);
 // Stage 24C: Copilot UI event binding moved to js/copilot-stage24c.js.
 // The main app no longer calls Copilot setup during startup.

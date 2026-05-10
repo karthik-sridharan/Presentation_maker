@@ -1,4 +1,4 @@
-/* Stage 41Q file/import workflow helpers.
+/* Stage 41S file/import workflow helpers.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -1022,7 +1022,7 @@ Previous output to repair:
 
     setTimeout(initExtractionFields, 0);
 
-    return {
+    const api = {
       importModeValue,
       applyImportedSlides,
       importSelectedFiles,
@@ -1031,6 +1031,13 @@ Previous output to repair:
       extractPresentationFile,
       maybeReviewImportedDeckWithAi
     };
+    try{
+      global.__LUMINA_FILE_IO_API = api;
+      global.__LUMINA_STAGE41S_FILE_IO_API = api;
+      global.LuminaStage41SFileIoApi = api;
+      global.__LUMINA_STAGE41S_FILE_IO_READY = { stage:'stage41s-import-button-rescue-20260509-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    }catch(_err){}
+    return api;
   }
 
   global.LuminaFileIo = { createApi };
