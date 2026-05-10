@@ -1,13 +1,11 @@
-Lumina AI import prompts
+Stage 41R editable AI import prompts
 
-These editable text files are loaded by the browser during AI-assisted PDF/PPT/PPTX import.
+The AI-assisted import prompt lives in:
+  prompt/ai_import_review_prompt.txt
 
-- ai_import_review_prompt.txt: main prompt used after backend extraction.
-- ai_import_repair_prompt.txt: repair prompt used if the first AI JSON fails validation.
+The repair prompt lives in:
+  prompt/ai_import_repair_prompt.txt
 
-You can edit these files in GitHub and redeploy GitHub Pages. Reload Presentation Maker before importing.
-Do not put API keys or secrets in these prompt files.
+Stage 41R adds stricter math/figure preservation. The frontend sends the AI a compact per-slide summary with sourceText, mathCandidates, and figureCandidates. If AI drops equations or figures, the frontend automatically requests one repair pass using prompt/ai_import_repair_prompt.txt.
 
-The repair prompt supports these placeholders:
-{{PROBLEMS}}        validation errors found by Lumina
-{{PREVIOUS_OUTPUT}} AI JSON/text output that needs repair
+Do not put API keys or bearer tokens in prompt files.
