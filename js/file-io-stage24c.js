@@ -1,4 +1,4 @@
-/* Stage 42G file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
+/* Stage 42I file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -442,7 +442,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42h-patch-ai-import-repair-20260511-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42i-classic-ai-source-id-fix-20260511-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -472,21 +472,216 @@ Previous output to repair:
       };
     }
     function aiDeckUserPrompt(deckTitle, slides){
-      const compact = {
-        deckTitle: deckTitle || 'Imported deck',
-        sourceSlideCount: (slides || []).length,
-        expectations: sourceExpectationsForAi(slides),
-        importedSlides: compactSlidesForAi(slides)
-      };
+      addAiSourceIdsToSourceSlides(slides || []);
+      const payload = simpleAiRepairSourceDeckForAi(deckTitle, slides || []);
       return [
-        'Review this imported deck, clean it up, add or edit blocks within slides, and wherever useful replace figures with better editable diagrams or custom HTML/SVG animations.',
-        'CRITICAL: The cleaned deck must preserve or reconstruct the source deck\'s mathematical content and visual explanations. Do not make a text-only outline when the source has equations, figures, diagrams, or visual concepts.',
-        'For every slide summary that has mathCandidates, include the corresponding corrected equation(s) in the cleaned output using escaped LaTeX. For every slide summary that has figureCandidates or a visual concept, include either a clean figure/custom SVG animation or a clear replacement diagram.',
-        'Make the output look like a hand-authored lecture deck, not a raw PDF import.',
-        'Only return the cleaned Lumina deck JSON. Do not wrap it in markdown.',
-        'The raw imported deck has been compacted below to avoid embedding large base64 images, but the summary explicitly lists mathCandidates and figureCandidates that must not be dropped:',
-        JSON.stringify(compact, null, 2)
+        'Repair this imported Lumina deck conservatively. Do not redesign it.',
+        'For each slide and each block, fix garbled math, use the requested math delimiters, preserve image assets, and make only small layout/size repairs.',
+        'Return ONLY JSON patch data of the form {"patches":[...]}. Preserve __aiSourceBlockId/blockId in every block patch so the app can apply changes to the source-extracted slides.',
+        JSON.stringify(payload, null, 2)
       ].join('\n\n');
+    }
+
+    function deterministicAiSourceBlockId(slideIndex, column, blockIndex){
+      return 's' + (slideIndex + 1) + '-' + String(column || 'left') + '-' + (blockIndex + 1);
+    }
+    function aiRepairBlockPayload(block, slideIndex, column, blockIndex){
+      const b = block || {};
+      const id = String(b.__aiSourceBlockId || deterministicAiSourceBlockId(slideIndex, column, blockIndex));
+      const isFigure = blockLooksLikeFigure(b);
+      let content = String(b.content || '');
+      if(isFigure){
+        content = stripHugeInlineAssets(content);
+        if(!content || /\[large inline image omitted\]/i.test(content) || /\[image omitted\]/i.test(content) || /\[embedded-image-omitted\]/i.test(content)){
+          content = '[source image/figure preserved by app; do not replace or delete; adjust layout only if needed]';
+        }
+      } else {
+        content = repairGarbledMathText(stripHtmlForAi(stripHugeInlineAssets(content)) || stripHugeInlineAssets(content));
+      }
+      return {
+        __aiSourceBlockId:id,
+        blockId:id,
+        sourceColumn:column,
+        sourceBlockIndex:blockIndex,
+        mode:String(b.mode || 'panel'),
+        title:String(b.title || ''),
+        content:content,
+        layout:b.layout || null,
+        importSourceLayout:b.importSourceLayout || null,
+        importRole:b.importRole || '',
+        style:b.style || {},
+        animation:b.animation || {},
+        isFigure:!!isFigure,
+        preserveOriginalAsset:!!isFigure,
+        repairInstruction:isFigure
+          ? 'Preserve this source image/figure asset. Patch layout only if clearly needed; do not return image data.'
+          : 'Repair OCR/PDF math corruption if present; keep placement similar to source.'
+      };
+    }
+    function simpleAiRepairSourceDeckForAi(deckTitle, slides){
+      const sourceSlides = Array.isArray(slides) ? slides : [];
+      return {
+        task:'simple-import-repair',
+        deckTitle:deckTitle || 'Imported deck',
+        sourceSlideCount:sourceSlides.length,
+        rules:{
+          outputFormat:'json-patches-only',
+          preserveSlideCount:true,
+          preserveBlockIds:true,
+          preserveImages:true,
+          conservativeLayoutRepair:true,
+          inlineMathDelimiter:'$ math goes here $',
+          displayedEquationDelimiter:'\\[ math goes here \\]'
+        },
+        slides:sourceSlides.map(function(slide, slideIndex){
+          const left = Array.isArray(slide && slide.leftBlocks) ? slide.leftBlocks : [];
+          const right = Array.isArray(slide && slide.rightBlocks) ? slide.rightBlocks : [];
+          return {
+            __aiSourceSlideIndex:slideIndex,
+            slideIndex:slideIndex,
+            slideNumber:slideIndex + 1,
+            slideType:String(slide && slide.slideType || 'single'),
+            title:String(slide && slide.title || ''),
+            kicker:String(slide && slide.kicker || ''),
+            lede:String(slide && slide.lede || ''),
+            importMeta:(slide && slide.importMeta) || null,
+            sourceWidth:slide && slide.importMeta && slide.importMeta.sourceWidth || null,
+            sourceHeight:slide && slide.importMeta && slide.importMeta.sourceHeight || null,
+            leftBlocks:left.map(function(block, blockIndex){ return aiRepairBlockPayload(block, slideIndex, 'left', blockIndex); }),
+            rightBlocks:right.map(function(block, blockIndex){ return aiRepairBlockPayload(block, slideIndex, 'right', blockIndex); })
+          };
+        })
+      };
+    }
+    function addAiSourceIdsToSourceSlides(slides){
+      (Array.isArray(slides) ? slides : []).forEach(function(slide, slideIndex){
+        ['leftBlocks','rightBlocks'].forEach(function(key){
+          const arr = Array.isArray(slide && slide[key]) ? slide[key] : [];
+          const col = key === 'rightBlocks' ? 'right' : 'left';
+          arr.forEach(function(block, blockIndex){
+            if(block && !block.__aiSourceBlockId) block.__aiSourceBlockId = deterministicAiSourceBlockId(slideIndex, col, blockIndex);
+          });
+        });
+      });
+      return slides;
+    }
+    function sourceBlockMapForSimpleRepair(sourceSlides){
+      const map = Object.create(null);
+      (Array.isArray(sourceSlides) ? sourceSlides : []).forEach(function(slide, slideIndex){
+        ['leftBlocks','rightBlocks'].forEach(function(key){
+          const arr = Array.isArray(slide && slide[key]) ? slide[key] : [];
+          const col = key === 'rightBlocks' ? 'right' : 'left';
+          arr.forEach(function(block, blockIndex){
+            const id = String(block && block.__aiSourceBlockId || deterministicAiSourceBlockId(slideIndex, col, blockIndex));
+            map[id] = { slideIndex, column:col, blockIndex, block:block || {} };
+          });
+        });
+      });
+      return map;
+    }
+    function blockHasRealImageAsset(content){
+      return /<img\b[^>]*\bsrc=["']data:image\//i.test(String(content || '')) || /data:image\/(png|jpeg|jpg|webp);base64,/i.test(String(content || ''));
+    }
+    function repairSimpleMathContainerText(content){
+      let s = repairGarbledMathText(content);
+      if(/^(EQ|Equation)\s*:/i.test(s)){
+        let body = s.replace(/^(EQ|Equation)\s*:\s*/i, '').trim();
+        if(body && !/^\$.*\$$/.test(body) && !/^\\\(.*\\\)$/.test(body) && !/^\\\[.*\\\]$/.test(body)){
+          s = '\\[' + body + '\\]';
+        }
+      }
+      return s;
+    }
+    function mergeSimpleAiRepairWithSource(deck, sourceSlides){
+      if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
+      addAiSourceIdsToSourceSlides(sourceSlides);
+      const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
+      const stats = { stage:'stage42i-classic-ai-source-id-fix-20260511-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const outputSlides = [];
+      const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
+      for(let si = 0; si < maxSlides; si++){
+        const sourceSlide = sourceSlides[si] || null;
+        let outSlide = deck.slides[si] || null;
+        if(!outSlide && sourceSlide){
+          outSlide = cloneJsonSafe(sourceSlide);
+          stats.slidesRestored += 1;
+        }
+        if(!outSlide) continue;
+        if(sourceSlide){
+          outSlide.slideType = outSlide.slideType || sourceSlide.slideType || 'single';
+          outSlide.headingLevel = outSlide.headingLevel || sourceSlide.headingLevel || 'h2';
+          outSlide.importMeta = outSlide.importMeta || cloneJsonSafe(sourceSlide.importMeta || null);
+          outSlide.bgColor = outSlide.bgColor || sourceSlide.bgColor || '#ffffff';
+          outSlide.fontColor = outSlide.fontColor || sourceSlide.fontColor || '#111111';
+        }
+        const used = Object.create(null);
+        function mergeColumn(key){
+          const arr = Array.isArray(outSlide[key]) ? outSlide[key] : [];
+          const col = key === 'rightBlocks' ? 'right' : 'left';
+          const merged = arr.map(function(aiBlock, bi){
+            aiBlock = aiBlock || {};
+            const id = String(aiBlock.__aiSourceBlockId || aiBlock.sourceBlockId || aiBlock.blockId || deterministicAiSourceBlockId(si, col, bi));
+            const srcInfo = sourceMap[id];
+            if(srcInfo) used[id] = true;
+            if(!srcInfo){
+              if(typeof aiBlock.content === 'string' && !blockLooksLikeFigure(aiBlock)){
+                const before = aiBlock.content;
+                aiBlock.content = repairSimpleMathContainerText(before);
+                if(before !== aiBlock.content) stats.mathFieldsRepaired += 1;
+              }
+              return aiBlock;
+            }
+            const srcBlock = srcInfo.block || {};
+            const out = Object.assign({}, aiBlock);
+            out.__aiSourceBlockId = id;
+            out.style = Object.assign({}, srcBlock.style || {}, aiBlock.style || {});
+            out.animation = Object.assign({}, srcBlock.animation || {}, aiBlock.animation || {});
+            out.layout = aiBlock.layout || cloneJsonSafe(srcBlock.layout || null);
+            out.importSourceLayout = aiBlock.importSourceLayout || cloneJsonSafe(srcBlock.importSourceLayout || null);
+            if(!aiBlock.layout && srcBlock.layout) stats.layoutsPreserved += 1;
+            if(blockLooksLikeFigure(srcBlock)){
+              const aiContent = String(aiBlock.content || '');
+              out.mode = srcBlock.mode || aiBlock.mode || 'import-image';
+              out.content = blockHasRealImageAsset(aiContent) ? aiContent : String(srcBlock.content || '');
+              out.title = String(aiBlock.title || srcBlock.title || 'Figure');
+              out.importRole = srcBlock.importRole || aiBlock.importRole || 'source-figure';
+              if(out.content === String(srcBlock.content || '')) stats.imageAssetsRestored += 1;
+            } else {
+              out.mode = String(aiBlock.mode || srcBlock.mode || 'panel');
+              out.title = String(aiBlock.title || srcBlock.title || '');
+              const before = String(aiBlock.content || srcBlock.content || '');
+              out.content = repairSimpleMathContainerText(before);
+              if(before !== out.content) stats.mathFieldsRepaired += 1;
+            }
+            return out;
+          });
+          if(sourceSlide){
+            const sourceArr = Array.isArray(sourceSlide[key]) ? sourceSlide[key] : [];
+            sourceArr.forEach(function(srcBlock, bi){
+              const id = String(srcBlock && srcBlock.__aiSourceBlockId || deterministicAiSourceBlockId(si, col, bi));
+              if(used[id]) return;
+              const restored = cloneJsonSafe(srcBlock);
+              restored.__aiSourceBlockId = id;
+              if(!blockLooksLikeFigure(restored) && typeof restored.content === 'string') restored.content = repairSimpleMathContainerText(restored.content);
+              restored.__stage42iRestoredMissingSourceBlock = true;
+              merged.push(restored);
+              used[id] = true;
+              stats.blocksRestored += 1;
+            });
+          }
+          outSlide[key] = merged;
+        }
+        mergeColumn('leftBlocks');
+        mergeColumn('rightBlocks');
+        if(sourceSlide && sourceSlide.importChoiceMode === 'image'){
+          try{ outSlide = normalizeSlide(stripImportReviewInternals(cloneJsonSafe(sourceSlide))); stats.slidesRestored += 1; }catch(_err){}
+        }
+        outputSlides.push(outSlide);
+      }
+      deck.slides = outputSlides;
+      repairAiImportDeckMath(deck);
+      try{ globalThis.__LUMINA_STAGE42I_CLASSIC_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR = stats; }catch(_err){}
+      return deck;
     }
     function extractJsonText(text){
       let s = String(text || '').trim();
@@ -996,7 +1191,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42h-patch-ai-import-repair-20260511-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42i-classic-ai-source-id-fix-20260511-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1059,7 +1254,7 @@ Previous output to repair:
     stats.changedCount = countPatchableChanges(stats);
     deck.aiPatchStats = stats;
     try{
-      globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
+      globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
       globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR = stats;
     }catch(_err){}
     return deck;
@@ -1113,9 +1308,9 @@ Previous output to repair:
         throw new Error('AI import repair still failed validation: ' + problems.join('; '));
       }
     }
-    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
+    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
     try{
-      globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR = {
+      globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR = {
         ok:true,
         endpoint, provider, model,
         inputSlides:(slides||[]).length,
@@ -1126,9 +1321,10 @@ Previous output to repair:
         changedCount:stats && stats.changedCount || 0,
         at:new Date().toISOString()
       };
-      globalThis.__LUMINA_STAGE42C_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE41V_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE42C_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE41V_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR;
     }catch(_err){}
     return deck;
   }
@@ -1137,7 +1333,7 @@ Previous output to repair:
       showToast('Asking AI Copilot to repair math/layout in the imported deck…');
       try{
         const deck = await callImportAiReview(deckTitle, importedSlides);
-        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
         const changedCount = stats && Number(stats.changedCount || 0) || 0;
         if(changedCount > 0) showToast('AI repair completed: applied ' + changedCount + ' patch change' + (changedCount === 1 ? '' : 's') + '.');
         else showToast('AI repair completed; no patch changes were needed.');
@@ -1570,7 +1766,7 @@ Previous output to repair:
         globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:true, pending:false, applied:true, replacedSlides:replaceCount, repairedSlides:incoming.length, deckTitle:deckTitle || '', batchId:batchId, at:new Date().toISOString() });
       }catch(_err){}
       clearStage42fAiRepairNotice();
-      const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+      const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
       const patchChanged = patchStats && Number(patchStats.changedCount || 0) || 0;
       if(patchChanged > 0) showToast('AI repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
       else showToast('AI repair completed; source slides stayed loaded because no patch changes were needed.');
@@ -1717,7 +1913,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42h-patch-ai-import-repair-20260511-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42i-classic-ai-source-id-fix-20260511-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
