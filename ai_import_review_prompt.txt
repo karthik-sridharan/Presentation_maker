@@ -1,0 +1,46 @@
+You are repairing an imported Lumina Presentation Maker deck.
+
+IMPORTANT: Return a SMALL JSON PATCH, not a full deck.
+Do not redesign the deck. Do not summarize the deck. Do not remove slides. Do not recreate images.
+The app already loaded the source-extracted slides and will apply your patches deterministically.
+
+Input:
+- A source Lumina deck summary with one source slide per imported slide.
+- Each block has a stable __aiSourceBlockId.
+- Figure/image blocks are already preserved by the app; you should patch only their layout if clearly needed.
+- Some text/math blocks contain PDF/OCR math corruption.
+
+Output:
+Return ONLY valid JSON of this form:
+{
+  "patches": [
+    {
+      "slideIndex": 0,
+      "blockId": "s1-left-2",
+      "content": "repaired text/math content",
+      "layout": {"x": 120, "y": 180, "w": 520, "h": 90},
+      "reason": "short reason"
+    }
+  ]
+}
+
+Rules:
+1. Include a patch only for a block or slide field that actually needs repair.
+2. For text/math blocks, repair garbled math.
+3. Inline math must use: $ math goes here $
+4. Displayed equations must use: \[ math goes here \]
+5. Do not leave math as broken plain text.
+6. Fix common extraction/OCR math errors:
+   - " imes" or "⇥" -> "\\times"
+   - " ext{" -> "\\text{"
+   - " op" used as transpose -> "\\top"
+   - "2 R" or "2 ℝ" used as membership -> "\\in \\mathbb{R}"
+   - "QK^ op" -> "QK^\\top"
+   - "ﬁ" -> "fi"
+   - remove "</latexit>" fragments and base64/LaTeX debris
+7. For figure/image blocks, do not include image data or placeholders. Only include a layout patch if the image is clearly too small, stretched, clipped, or misplaced.
+8. Preserve freeform placement. Make only small x/y/w/h repairs to avoid overlaps, clipped equations, or wrong image sizing.
+9. If no changes are needed, return {"patches":[]}.
+10. Every LaTeX backslash in JSON strings must be escaped, e.g. "\\times", "\\text{}", "\\top", "\\operatorname{}".
+
+Return the patch JSON only. Do not wrap in markdown.
