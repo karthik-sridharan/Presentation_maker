@@ -1,0 +1,16 @@
+Stage 42K: AI import repair batch-marker preservation fix
+Date: 2026-05-11
+
+Purpose
+- Fixes the false message: "AI repair finished, but the imported slides changed; kept current deck."
+- Preserves the background AI import batch marker through autosave/current-slide syncing.
+- Preserves stable AI source block IDs when the selected block is synced back from the editor.
+- Keeps source slides loaded without a scary failure banner when a genuinely stale async repair returns.
+
+Deploy
+- Copy the changed files into the Presentation_maker frontend repo, or deploy the full backup.
+- Open with cache busting:
+  https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42k-import-batch-marker-preserve-20260511-1&clearLuminaStorage=1
+
+Backend
+- No backend change is required for this fix. Keep the Stage 42J backend patch deployed if you already deployed it.

@@ -1,0 +1,13 @@
+{
+  "stage": "stage42k-import-batch-marker-preserve-20260511-1",
+  "checks": [
+    "node --check js/file-io-stage24c.js",
+    "node --check js/esm/file-io-stage34j.js",
+    "node --check js/block-editor-stage24c.js",
+    "node --check js/esm/block-editor-stage34j.js",
+    "node --check js/legacy-app-stage24c.js",
+    "VM smoke: background AI repair applies after active-slide sync strips top-level marker but preserves importMeta marker",
+    "VM smoke: currentDraftSlide preserves batch marker and __aiSourceBlockId"
+  ],
+  "backendRequired": false
+}
