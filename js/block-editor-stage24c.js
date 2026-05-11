@@ -100,6 +100,9 @@
         notesBody: fields.notesBody.value
       };
       if(existingSlide.importMeta) draftSlide.importMeta = clone(existingSlide.importMeta);
+      ['__stage42eImportBatchId','__stage42eImportBatchIndex','__stage42eRawImported','__stage42eAiRepaired'].forEach(function(key){
+        if(existingSlide[key] !== undefined) draftSlide[key] = existingSlide[key];
+      });
       return draftSlide;
     }
     function applySlideToForm(slide){
@@ -179,6 +182,9 @@
       if(existing && existing.layout) nextBlock.layout = clone(existing.layout);
       if(existing && existing.importSourceLayout) nextBlock.importSourceLayout = clone(existing.importSourceLayout);
       if(existing && existing.importRole) nextBlock.importRole = existing.importRole;
+      ['__aiSourceBlockId','sourceBlockId','blockId'].forEach(function(key){
+        if(existing && existing[key] !== undefined) nextBlock[key] = existing[key];
+      });
       if(existing && Array.isArray(existing.importRuns)){
         const oldContent = cleanEditableContent(existing.content || '', existing.mode || 'panel');
         if(nextContent === oldContent){
