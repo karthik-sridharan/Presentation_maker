@@ -1,12 +1,9 @@
-Your previous Lumina import repair JSON had these problems:
+Your previous Lumina import repair patch JSON had these problems:
 {{PROBLEMS}}
 
-Repair the JSON only. Do not redesign the deck. Preserve source slide count, source block ids, images, and layout.
-Return ONLY valid JSON. Do not wrap in markdown.
-Use inline math as $math goes here$ and displayed equations as \[ math goes here \].
-Review each block for possible math and if present repair it. 
-Move blocks within each slide around so they are arranged well in a clear organized fashion.
-
+Repair the PATCH JSON only. Do not return a full deck. Do not redesign the deck.
+Return ONLY valid JSON of the form {"patches":[...]}.
+Use inline math as $ math goes here $ and displayed equations as \[ math goes here \].
 Ensure every LaTeX backslash is JSON-escaped: use "\\times", "\\text{}", "\\top", "\\operatorname{}" inside JSON strings.
 
 Source context:
