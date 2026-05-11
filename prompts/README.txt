@@ -6,3 +6,5 @@ It tells the AI to preserve slide count, block ids, image assets, and freeform l
 ai_import_repair_prompt.txt is the one-pass retry prompt used if the first response is invalid JSON or still contains obvious broken math artifacts.
 
 These files are loaded by the frontend at import time, so users can edit them without rebuilding the app.
+
+Stage 42F adds a persistent user notice if background AI import repair fails, returns no valid repaired deck, or takes unusually long.
