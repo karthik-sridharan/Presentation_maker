@@ -1,0 +1,17 @@
+Stage 42G: AI import repair notification
+
+Install by unzipping this package at the root of your GitHub Presentation_maker repo, replacing existing files.
+
+Open:
+https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42g-clonejsonsafe-hotfix-20260511-1
+
+Behavior:
+- Continue Import still loads source-extracted slides immediately.
+- AI repair runs in the background.
+- If AI repair succeeds, the imported batch is replaced by repaired slides and any AI repair notice is cleared.
+- If AI repair fails, returns no valid repaired deck, or the imported batch changed before repair finished, the source slides stay loaded and a persistent bottom-right notice appears.
+- If AI repair is still pending after 60 seconds, a notice explains that source slides are already loaded and repair may still apply later.
+
+Diagnostic globals:
+window.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR
+window.__LUMINA_STAGE42F_AI_REPAIR_NOTIFICATION
