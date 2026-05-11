@@ -1,4 +1,4 @@
-/* Stage 41Z file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
+/* Stage 42F file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -429,7 +429,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42d-displaymath-brackets-import-repair-20260510-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42e-import-load-first-ai-repair-20260510-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -788,7 +788,7 @@ Previous output to repair:
         try{ recovered = normalizeSlide(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide || {}))); }
         catch(_err){ recovered = Object.assign({ title:'Recovered source slide', slideType:'single', leftBlocks:[], rightBlocks:[] }, sourceSlide || {}); }
         recovered.title = String(recovered.title || ('Recovered source slide ' + (deck.slides.length + 1)));
-        recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 41Z appended this source slide because AI cleanup returned too few slides.';
+        recovered.notesBody = String(recovered.notesBody || '') + (recovered.notesBody ? '\n\n' : '') + 'Stage 42F appended this source slide because AI cleanup returned too few slides.';
         recovered.__stage41vRecoveredSourceSlide = true;
         deck.slides.push(recovered);
         stats.rawSlidesAdded += 1;
@@ -812,10 +812,10 @@ Previous output to repair:
         }
         if(touched){
           stats.touchedSlides += 1;
-          cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 41Z restored source math/figure content that AI cleanup dropped.';
+          cleanSlide.notesBody = String(cleanSlide.notesBody || '') + (cleanSlide.notesBody ? '\n\n' : '') + 'Stage 42F restored source math/figure content that AI cleanup dropped.';
         }
       });
-      // Stage 41Z: preserve user-selected image alternatives exactly, even after AI cleanup.
+      // Stage 42F: preserve user-selected image alternatives exactly, even after AI cleanup.
       sourceSlides.forEach((sourceSlide, i)=>{
         if(sourceSlide && sourceSlide.importChoiceMode === 'image' && deck.slides[i]){
           try{ deck.slides[i] = normalizeSlide(stripImportReviewInternals(clone ? clone(sourceSlide) : JSON.parse(JSON.stringify(sourceSlide)))); stats.touchedSlides += 1; }catch(_err){}
@@ -942,7 +942,7 @@ Previous output to repair:
         return Object.assign({ aiReviewed:true }, deck);
       }catch(err){
         const message = err && err.message ? err.message : String(err);
-        // Stage 41Z: do not leave the user with no slides when the AI preserve-merge path
+        // Stage 42F: do not leave the user with no slides when the AI preserve-merge path
         // is too strict or the model drops equations/figures. Preserve the backend
         // extraction output and report the AI validation failure for diagnostics.
         const fallbackSlides = Array.isArray(importedSlides) ? importedSlides : [];
@@ -957,7 +957,7 @@ Previous output to repair:
           };
           global.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = Object.assign({}, global.__LUMINA_STAGE41V_LAST_AI_IMPORT_FALLBACK);
         }catch(_err){}
-        showToast('AI cleanup failed validation; loaded the source-extracted slides instead.');
+        showToast('AI repair failed validation; kept the source-extracted slides already loaded.');
         return {
           deckTitle,
           slides:fallbackSlides,
@@ -1020,7 +1020,7 @@ Previous output to repair:
           }
           return '<div class="stage41w-import-review-slide" data-slide-index="'+i+'"><div class="stage41w-import-review-slide-title"><span>'+(i+1)+'. '+title+'</span><span>Choose version</span></div><div class="stage41w-import-review-choices"><label class="stage41w-import-choice stage41w-selected" data-choice="semantic"><input name="stage41w-choice-'+i+'" type="radio" value="semantic" checked> Editable semantic extraction'+renderImportChoicePreview(slide, 'Editable extraction')+'</label><label class="stage41w-import-choice" data-choice="image"><input name="stage41w-choice-'+i+'" type="radio" value="image"> Rendered image/background'+renderImportChoicePreview(imageSlide, 'Rendered image')+'</label></div></div>';
         }).join('');
-        backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
+        backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. AI repair starts after Continue, while the chosen slides load immediately.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
         function refresh(){
           Array.from(backdrop.querySelectorAll('.stage41w-import-review-slide')).forEach(row=>{
             Array.from(row.querySelectorAll('.stage41w-import-choice')).forEach(choice=>{
@@ -1106,7 +1106,7 @@ Previous output to repair:
         }
       }
       if(/Load failed|Failed to fetch|NetworkError/i.test(msg)){
-        hint += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits, and that the extraction JSON response was not too large. Stage 41Z uses compact review images; if this persists, temporarily reduce Max PDF pages or set Include review alternates off.';
+        hint += ' Check that the extraction endpoint is the full Cloud Run URL ending in /api/lumina/extract, that ALLOWED_ORIGINS includes https://karthik-sridharan.github.io, and that the PDF is below Cloud Run/browser upload limits, and that the extraction JSON response was not too large. Stage 42F uses compact review images; if this persists, temporarily reduce Max PDF pages or set Include review alternates off.';
       }
       return msg + ' — ' + hint;
     }
@@ -1202,7 +1202,7 @@ Previous output to repair:
       if(!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
       payload.warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
       if(attempt && attempt.label && !/^full/i.test(attempt.label)){
-        payload.warnings.push('Stage 41Z used ' + attempt.label + ' after the larger extraction attempt could not complete. The deck is loaded, but rendered image-review alternatives may be unavailable for some slides.');
+        payload.warnings.push('Stage 42F used ' + attempt.label + ' after the larger extraction attempt could not complete. The deck is loaded, but rendered image-review alternatives may be unavailable for some slides.');
       }
       payload.meta = Object.assign({}, payload.meta || {}, { stage41zAttempt: attempt && attempt.label || 'extract' });
       return payload;
@@ -1267,6 +1267,110 @@ Previous output to repair:
       showToast('Imported ' + incoming.length + ' slide' + (incoming.length === 1 ? '' : 's') + '.');
     }
 
+
+
+
+    function stage42fEscapeHtml(value){
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){
+        return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '"' ? '&quot;' : '&#39;';
+      });
+    }
+    function clearStage42fAiRepairNotice(){
+      try{
+        var d = doc();
+        var box = d && d.getElementById ? d.getElementById('stage42f-ai-repair-notice') : null;
+        if(box && box.parentNode) box.parentNode.removeChild(box);
+      }catch(_err){}
+    }
+    function notifyStage42fAiRepairIssue(message, detail){
+      var msg = String(message || 'AI repair did not go through; kept the source-extracted slides.');
+      var details = String(detail || 'The imported source slides remain loaded, so no content was lost.');
+      try{
+        globalThis.__LUMINA_STAGE42F_AI_REPAIR_NOTIFICATION = {
+          ok:false,
+          pending:false,
+          message:msg,
+          detail:details,
+          keptSource:true,
+          backgroundStatus:globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || null,
+          at:new Date().toISOString()
+        };
+      }catch(_err){}
+      try{ if(typeof showToast === 'function') showToast(msg); }catch(_err){}
+      try{
+        var d = doc();
+        if(!d || !d.body) return;
+        var box = d.getElementById('stage42f-ai-repair-notice');
+        if(!box){
+          box = d.createElement('div');
+          box.id = 'stage42f-ai-repair-notice';
+          box.setAttribute('role', 'status');
+          box.setAttribute('aria-live', 'polite');
+          box.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:99999;max-width:min(460px,calc(100vw - 36px));background:#fff7ed;color:#7c2d12;border:1px solid #fdba74;border-left:6px solid #f97316;border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.22);padding:14px 14px 12px 14px;font:14px/1.42 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
+          d.body.appendChild(box);
+        }
+        box.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div><strong style="display:block;margin-bottom:4px">AI repair did not complete</strong><div>'+stage42fEscapeHtml(msg)+'</div><div style="font-size:12px;margin-top:6px;color:#9a3412">'+stage42fEscapeHtml(details)+'</div></div><button type="button" data-stage42f-close style="border:1px solid rgba(124,45,18,.25);background:#fff;color:#7c2d12;border-radius:999px;padding:4px 9px;font-weight:700;cursor:pointer">Close</button></div>';
+        var close = box.querySelector('[data-stage42f-close]');
+        if(close) close.onclick = function(){ clearStage42fAiRepairNotice(); };
+      }catch(_err){}
+    }
+    function notifyStage42fAiRepairSlow(batchId){
+      try{
+        var status = globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {};
+        if(!status.pending || (batchId && status.batchId !== batchId)) return;
+        notifyStage42fAiRepairIssue('AI repair is taking longer than expected; source-extracted slides are already loaded.', 'You can keep editing. If AI repair succeeds later, it will replace only this imported batch; otherwise the source slides stay loaded.');
+      }catch(_err){}
+    }
+
+    function markStage42eImportBatch(slides, batchId){
+      return (slides || []).map(function(slide, i){
+        var out = cloneJsonSafe(slide || {});
+        out.__stage42eImportBatchId = batchId;
+        out.__stage42eImportBatchIndex = i;
+        out.__stage42eRawImported = true;
+        return out;
+      });
+    }
+    function applyStage42eBackgroundAiRepair(rawBatchSlides, repairedDeck, startIndex, batchId, deckTitle){
+      var repairedSlides = repairedDeck && Array.isArray(repairedDeck.slides) ? repairedDeck.slides : [];
+      if(!repairedSlides.length) return false;
+      var incoming = repairedSlides.map(function(slide, i){
+        var out = normalizeSlide(slide);
+        out.__stage42eImportBatchId = batchId;
+        out.__stage42eImportBatchIndex = i;
+        out.__stage42eAiRepaired = true;
+        return out;
+      }).filter(Boolean);
+      if(!incoming.length) return false;
+      var current = getSlides();
+      var replaceCount = (rawBatchSlides || []).length;
+      var expectedStart = Math.max(0, Number(startIndex) || 0);
+      var stillSameBatch = true;
+      for(var i = 0; i < replaceCount; i++){
+        var slide = current[expectedStart + i];
+        if(!slide || slide.__stage42eImportBatchId !== batchId){ stillSameBatch = false; break; }
+      }
+      if(!stillSameBatch){
+        try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, skipped:true, reason:'Imported batch changed before AI repair finished.', at:new Date().toISOString() }); }catch(_err){}
+        notifyStage42fAiRepairIssue('AI repair finished, but the imported slides changed; kept current deck.', 'The source-extracted slides remain loaded because the imported batch was edited or replaced before AI repair finished.');
+        return false;
+      }
+      var next = cloneJsonSafe(current || []);
+      next.splice.apply(next, [expectedStart, replaceCount].concat(incoming));
+      setSlides(next);
+      setActiveIndex(expectedStart);
+      var slidesNow = getSlides();
+      if(slidesNow[expectedStart]) applySlideToForm(slidesNow[expectedStart]);
+      renderDeckList();
+      buildPreview();
+      scheduleAutosave('Autosaved after AI import repair.');
+      try{
+        globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:true, pending:false, applied:true, replacedSlides:replaceCount, repairedSlides:incoming.length, deckTitle:deckTitle || '', batchId:batchId, at:new Date().toISOString() });
+      }catch(_err){}
+      clearStage42fAiRepairNotice();
+      showToast('AI repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
+      return true;
+    }
     async function importSelectedFiles(fileList){
       initExtractionFields();
       const files = Array.from(fileList || []);
@@ -1317,15 +1421,37 @@ Previous output to repair:
           else imported.push(...parsePowerPointTextToSlides(text));
         }
       }
-      let importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:false };
+      let importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:false, aiRepairPending:false };
       if(usedExtractionBackend){
         imported = await reviewExtractedSlidesWithAlternates(imported, deckTitle);
-        importDeck = await maybeReviewImportedDeckWithAi(imported, deckTitle);
-        imported = importDeck.slides || imported;
-        deckTitle = importDeck.deckTitle || deckTitle;
+        importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:false, aiRepairPending: aiReviewAfterImportEnabled() };
       }
-      applyImportedSlides(imported, { mode: importModeValue(), deckTitle, theme: importDeck.theme, presentationOptions: importDeck.presentationOptions });
+      const mode = importModeValue();
+      const startIndex = mode === 'replace' ? 0 : getSlides().length;
+      const batchId = 'stage42e-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      let rawBatch = imported;
+      if(importDeck.aiRepairPending){
+        imported = markStage42eImportBatch(imported, batchId);
+        rawBatch = imported;
+      }
+      applyImportedSlides(imported, { mode, deckTitle, theme: importDeck.theme, presentationOptions: importDeck.presentationOptions });
       if(warnings.length) showToast(warnings[0]);
+      if(importDeck.aiRepairPending){
+        showToast('Imported source slides. AI repair is running in the background…');
+        try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = { ok:null, pending:true, applied:false, batchId, startIndex, slideCount:rawBatch.length, at:new Date().toISOString() }; }catch(_err){}
+        setTimeout(function(){ notifyStage42fAiRepairSlow(batchId); }, 60000);
+        maybeReviewImportedDeckWithAi(rawBatch, deckTitle).then(function(repairedDeck){
+          if(repairedDeck && repairedDeck.aiReviewed && !repairedDeck.aiReviewFailed){
+            applyStage42eBackgroundAiRepair(rawBatch, repairedDeck, startIndex, batchId, deckTitle);
+          }else{
+            try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, applied:false, keptSource:true, reason:repairedDeck && repairedDeck.aiReviewError || 'AI repair did not return a repaired deck.', at:new Date().toISOString() }); }catch(_err){}
+            notifyStage42fAiRepairIssue('AI repair did not produce changes; kept the source-extracted slides.', repairedDeck && repairedDeck.aiReviewError || 'The AI did not return a valid repaired deck.');
+          }
+        }).catch(function(err){
+          try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, applied:false, keptSource:true, error:err && err.message ? err.message : String(err), at:new Date().toISOString() }); }catch(_err){}
+          notifyStage42fAiRepairIssue('AI repair failed; kept the source-extracted slides.', err && err.message ? err.message : String(err));
+        });
+      }
     }
 
     async function loadDeckFromFile(file){
@@ -1386,7 +1512,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42d-displaymath-brackets-import-repair-20260510-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42e-import-load-first-ai-repair-20260510-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
