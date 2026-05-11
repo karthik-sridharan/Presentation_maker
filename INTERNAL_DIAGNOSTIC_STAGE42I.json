@@ -1,0 +1,24 @@
+{
+  "stage": "stage42i-classic-ai-source-id-fix-20260511-1",
+  "focus": "Fix classic browser AI import repair ReferenceError: addAiSourceIdsToSourceSlides is not defined",
+  "rootCause": "js/file-io-stage24c.js referenced patch-based AI source-id helpers that were present in the ESM file but missing from the classic script path loaded by index.html.",
+  "changes": [
+    "Added deterministicAiSourceBlockId and addAiSourceIdsToSourceSlides to js/file-io-stage24c.js.",
+    "Added classic helper functions for source-block mapping, image-asset preservation, simple math-container repair, and source merge fallback.",
+    "Aligned the classic AI import user prompt with patch-based repair and stable __aiSourceBlockId/blockId patch targeting.",
+    "Updated ESM prompt/stage strings for consistency and added Stage 42I diagnostic aliases while preserving Stage 42H aliases.",
+    "Updated index.html cache-busting stage to stage42i-classic-ai-source-id-fix-20260511-1."
+  ],
+  "checksRun": [
+    "node --check js/file-io-stage24c.js",
+    "node --check js/esm/file-io-stage34j.js",
+    "node --check js/legacy-app-stage24c.js",
+    "VM smoke test: fake /api/lumina/ai patch response applied to source slide with __aiSourceBlockId and math repair x imes y -> \\[x \\times y\\]"
+  ],
+  "expectedRuntimeBehavior": [
+    "Import review modal appears as before.",
+    "Continue import loads source-extracted slides immediately.",
+    "AI repair no longer throws Can't find variable: addAiSourceIdsToSourceSlides in the classic path.",
+    "If AI returns valid patches, the app reports patch changes; if no changes are needed, the source-extracted slides remain loaded with a clear notice."
+  ]
+}

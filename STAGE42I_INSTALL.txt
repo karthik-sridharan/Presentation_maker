@@ -1,0 +1,32 @@
+Stage 42I: classic AI source-id repair fix
+
+What changed
+- Fixes the classic-browser import AI repair crash: Can't find variable: addAiSourceIdsToSourceSlides.
+- Adds the missing source-block-id helpers to js/file-io-stage24c.js.
+- Aligns the classic AI import prompt with patch-based repair so each patch can target stable __aiSourceBlockId values.
+- Keeps image/figure assets in the source-extracted slides and lets AI patch only text/math/layout.
+- Adds Stage 42I diagnostics while preserving Stage 42H diagnostic aliases.
+
+Install
+1. Copy these files/folders into your Presentation_maker deploy root, replacing existing files:
+   - index.html
+   - js/file-io-stage24c.js
+   - js/esm/file-io-stage34j.js
+   - js/legacy-app-stage24c.js
+   - js/export-stage24c.js
+   - js/esm/export-stage34j.js
+   - prompt/
+2. Deploy to GitHub Pages.
+3. Open with cache busting:
+   https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42i-classic-ai-source-id-fix-20260511-1&clearLuminaStorage=1
+
+Useful console checks after an import
+- window.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR
+- window.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR
+- window.__LUMINA_STAGE41V_LAST_AI_IMPORT_FALLBACK
+
+Expected behavior
+- The review window still appears after PDF/image extraction.
+- Clicking Continue import loads the source-extracted slides immediately.
+- AI repair runs without the addAiSourceIdsToSourceSlides crash.
+- If AI produces valid patches, the patch count is reported; if it produces no changes, the source slides remain loaded and the user is notified.
