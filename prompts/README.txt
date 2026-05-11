@@ -1,4 +1,4 @@
-Stage 42H import AI prompts
+Stage 42I import AI prompts
 
 ai_import_review_prompt.txt is intentionally patch-based.
 The AI should return only {"patches":[...]} instead of a complete deck.
