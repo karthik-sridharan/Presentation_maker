@@ -1,4 +1,4 @@
-/* Stage 42F file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
+/* Stage 42G file/import workflow helpers: AI preserve-and-merge import keeps source math/figures when AI cleanup drops them.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -78,6 +78,18 @@
     const STORAGE_AI_MODEL = 'luminaImportAiModel';
     const DEFAULT_MAX_IMPORT_PAGES = 80;
     const DEFAULT_MAX_IMPORT_SLIDES = 160;
+
+    function cloneJsonSafe(value){
+      try{
+        if(typeof clone === 'function') return clone(value);
+        return JSON.parse(JSON.stringify(value == null ? null : value));
+      }catch(_err){
+        if(value && typeof value === 'object'){
+          try{ return Array.isArray(value) ? value.slice() : Object.assign({}, value); }catch(_err2){}
+        }
+        return value;
+      }
+    }
 
     function doc(){ return typeof getDocument === 'function' ? getDocument() : global.document; }
     function readFileAsDataUrl(file){
