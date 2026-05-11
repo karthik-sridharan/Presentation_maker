@@ -1,0 +1,18 @@
+Stage 42H: patch-based AI import repair
+
+Install by unzipping at the root of the Presentation_maker GitHub repo, replacing the included files.
+
+Open:
+https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42h-patch-ai-import-repair-20260511-1
+
+What changed:
+- AI import repair now asks the model for a small patch JSON instead of a full deck JSON.
+- Source-extracted slides load immediately and remain loaded.
+- The AI can patch text/math content and small layout x/y/w/h values.
+- Source images/base64 assets are preserved deterministically by the app.
+- Empty patch output is treated as successful completion with no changes, not as a failure.
+
+Diagnostics:
+window.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR
+window.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR
+window.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR
