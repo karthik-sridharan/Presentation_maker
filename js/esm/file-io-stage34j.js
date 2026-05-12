@@ -126,7 +126,7 @@ export function createApi(deps) {
     initExtractionFields();
     var el = doc().getElementById('extractionEngineSelect');
     var value = String((el && el.value) || storageGet(STORAGE_ENGINE, 'hybrid') || 'hybrid').trim().toLowerCase();
-    if(['pymupdf','pymupdf-math-image','marker','hybrid','docai'].indexOf(value) < 0) value = 'hybrid';
+    if(['pymupdf','pymupdf-math-image','pymupdf-all-image','marker','hybrid','docai'].indexOf(value) < 0) value = 'hybrid';
     storageSet(STORAGE_ENGINE, value);
     return value;
   }
@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42w-pymupdf-math-image-hybrid-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42x-pymupdf-all-image-patches-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42x-pymupdf-all-image-patches-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1284,7 +1284,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42x-pymupdf-all-image-patches-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1624,7 +1624,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage42x-pymupdf-all-image-patches-20260512-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1656,6 +1656,10 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     form.append('includePdfReviewAlternates', '1');
     form.append('includePdfRender', '1');
     form.append('extractEngine', engine === 'docai' ? 'docai-semantic' : engine);
+    if (engine.indexOf('all-image') >= 0) {
+      form.append('allTextAsImage', '1');
+      form.append('textImageZoom', '2.25');
+    }
     if (engine.indexOf('math-image') >= 0) {
       form.append('mathAsImage', '1');
       form.append('mathImageZoom', '2.25');
@@ -1678,7 +1682,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
     var startedAt = Date.now();
-    stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend… ' + (engine === 'docai' ? 'Document AI fast mode is on: backend AI rebuild is skipped, but rendered review choices are requested.' : (engine.indexOf('math-image') >= 0 ? 'PyMuPDF math-image hybrid is on: prose stays editable and math-like regions are cropped as image blobs.' : 'Extraction is running.')), endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, filename:file && file.name || '', fileSize:file && file.size || 0, pending:true, startedAt:new Date().toISOString() });
+    stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend… ' + (engine === 'docai' ? 'Document AI fast mode is on: backend AI rebuild is skipped, but rendered review choices are requested.' : (engine.indexOf('all-image') >= 0 ? 'PyMuPDF image-patch mode is on: every text or math region is kept as a cropped image patch for later extraction.' : (engine.indexOf('math-image') >= 0 ? 'PyMuPDF math-image hybrid is on: prose stays editable and math-like regions are cropped as image blobs.' : 'Extraction is running.'))), endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, filename:file && file.name || '', fileSize:file && file.size || 0, pending:true, startedAt:new Date().toISOString() });
     return fetch(endpoint, { method:'POST', headers:headers, body:form, cache:'no-store', mode:'cors' }).catch(function (fetchErr) {
       stage42sPublishImportStatus({ phase:'backend-fetch-error', pending:false, ok:false, message:'Extraction backend request failed before a response was received.', error:fetchErr && fetchErr.message ? fetchErr.message : String(fetchErr || 'Fetch failed'), elapsedMs:Date.now()-startedAt });
       return describeExtractionFetchFailure(endpoint, fetchErr).then(function (message) { throw new Error(message); });
@@ -2020,7 +2024,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42x-pymupdf-all-image-patches-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
