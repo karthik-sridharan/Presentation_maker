@@ -1,0 +1,16 @@
+{
+  "stage": "stage42l-import-flow-restore-ai-stale-fix-20260511-1",
+  "base": "stage42j-ai-patch-task-backend-fix-20260511-1",
+  "purpose": "Restore import flow after Stage 42K and retain a narrow stale background AI repair guard fix.",
+  "backendRequired": "stage42j backend or newer",
+  "checks": [
+    "node --check js/file-io-stage24c.js",
+    "node --check js/esm/file-io-stage34j.js",
+    "node --check js/block-editor-stage24c.js",
+    "node --check js/esm/block-editor-stage34j.js",
+    "node --check js/legacy-app-stage24c.js",
+    "VM markdown import smoke test",
+    "VM extraction import smoke test",
+    "VM background AI repair stale-marker-stripped smoke test"
+  ]
+}

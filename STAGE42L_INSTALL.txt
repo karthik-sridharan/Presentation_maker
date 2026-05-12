@@ -1,0 +1,6 @@
+Deploy the Stage 42L frontend files, keeping the Stage 42J backend deployed.
+
+Open with:
+https://karthik-sridharan.github.io/Presentation_maker/index.html?v=stage42l-import-flow-restore-ai-stale-fix-20260511-1&clearLuminaStorage=1
+
+Changed-files patch is intended to be applied over Stage 42K or Stage 42J frontend deployments.
