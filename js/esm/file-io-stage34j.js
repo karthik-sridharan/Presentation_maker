@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42q-docai-nonempty-semantic-import-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42s-import-progress-visible-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42s-import-progress-visible-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1284,7 +1284,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42s-import-progress-visible-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1620,6 +1620,22 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     });
   }
 
+
+  function stage42sPublishImportStatus(update){
+    try{
+      var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
+      var next = Object.assign({}, prev, update || {}, { stage:'stage42s-import-progress-visible-20260512-1', updatedAt:new Date().toISOString() });
+      if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
+      globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
+      globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
+      if(typeof globalThis.LuminaStage42SUpdateImportPanel === 'function') globalThis.LuminaStage42SUpdateImportPanel(next);
+    }catch(_err){}
+  }
+  function stage42sCompactEndpoint(endpoint){
+    try{ var u = new URL(String(endpoint || ''), globalThis.location && globalThis.location.href || undefined); return u.origin + u.pathname; }
+    catch(_err){ return String(endpoint || '').slice(0, 180); }
+  }
+
   function extractPresentationFile(file) {
     if (typeof fetch !== 'function' || typeof FormData !== 'function') return Promise.reject(new Error('This browser does not support fetch/FormData upload.'));
     var engine = extractionEngineValue();
@@ -1654,18 +1670,27 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
+    var startedAt = Date.now();
+    stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend…', endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, filename:file && file.name || '', fileSize:file && file.size || 0, pending:true, startedAt:new Date().toISOString() });
     return fetch(endpoint, { method:'POST', headers:headers, body:form, cache:'no-store', mode:'cors' }).catch(function (fetchErr) {
+      stage42sPublishImportStatus({ phase:'backend-fetch-error', pending:false, ok:false, message:'Extraction backend request failed before a response was received.', error:fetchErr && fetchErr.message ? fetchErr.message : String(fetchErr || 'Fetch failed'), elapsedMs:Date.now()-startedAt });
       return describeExtractionFetchFailure(endpoint, fetchErr).then(function (message) { throw new Error(message); });
     }).then(function (res) {
+      stage42sPublishImportStatus({ phase:'reading-backend-response', message:'Backend responded; reading extracted slides…', httpStatus:res.status, elapsedMs:Date.now()-startedAt, pending:true });
       return res.text().then(function (text) {
         var payload = null;
         try { payload = text ? JSON.parse(text) : null; }
         catch (_err) { payload = { ok:false, error:{ message:text ? text.slice(0, 500) : 'Empty response from extraction backend.' } }; }
         if (!res.ok || !payload || payload.ok === false) {
           var msg = payload && payload.error && payload.error.message ? payload.error.message : ('Extraction backend failed with HTTP ' + res.status + '.');
+          stage42sPublishImportStatus({ phase:'backend-error', pending:false, ok:false, message:msg, httpStatus:res.status, responsePreview:text ? text.slice(0, 900) : '', elapsedMs:Date.now()-startedAt });
           throw new Error(msg);
         }
-        if (!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
+        if (!Array.isArray(payload.slides) || !payload.slides.length) {
+          stage42sPublishImportStatus({ phase:'backend-empty', pending:false, ok:false, message:'Extraction backend returned no slides.', httpStatus:res.status, elapsedMs:Date.now()-startedAt });
+          throw new Error('Extraction backend returned no slides.');
+        }
+        stage42sPublishImportStatus({ phase:'backend-success', pending:true, ok:true, message:'Backend returned ' + payload.slides.length + ' slide' + (payload.slides.length === 1 ? '' : 's') + '; preparing import…', slideCount:payload.slides.length, httpStatus:res.status, elapsedMs:Date.now()-startedAt, meta:payload.meta || null, source:payload.source || null });
         try { globalThis.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '' }; } catch (_err) {}
         return payload;
       });
@@ -1868,6 +1893,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
 
         if (isExtractablePresentationFile(file)) {
           if (extractionBackendEnabled()) {
+            stage42sPublishImportStatus({ phase:'extract-file', message:'Sending ' + (file.name || 'presentation') + ' to extraction backend…', filename:file.name || '', pending:true });
             return extractPresentationFile(file).then(function (payload) {
               usedExtractionBackend = true;
               if (payload.deckTitle && !deckTitle) deckTitle = payload.deckTitle;
@@ -1921,7 +1947,9 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
         imported = markStage42eImportBatch(imported, batchId);
         rawBatch = imported;
       }
-      applyImportedSlides(imported, { mode:mode, deckTitle:deckTitle, theme:importDeck.theme, presentationOptions:importDeck.presentationOptions });
+      stage42sPublishImportStatus({ phase:'applying-slides', message:'Loading ' + imported.length + ' imported slide' + (imported.length === 1 ? '' : 's') + ' into the deck…', slideCount:imported.length, pending:true });
+    applyImportedSlides(imported, { mode:mode, deckTitle:deckTitle, theme:importDeck.theme, presentationOptions:importDeck.presentationOptions });
+    stage42sPublishImportStatus({ phase:'import-complete', message:'Imported ' + imported.length + ' slide' + (imported.length === 1 ? '' : 's') + '.', slideCount:imported.length, pending:false, ok:true, finishedAt:new Date().toISOString() });
       if (warnings.length) showToast(warnings[0]);
       if (importDeck.aiRepairPending) {
         showToast('Imported source slides. AI repair is running in the background…');
@@ -1985,7 +2013,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42s-import-progress-visible-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
