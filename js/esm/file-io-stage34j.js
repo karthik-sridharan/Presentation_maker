@@ -1,4 +1,4 @@
-/* Stage 42L: browser-compatible ES module file/import workflow helpers with patch-task AI repair.
+/* Stage 42O: browser-compatible ES module file/import workflow helpers with patch-task AI repair.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -399,7 +399,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42n-ai-repair-slide-change-summary-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42o-ai-repair-local-change-summary-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -555,7 +555,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage42n-ai-repair-slide-change-summary-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -753,36 +753,79 @@ Previous output to repair:
   function repairAiImportDeckMath(deck){
     if(!deck || !Array.isArray(deck.slides)) return deck;
     let repairedCount = 0;
-    function repairField(obj, key){
+    const changes = [];
+    function compact(value, maxLen){
+      var s = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+      maxLen = Math.max(24, Number(maxLen || 90));
+      return s.length > maxLen ? s.slice(0, maxLen - 1) + '…' : s;
+  }
+    function slideTitle(slide, slideIndex){
+      return compact(slide && (slide.title || slide.kicker || slide.lede || slide.notesTitle) || '', 70) || ('Slide ' + (Number(slideIndex || 0) + 1));
+  }
+    function blockLabel(block, blockIndex){
+      var idx = Number(blockIndex || 0) + 1;
+      var kind = block && (block.type || block.kind || block.role) || '';
+      var title = compact(block && (block.title || block.label) || '', 40);
+      return 'block ' + idx + (kind ? ' (' + kind + ')' : '') + (title ? ': ' + title : '');
+  }
+    function recordRepair(ctx, summary){
+      repairedCount += 1;
+      if(!ctx || ctx.slideIndex == null) return;
+      changes.push({
+        slideIndex: Number(ctx.slideIndex) || 0,
+        slideNumber: (Number(ctx.slideIndex) || 0) + 1,
+        title: slideTitle(ctx.slide, ctx.slideIndex),
+        column: ctx.key || '',
+        blockIndex: ctx.blockIndex == null ? null : Number(ctx.blockIndex),
+        field: ctx.field || '',
+        summary: compact(summary, 140)
+      });
+  }
+    function repairField(obj, key, ctx){
       if(!obj || typeof obj[key] !== 'string') return;
       const before = obj[key];
       const after = repairGarbledMathText(before);
-      if(after !== before){ obj[key] = after; repairedCount += 1; }
-    }
-    deck.deckTitle = repairGarbledMathText(deck.deckTitle || 'AI-cleaned imported deck');
-    deck.slides.forEach(slide=>{
-      repairField(slide, 'title'); repairField(slide, 'kicker'); repairField(slide, 'lede'); repairField(slide, 'notesTitle'); repairField(slide, 'notesBody');
-      const blocks = [].concat(Array.isArray(slide.leftBlocks) ? slide.leftBlocks : [], Array.isArray(slide.rightBlocks) ? slide.rightBlocks : []);
-      blocks.forEach(block=>{
-        repairField(block, 'title');
-        if(blockLooksLikeFigure(block)){
+      if(after !== before){
+        obj[key] = after;
+        var label = ctx && ctx.block ? blockLabel(ctx.block, ctx.blockIndex) : 'slide';
+        recordRepair(Object.assign({}, ctx || {}, { field:key }), 'Repaired math/text in ' + label + ' field "' + key + '"');
+      }
+  }
+    const titleBefore = deck.deckTitle || 'AI-cleaned imported deck';
+    const titleAfter = repairGarbledMathText(titleBefore);
+    if(titleAfter !== titleBefore){ deck.deckTitle = titleAfter; repairedCount += 1; }
+    else deck.deckTitle = titleAfter;
+    deck.slides.forEach((slide, slideIndex)=>{
+      ['title','kicker','lede','notesTitle','notesBody'].forEach(function(field){ repairField(slide, field, { slide, slideIndex, key:'slide', block:null, blockIndex:null }); });
+      [['leftBlocks','left'], ['rightBlocks','right']].forEach(function(pair){
+        const key = pair[0];
+        const blocks = Array.isArray(slide && slide[key]) ? slide[key] : [];
+        blocks.forEach(function(block, blockIndex){
+          const ctx = { slide, slideIndex, key, block, blockIndex };
+          repairField(block, 'title', ctx);
+          if(blockLooksLikeFigure(block)){
+            if(String(block && block.mode || '') === 'custom'){
+              const before = String(block.content || '');
+              const after = repairCustomHtmlSizing(before);
+              if(after !== before){ block.content = after; recordRepair(Object.assign({}, ctx, { field:'content' }), 'Repaired custom figure/HTML sizing in ' + blockLabel(block, blockIndex)); }
+            }
+            return;
+          }
           if(String(block && block.mode || '') === 'custom'){
             const before = String(block.content || '');
             const after = repairCustomHtmlSizing(before);
-            if(after !== before){ block.content = after; repairedCount += 1; }
+            if(after !== before){ block.content = after; recordRepair(Object.assign({}, ctx, { field:'content' }), 'Repaired custom HTML sizing in ' + blockLabel(block, blockIndex)); }
+          } else {
+            repairField(block, 'content', ctx);
           }
-          return;
-        }
-        if(String(block && block.mode || '') === 'custom'){
-          const before = String(block.content || '');
-          const after = repairCustomHtmlSizing(before);
-          if(after !== before){ block.content = after; repairedCount += 1; }
-        } else {
-          repairField(block, 'content');
-        }
+        });
       });
     });
-    try{ globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR = { repairedCount, at:new Date().toISOString() }; }catch(_err){}
+    const changedSlideKeys = {};
+    changes.forEach(function(change){ changedSlideKeys[String(change.slideIndex)] = true; });
+    const changeSummary = changes.length ? changes.slice(0, 20).map(function(change){ return 'Slide ' + change.slideNumber + ': ' + change.summary; }).join(' | ') : '';
+    try{ globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR = { repairedCount, changes, changedSlideCount:Object.keys(changedSlideKeys).length, changeSummary, at:new Date().toISOString() }; }catch(_err){}
+    try{ global.__LUMINA_STAGE41R_LAST_MATH_REPAIR = globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR; }catch(_err){}
     return deck;
   }
   const AI_IMPORT_BAD_PATTERNS = [
@@ -1205,11 +1248,32 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
       stats.changeSummary = stats.changeSummary || '';
     }
   }
+  function recordLocalMathRepairChanges(stats, deck, repairStatus){
+    var changes = repairStatus && Array.isArray(repairStatus.changes) ? repairStatus.changes : [];
+    if(!stats || !deck || !Array.isArray(deck.slides) || !changes.length) return;
+    changes.forEach(function(change){
+      var si = Number(change && change.slideIndex);
+      if(!Number.isFinite(si) || si < 0 || si >= deck.slides.length) return;
+      var slide = deck.slides[Math.floor(si)];
+      var target = { slide:slide, slideIndex:Math.floor(si), key:change.column || '', block:null, blockIndex:-1 };
+      if(change.blockIndex != null){
+        var bi = Number(change.blockIndex);
+        var key = String(change.column || '').indexOf('right') >= 0 ? 'rightBlocks' : 'leftBlocks';
+        var arr = Array.isArray(slide && slide[key]) ? slide[key] : [];
+        if(Number.isFinite(bi) && arr[Math.floor(bi)]){
+          target.key = key;
+          target.blockIndex = Math.floor(bi);
+          target.block = arr[Math.floor(bi)];
+        }
+      }
+      recordAiRepairChange(stats, target, change.summary || 'Repaired local math/text formatting');
+    });
+  }
   function applyAiRepairPatchesToSource(deckTitle, sourceSlides, patchResult){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42n-ai-repair-slide-change-summary-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1278,13 +1342,15 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     });
     const beforeLocal = globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR && globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR.repairedCount || 0;
     repairAiImportDeckMath(deck);
-    const afterLocal = globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR && globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR.repairedCount || 0;
+    const localMathRepairStatus = globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR || null;
+    const afterLocal = localMathRepairStatus && Number(localMathRepairStatus.repairedCount || 0) || 0;
     stats.localMathFieldsRepaired = Math.max(0, Number(afterLocal || 0));
+    recordLocalMathRepairChanges(stats, deck, localMathRepairStatus);
     stats.changedCount = countPatchableChanges(stats);
     finalizeAiRepairChangeSummary(stats);
     deck.aiPatchStats = stats;
     try{
-      globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
+      globalThis.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
       globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR = stats;
     }catch(_err){}
     return deck;
@@ -1338,7 +1404,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
         throw new Error('AI import repair still failed validation: ' + problems.join('; '));
       }
     }
-    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
+    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
     try{
       globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR = {
         ok:true,
@@ -1365,7 +1431,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     showToast('Asking AI Copilot to repair math/layout in the imported deck…');
     try{
       const deck = await callImportAiReview(deckTitle, importedSlides);
-      const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+      const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
       const changedCount = stats && Number(stats.changedCount || 0) || 0;
       if(changedCount > 0) showToast('AI repair completed: applied ' + changedCount + ' patch change' + (changedCount === 1 ? '' : 's') + '.');
       else showToast('AI repair completed; no patch changes were needed.');
@@ -1753,7 +1819,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
       globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:true, pending:false, applied:true, replacedSlides:replaceCount, repairedSlides:incoming.length, deckTitle:deckTitle || '', batchId:batchId, at:new Date().toISOString() });
     }catch(_err){}
     clearStage42fAiRepairNotice();
-    const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+    const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
     const patchChanged = patchStats && Number(patchStats.changedCount || 0) || 0;
     if(patchChanged > 0) showToast('AI repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
     else showToast('AI repair completed; source slides stayed loaded because no patch changes were needed.');
@@ -1890,7 +1956,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42n-ai-repair-slide-change-summary-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
