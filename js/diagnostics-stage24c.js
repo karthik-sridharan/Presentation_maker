@@ -24,7 +24,8 @@
   function expectedDomIds() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.domIds ? W.LuminaModuleManifest.domIds : ['leftTabs','slideType','preview','deckList','blockList','deckTitle']).slice(); }
   function esmStatus(esm) { return esm ? (esm.status || (esm.ok === true ? 'passed' : 'failed')) : 'not-started'; }
   function pickAiPatchStats() {
-    return W.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR
+    return W.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR
+      || W.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR
@@ -46,6 +47,7 @@
     var changedSlides = patch && Array.isArray(patch.changedSlides) ? patch.changedSlides.slice() : [];
     var changedSlideCount = Number((patch && patch.changedSlideCount) || changedSlides.length || 0) || 0;
     var changeSummary = patch && patch.changeSummary ? String(patch.changeSummary) : '';
+    var changeTrackingUnavailable = changedCount > 0 && changedSlideCount === 0;
     var didRun = !!(bg || patch);
     var worked = null;
     var state = didRun ? 'unknown' : 'idle';
@@ -59,7 +61,7 @@
       worked = true;
       if (changedCount > 0) {
         state = 'applied';
-        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + '.';
+        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + (changeTrackingUnavailable ? '. Per-slide detail was not recorded for this completed run; Stage 42O records it on the next import' : '') + '.';
       } else {
         state = 'completed-no-changes';
         message = 'AI repair completed for ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ', but no patch changes were needed.';
@@ -99,6 +101,7 @@
       changedSlideCount: changedSlideCount,
       changedSlides: changedSlides,
       changeSummary: changeSummary,
+      changedSlideTrackingUnavailable: changeTrackingUnavailable,
       patchesApplied: patchesApplied,
       backgroundStatus: bg,
       patchStats: patch,
@@ -168,6 +171,7 @@
         changedSlideCount: aiRepairStatus.changedSlideCount,
         changedSlides: aiRepairStatus.changedSlides,
         changeSummary: aiRepairStatus.changeSummary,
+        changedSlideTrackingUnavailable: aiRepairStatus.changedSlideTrackingUnavailable,
         updatedAt: aiRepairStatus.updatedAt,
         message: aiRepairStatus.message
       }
@@ -221,7 +225,7 @@
     stats.appendChild(card('Imported slides', imported || 0));
     stats.appendChild(card('Slides repaired', repaired || 0));
     stats.appendChild(card('Changes applied', changed || 0));
-    stats.appendChild(card('Slides changed', Number(status && status.changedSlideCount || 0) || 0));
+    stats.appendChild(card('Slides changed', status && status.changedSlideTrackingUnavailable ? 'Not recorded' : (Number(status && status.changedSlideCount || 0) || 0)));
     var changedList = document.createElement('div');
     changedList.style.cssText = 'margin-top:12px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.72);border-radius:10px;padding:10px;';
     var changedSlides = status && Array.isArray(status.changedSlides) ? status.changedSlides : [];
@@ -250,7 +254,9 @@
         changedList.appendChild(more);
       }
     } else {
-      changedList.textContent = status && status.didRun ? 'No per-slide changes were recorded.' : 'No AI repair run recorded yet.';
+      changedList.textContent = status && status.changedSlideTrackingUnavailable
+        ? 'Changes were counted, but per-slide detail was not recorded for this completed run. Re-import after Stage 42O to get slide-by-slide summaries.'
+        : (status && status.didRun ? 'No per-slide changes were recorded.' : 'No AI repair run recorded yet.');
     }
     if (status && status.updatedAt) {
       var meta = document.createElement('div');
