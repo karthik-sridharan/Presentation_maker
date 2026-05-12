@@ -24,7 +24,8 @@
   function expectedDomIds() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.domIds ? W.LuminaModuleManifest.domIds : ['leftTabs','slideType','preview','deckList','blockList','deckTitle']).slice(); }
   function esmStatus(esm) { return esm ? (esm.status || (esm.ok === true ? 'passed' : 'failed')) : 'not-started'; }
   function pickAiPatchStats() {
-    return W.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR
+    return W.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR
+      || W.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR
@@ -42,6 +43,9 @@
     var repairedSlides = Number((bg && (bg.repairedSlides || bg.replacedSlides)) || 0) || 0;
     var changedCount = Number((patch && patch.changedCount) || 0) || 0;
     var patchesApplied = Number((patch && patch.patchesApplied) || 0) || 0;
+    var changedSlides = patch && Array.isArray(patch.changedSlides) ? patch.changedSlides.slice() : [];
+    var changedSlideCount = Number((patch && patch.changedSlideCount) || changedSlides.length || 0) || 0;
+    var changeSummary = patch && patch.changeSummary ? String(patch.changeSummary) : '';
     var didRun = !!(bg || patch);
     var worked = null;
     var state = didRun ? 'unknown' : 'idle';
@@ -55,7 +59,7 @@
       worked = true;
       if (changedCount > 0) {
         state = 'applied';
-        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + '.';
+        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + '.';
       } else {
         state = 'completed-no-changes';
         message = 'AI repair completed for ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ', but no patch changes were needed.';
@@ -92,6 +96,9 @@
       importedSlides: importedSlides,
       repairedSlides: repairedSlides,
       changedCount: changedCount,
+      changedSlideCount: changedSlideCount,
+      changedSlides: changedSlides,
+      changeSummary: changeSummary,
       patchesApplied: patchesApplied,
       backgroundStatus: bg,
       patchStats: patch,
@@ -158,6 +165,9 @@
         importedSlides: aiRepairStatus.importedSlides,
         repairedSlides: aiRepairStatus.repairedSlides,
         changedCount: aiRepairStatus.changedCount,
+        changedSlideCount: aiRepairStatus.changedSlideCount,
+        changedSlides: aiRepairStatus.changedSlides,
+        changeSummary: aiRepairStatus.changeSummary,
         updatedAt: aiRepairStatus.updatedAt,
         message: aiRepairStatus.message
       }
@@ -201,7 +211,7 @@
     top.appendChild(left);
     top.appendChild(chip);
     var stats = document.createElement('div');
-    stats.style.cssText = 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;';
+    stats.style.cssText = 'display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;';
     function card(label, value) {
       var el = document.createElement('div');
       el.style.cssText = 'border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.72);border-radius:10px;padding:10px;min-height:58px;';
@@ -211,17 +221,50 @@
     stats.appendChild(card('Imported slides', imported || 0));
     stats.appendChild(card('Slides repaired', repaired || 0));
     stats.appendChild(card('Changes applied', changed || 0));
+    stats.appendChild(card('Slides changed', Number(status && status.changedSlideCount || 0) || 0));
+    var changedList = document.createElement('div');
+    changedList.style.cssText = 'margin-top:12px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.72);border-radius:10px;padding:10px;';
+    var changedSlides = status && Array.isArray(status.changedSlides) ? status.changedSlides : [];
+    if (changedSlides.length) {
+      var listTitle = document.createElement('div');
+      listTitle.style.cssText = 'font:700 12px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em;opacity:.75;';
+      listTitle.textContent = 'Changed slides';
+      changedList.appendChild(listTitle);
+      changedSlides.slice(0, 12).forEach(function(entry){
+        var row = document.createElement('div');
+        row.style.cssText = 'padding:8px 0;border-top:1px solid rgba(15,23,42,.08);';
+        var title = document.createElement('div');
+        title.style.cssText = 'font:700 13px/1.3 system-ui,-apple-system,Segoe UI,sans-serif;';
+        title.textContent = 'Slide ' + (entry.slideNumber || (Number(entry.slideIndex || 0) + 1)) + (entry.title ? ': ' + entry.title : '');
+        var summary = document.createElement('div');
+        summary.style.cssText = 'font:12px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;margin-top:3px;opacity:.85;';
+        summary.textContent = entry.summary || (Array.isArray(entry.changes) ? entry.changes.join('; ') : 'Changed');
+        row.appendChild(title);
+        row.appendChild(summary);
+        changedList.appendChild(row);
+      });
+      if (changedSlides.length > 12) {
+        var more = document.createElement('div');
+        more.style.cssText = 'padding-top:8px;font-size:12px;opacity:.8;';
+        more.textContent = 'Plus ' + (changedSlides.length - 12) + ' more changed slide' + (changedSlides.length - 12 === 1 ? '' : 's') + ' in the copied diagnostics JSON.';
+        changedList.appendChild(more);
+      }
+    } else {
+      changedList.textContent = status && status.didRun ? 'No per-slide changes were recorded.' : 'No AI repair run recorded yet.';
+    }
     if (status && status.updatedAt) {
       var meta = document.createElement('div');
       meta.style.cssText = 'margin-top:10px;font-size:12px;opacity:.8;';
       meta.textContent = 'Last updated: ' + status.updatedAt;
       container.appendChild(top);
       container.appendChild(stats);
+      container.appendChild(changedList);
       container.appendChild(meta);
       return;
     }
     container.appendChild(top);
     container.appendChild(stats);
+    container.appendChild(changedList);
   }
   function makePanel() {
     var existing = document.getElementById('luminaDiagPanel'); if (existing) existing.remove();

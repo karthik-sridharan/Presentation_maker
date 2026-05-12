@@ -442,7 +442,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42l-import-flow-restore-ai-stale-fix-20260511-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42n-ai-repair-slide-change-summary-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -596,7 +596,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42l-import-flow-restore-ai-stale-fix-20260511-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage42n-ai-repair-slide-change-summary-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1187,32 +1187,98 @@ Previous output to repair:
   function countPatchableChanges(stats){
     return Number(stats.contentPatches || 0) + Number(stats.titlePatches || 0) + Number(stats.layoutPatches || 0) + Number(stats.stylePatches || 0) + Number(stats.slideFieldPatches || 0) + Number(stats.localMathFieldsRepaired || 0);
   }
+  function shortAiRepairText(value, maxLen){
+    var s = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+    maxLen = Math.max(24, Number(maxLen || 90));
+    return s.length > maxLen ? s.slice(0, maxLen - 1) + '…' : s;
+  }
+  function aiRepairBlockLabel(target){
+    if(!target || !target.block) return 'slide';
+    var idx = Number(target.blockIndex || 0) + 1;
+    var kind = target.block.type || target.block.kind || target.block.role || '';
+    var title = shortAiRepairText(target.block.title || target.block.label || '', 40);
+    return 'block ' + idx + (kind ? ' (' + kind + ')' : '') + (title ? ': ' + title : '');
+  }
+  function aiRepairSlideTitle(slide, index){
+    var title = slide && (slide.title || slide.kicker || slide.lede || slide.notesTitle) || '';
+    return shortAiRepairText(title, 70) || ('Slide ' + (Number(index || 0) + 1));
+  }
+  function ensureAiRepairSlideChange(stats, target){
+    var slideIndex = Math.max(0, Number(target && target.slideIndex || 0));
+    if(!stats.__changedSlideMap) stats.__changedSlideMap = {};
+    var key = String(slideIndex);
+    if(stats.__changedSlideMap[key]) return stats.__changedSlideMap[key];
+    var entry = {
+      slideIndex: slideIndex,
+      slideNumber: slideIndex + 1,
+      title: aiRepairSlideTitle(target && target.slide, slideIndex),
+      changeCount: 0,
+      changes: [],
+      summary: ''
+    };
+    stats.__changedSlideMap[key] = entry;
+    stats.changedSlides.push(entry);
+    return entry;
+  }
+  function recordAiRepairChange(stats, target, summary){
+    if(!stats || !target) return;
+    var entry = ensureAiRepairSlideChange(stats, target);
+    var text = shortAiRepairText(summary, 140);
+    if(!text) return;
+    entry.changes.push(text);
+    entry.changeCount = entry.changes.length;
+    entry.summary = entry.changes.slice(0, 4).join('; ') + (entry.changes.length > 4 ? '; …' : '');
+  }
+  function finalizeAiRepairChangeSummary(stats){
+    try{
+      delete stats.__changedSlideMap;
+      stats.changedSlides = (stats.changedSlides || []).map(function(entry){
+        entry.changeCount = Array.isArray(entry.changes) ? entry.changes.length : Number(entry.changeCount || 0);
+        entry.summary = entry.summary || (Array.isArray(entry.changes) ? entry.changes.slice(0, 4).join('; ') : '');
+        return entry;
+      }).sort(function(a,b){ return Number(a.slideIndex || 0) - Number(b.slideIndex || 0); });
+      stats.changedSlideCount = stats.changedSlides.length;
+      stats.changeSummary = stats.changedSlides.length ? stats.changedSlides.map(function(entry){
+        return 'Slide ' + entry.slideNumber + ': ' + (entry.summary || 'changed');
+      }).join(' | ') : '';
+    }catch(_err){
+      stats.changedSlideCount = Array.isArray(stats.changedSlides) ? stats.changedSlides.length : 0;
+      stats.changeSummary = stats.changeSummary || '';
+    }
+  }
   function applyAiRepairPatchesToSource(deckTitle, sourceSlides, patchResult){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42l-import-flow-restore-ai-stale-fix-20260511-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42n-ai-repair-slide-change-summary-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
       if(!target){ stats.invalidPatches += 1; return; }
       let changed = false;
+      var aiSummary = shortAiRepairText(patch.summary || patch.reason || patch.description || '', 100);
       if(!target.block){
+        var changedFields = [];
         ['title','kicker','lede','notesTitle','notesBody'].forEach(function(field){
           const patchValue = patch[field] != null ? patch[field] : (field === 'title' && patch.slideTitle != null ? patch.slideTitle : null);
           if(patchValue != null && String(target.slide[field] || '') !== String(patchValue)){
             target.slide[field] = repairSimpleMathContainerText(String(patchValue));
-            stats.slideFieldPatches += 1; changed = true;
+            stats.slideFieldPatches += 1; changed = true; changedFields.push(field);
           }
         });
-        if(changed) stats.patchesApplied += 1;
+        if(changed){
+          stats.patchesApplied += 1;
+          recordAiRepairChange(stats, target, 'Updated slide field' + (changedFields.length === 1 ? '' : 's') + ': ' + changedFields.join(', ') + (aiSummary ? ' — ' + aiSummary : ''));
+        }
         return;
       }
       const block = target.block;
+      const blockLabel = aiRepairBlockLabel(target);
       const isFigure = blockLooksLikeFigure(block);
       if(patch.title != null && String(block.title || '') !== String(patch.title)){
         block.title = repairSimpleMathContainerText(String(patch.title));
         stats.titlePatches += 1; changed = true;
+        recordAiRepairChange(stats, target, 'Updated ' + blockLabel + ' title' + (aiSummary ? ' — ' + aiSummary : ''));
       }
       if(patch.content != null){
         if(isFigure){
@@ -1220,6 +1286,7 @@ Previous output to repair:
           if(blockHasRealImageAsset(proposed)){
             block.content = proposed;
             stats.contentPatches += 1; changed = true;
+            recordAiRepairChange(stats, target, 'Updated image/figure content for ' + blockLabel + (aiSummary ? ' — ' + aiSummary : ''));
           } else {
             stats.ignoredImageContentPatches += 1;
           }
@@ -1228,6 +1295,7 @@ Previous output to repair:
           if(String(block.content || '') !== nextContent){
             block.content = nextContent;
             stats.contentPatches += 1; changed = true;
+            recordAiRepairChange(stats, target, 'Updated text/math content for ' + blockLabel + (aiSummary ? ' — ' + aiSummary : ''));
           }
         }
       }
@@ -1236,6 +1304,7 @@ Previous output to repair:
         block.layout = Object.assign({}, block.layout || {}, layout);
         if(block.importSourceLayout) block.importSourceLayout = Object.assign({}, block.importSourceLayout || {}, layout);
         stats.layoutPatches += 1; changed = true;
+        recordAiRepairChange(stats, target, 'Adjusted layout/position for ' + blockLabel + (aiSummary ? ' — ' + aiSummary : ''));
       }
       if(patch.style && typeof patch.style === 'object'){
         const allowed = {};
@@ -1243,6 +1312,7 @@ Previous output to repair:
         if(Object.keys(allowed).length){
           block.style = Object.assign({}, block.style || {}, allowed);
           stats.stylePatches += 1; changed = true;
+          recordAiRepairChange(stats, target, 'Adjusted style for ' + blockLabel + ': ' + Object.keys(allowed).join(', ') + (aiSummary ? ' — ' + aiSummary : ''));
         }
       }
       if(changed) stats.patchesApplied += 1;
@@ -1252,9 +1322,10 @@ Previous output to repair:
     const afterLocal = globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR && globalThis.__LUMINA_STAGE41R_LAST_MATH_REPAIR.repairedCount || 0;
     stats.localMathFieldsRepaired = Math.max(0, Number(afterLocal || 0));
     stats.changedCount = countPatchableChanges(stats);
+    finalizeAiRepairChangeSummary(stats);
     deck.aiPatchStats = stats;
     try{
-      globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
+      globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
       globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR = stats;
     }catch(_err){}
     return deck;
@@ -1308,7 +1379,7 @@ Previous output to repair:
         throw new Error('AI import repair still failed validation: ' + problems.join('; '));
       }
     }
-    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
+    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
     try{
       globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR = {
         ok:true,
@@ -1335,7 +1406,7 @@ Previous output to repair:
       showToast('Asking AI Copilot to repair math/layout in the imported deck…');
       try{
         const deck = await callImportAiReview(deckTitle, importedSlides);
-        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
         const changedCount = stats && Number(stats.changedCount || 0) || 0;
         if(changedCount > 0) showToast('AI repair completed: applied ' + changedCount + ' patch change' + (changedCount === 1 ? '' : 's') + '.');
         else showToast('AI repair completed; no patch changes were needed.');
@@ -1804,7 +1875,7 @@ Previous output to repair:
         globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:true, pending:false, applied:true, replacedSlides:replaceCount, repairedSlides:incoming.length, deckTitle:deckTitle || '', batchId:batchId, at:new Date().toISOString() });
       }catch(_err){}
       clearStage42fAiRepairNotice();
-      const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+      const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
       const patchChanged = patchStats && Number(patchStats.changedCount || 0) || 0;
       if(patchChanged > 0) showToast('AI repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
       else showToast('AI repair completed; source slides stayed loaded because no patch changes were needed.');
@@ -1951,7 +2022,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42l-import-flow-restore-ai-stale-fix-20260511-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42n-ai-repair-slide-change-summary-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
