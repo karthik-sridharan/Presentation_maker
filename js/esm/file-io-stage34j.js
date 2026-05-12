@@ -1,4 +1,4 @@
-/* Stage 42O: browser-compatible ES module file/import workflow helpers with patch-task AI repair.
+/* Stage 42P: browser-compatible ES module file/import workflow helpers with patch-task AI repair.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports. */
 
 export function createApi(deps) {
@@ -67,6 +67,7 @@ export function createApi(deps) {
     var value = String(endpoint || '').trim();
     if (!value) return '/api/lumina/ai';
     if (/\/api\/lumina\/extract\/?$/i.test(value)) return value.replace(/\/api\/lumina\/extract\/?$/i, '/api/lumina/ai');
+    if (/\/api\/lumina\/import\/pdf-docai-semantic\/?$/i.test(value)) return value.replace(/\/api\/lumina\/import\/pdf-docai-semantic\/?$/i, '/api/lumina/ai');
     return '/api/lumina/ai';
   }
   function initExtractionFields() {
@@ -125,7 +126,7 @@ export function createApi(deps) {
     initExtractionFields();
     var el = doc().getElementById('extractionEngineSelect');
     var value = String((el && el.value) || storageGet(STORAGE_ENGINE, 'hybrid') || 'hybrid').trim().toLowerCase();
-    if(['pymupdf','marker','hybrid'].indexOf(value) < 0) value = 'hybrid';
+    if(['pymupdf','marker','hybrid','docai'].indexOf(value) < 0) value = 'hybrid';
     storageSet(STORAGE_ENGINE, value);
     return value;
   }
@@ -135,6 +136,16 @@ export function createApi(deps) {
     var value = String((el && el.value) || storageGet(STORAGE_ENDPOINT, '/api/lumina/extract') || '').trim();
     if (value) storageSet(STORAGE_ENDPOINT, value);
     return value;
+  }
+  function semanticDocAiEndpointFromExtractionEndpoint(endpoint) {
+    var raw = String(endpoint || '').trim();
+    if (!raw) return '/api/lumina/import/pdf-docai-semantic';
+    if (/\/api\/lumina\/extract\/?$/i.test(raw)) return raw.replace(/\/api\/lumina\/extract\/?$/i, '/api/lumina/import/pdf-docai-semantic');
+    return raw;
+  }
+  function effectiveExtractionEndpointForEngine(endpoint, engine) {
+    var value = String(endpoint || '').trim();
+    return String(engine || '').toLowerCase() === 'docai' ? semanticDocAiEndpointFromExtractionEndpoint(value) : value;
   }
   function extractionTokenValue() {
     initExtractionFields();
@@ -399,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42o-ai-repair-local-change-summary-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42p-docai-semantic-import-backend-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -555,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42p-docai-semantic-import-backend-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1273,7 +1284,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42p-docai-semantic-import-backend-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1580,7 +1591,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     if (!raw) return '';
     try {
       var url = new URL(raw, globalThis.location && globalThis.location.href || undefined);
-      url.pathname = url.pathname.replace(/\/api\/lumina\/extract\/?$/, '/health');
+      url.pathname = url.pathname.replace(/\/api\/lumina\/import\/pdf-docai-semantic\/?$/, '/health').replace(/\/api\/lumina\/extract\/?$/, '/health');
       url.search = '';
       url.hash = '';
       return url.toString();
@@ -1611,7 +1622,8 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
 
   function extractPresentationFile(file) {
     if (typeof fetch !== 'function' || typeof FormData !== 'function') return Promise.reject(new Error('This browser does not support fetch/FormData upload.'));
-    var endpoint = extractionEndpointValue();
+    var engine = extractionEngineValue();
+    var endpoint = effectiveExtractionEndpointForEngine(extractionEndpointValue(), engine);
     if (!endpoint) return Promise.reject(new Error('Set an extraction backend endpoint first.'));
     var form = new FormData();
     form.append('file', file, file.name || 'presentation');
@@ -1626,7 +1638,14 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     // background bitmap unless explicitly added later.
     form.append('includePdfBackground', '0');
     form.append('includePdfReviewAlternates', '1');
-    form.append('extractEngine', extractionEngineValue());
+    form.append('extractEngine', engine === 'docai' ? 'docai-semantic' : engine);
+    if (engine === 'docai') {
+      form.append('semanticAi', '1');
+      form.append('preserveFigures', '1');
+      form.append('allowFullPageBackground', '0');
+      form.append('semanticProvider', aiReviewProviderValue());
+      form.append('semanticModel', aiReviewModelValue());
+    }
     // Stage 42F: keep rendered review alternatives small enough for Safari/Cloud Run.
     form.append('reviewRenderZoom', '0.45');
     form.append('reviewJpegQuality', '48');
@@ -1956,7 +1975,7 @@ function mergeSourcePreservationIntoAiDeck(deck, sourceSlides, originalProblems)
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42p-docai-semantic-import-backend-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
