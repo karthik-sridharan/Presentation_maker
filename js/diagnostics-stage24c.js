@@ -61,7 +61,7 @@
       worked = true;
       if (changedCount > 0) {
         state = 'applied';
-        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + (changeTrackingUnavailable ? '. Per-slide detail was not recorded for this completed run; Stage 42O records it on the next import' : '') + '.';
+        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + (changeTrackingUnavailable ? '. Per-slide detail was not recorded for this completed run; Stage 42P records it on the next import' : '') + '.';
       } else {
         state = 'completed-no-changes';
         message = 'AI repair completed for ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ', but no patch changes were needed.';
@@ -255,7 +255,7 @@
       }
     } else {
       changedList.textContent = status && status.changedSlideTrackingUnavailable
-        ? 'Changes were counted, but per-slide detail was not recorded for this completed run. Re-import after Stage 42O to get slide-by-slide summaries.'
+        ? 'Changes were counted, but per-slide detail was not recorded for this completed run. Re-import after Stage 42P to get slide-by-slide summaries.'
         : (status && status.didRun ? 'No per-slide changes were recorded.' : 'No AI repair run recorded yet.');
     }
     if (status && status.updatedAt) {

@@ -1,4 +1,4 @@
-/* Stage 42O file/import workflow helpers: patch-task AI repair avoids backend full-deck validation and preserves source math/figures.
+/* Stage 42P file/import workflow helpers: patch-task AI repair avoids backend full-deck validation and preserves source math/figures.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -112,6 +112,7 @@
       const value = String(endpoint || '').trim();
       if(!value) return '/api/lumina/ai';
       if(/\/api\/lumina\/extract\/?$/i.test(value)) return value.replace(/\/api\/lumina\/extract\/?$/i, '/api/lumina/ai');
+      if(/\/api\/lumina\/import\/pdf-docai-semantic\/?$/i.test(value)) return value.replace(/\/api\/lumina\/import\/pdf-docai-semantic\/?$/i, '/api/lumina/ai');
       return '/api/lumina/ai';
     }
     function initExtractionFields(){
@@ -168,7 +169,7 @@
       initExtractionFields();
       const el = doc().getElementById('extractionEngineSelect');
       let value = String((el && el.value) || storageGet(STORAGE_ENGINE, 'hybrid') || 'hybrid').trim().toLowerCase();
-      if(!['pymupdf','marker','hybrid'].includes(value)) value = 'hybrid';
+      if(!['pymupdf','marker','hybrid','docai'].includes(value)) value = 'hybrid';
       storageSet(STORAGE_ENGINE, value);
       return value;
     }
@@ -178,6 +179,16 @@
       const value = String((el && el.value) || storageGet(STORAGE_ENDPOINT, '/api/lumina/extract') || '').trim();
       if(value) storageSet(STORAGE_ENDPOINT, value);
       return value;
+    }
+    function semanticDocAiEndpointFromExtractionEndpoint(endpoint){
+      const raw = String(endpoint || '').trim();
+      if(!raw) return '/api/lumina/import/pdf-docai-semantic';
+      if(/\/api\/lumina\/extract\/?$/i.test(raw)) return raw.replace(/\/api\/lumina\/extract\/?$/i, '/api/lumina/import/pdf-docai-semantic');
+      return raw;
+    }
+    function effectiveExtractionEndpointForEngine(endpoint, engine){
+      const value = String(endpoint || '').trim();
+      return String(engine || '').toLowerCase() === 'docai' ? semanticDocAiEndpointFromExtractionEndpoint(value) : value;
     }
     function extractionTokenValue(){
       initExtractionFields();
@@ -442,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42o-ai-repair-local-change-summary-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42p-docai-semantic-import-backend-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -596,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage42p-docai-semantic-import-backend-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1314,7 +1325,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42p-docai-semantic-import-backend-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1622,7 +1633,7 @@ Previous output to repair:
       if(!raw) return '';
       try{
         const url = new URL(raw, global.location && global.location.href || undefined);
-        url.pathname = url.pathname.replace(/\/api\/lumina\/extract\/?$/, '/health');
+        url.pathname = url.pathname.replace(/\/api\/lumina\/import\/pdf-docai-semantic\/?$/, '/health').replace(/\/api\/lumina\/extract\/?$/, '/health');
         url.search = '';
         url.hash = '';
         return url.toString();
@@ -1661,6 +1672,13 @@ Previous output to repair:
       form.append('includePdfReviewAlternates', String(attempt.includePdfReviewAlternates));
       form.append('includePdfRender', String(attempt.includePdfRender));
       form.append('extractEngine', String(attempt.extractEngine || extractionEngineValue()));
+      if(String(attempt.extractEngine || '').toLowerCase().includes('docai')){
+        form.append('semanticAi', '1');
+        form.append('preserveFigures', '1');
+        form.append('allowFullPageBackground', '0');
+        form.append('semanticProvider', aiReviewProviderValue());
+        form.append('semanticModel', aiReviewModelValue());
+      }
       form.append('reviewRenderZoom', String(attempt.reviewRenderZoom));
       form.append('reviewJpegQuality', String(attempt.reviewJpegQuality));
       form.append('vectorRenderZoom', String(attempt.vectorRenderZoom));
@@ -1671,6 +1689,21 @@ Previous output to repair:
     }
     function extractionAttemptsForFile(file){
       const engine = extractionEngineValue();
+      if(engine === 'docai'){
+        return [{
+          label:'Google Document AI semantic editable import',
+          extractEngine:'docai-semantic',
+          includePdfReviewAlternates:'0',
+          includePdfRender:'0',
+          includePdfBackground:'0',
+          maxImagesPerSlide:24,
+          reviewRenderZoom:0.30,
+          reviewJpegQuality:42,
+          vectorRenderZoom:0.70,
+          vectorJpegQuality:50,
+          httpSafeMb:20
+        }];
+      }
       return [
         {
           label:'full hybrid extraction with review alternates',
@@ -1746,7 +1779,8 @@ Previous output to repair:
     }
     async function extractPresentationFile(file){
       if(typeof fetch !== 'function' || typeof FormData !== 'function') throw new Error('This browser does not support fetch/FormData upload.');
-      const endpoint = extractionEndpointValue();
+      const engine = extractionEngineValue();
+      const endpoint = effectiveExtractionEndpointForEngine(extractionEndpointValue(), engine);
       if(!endpoint) throw new Error('Set an extraction backend endpoint first.');
       const headers = {};
       const token = extractionTokenValue();
@@ -2088,7 +2122,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42o-ai-repair-local-change-summary-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42p-docai-semantic-import-backend-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
