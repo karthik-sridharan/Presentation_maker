@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42q-docai-nonempty-semantic-import-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42s-import-progress-visible-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage42s-import-progress-visible-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1325,7 +1325,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42s-import-progress-visible-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1659,6 +1659,22 @@ Previous output to repair:
       return msg + ' — ' + hint;
     }
 
+
+    function stage42sPublishImportStatus(update){
+      try{
+        var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
+        var next = Object.assign({}, prev, update || {}, { stage:'stage42s-import-progress-visible-20260512-1', updatedAt:new Date().toISOString() });
+        if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
+        global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
+        global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
+        if(typeof global.LuminaStage42SUpdateImportPanel === 'function') global.LuminaStage42SUpdateImportPanel(next);
+      }catch(_err){}
+    }
+    function stage42sCompactEndpoint(endpoint){
+      try{ var u = new URL(String(endpoint || ''), global.location && global.location.href || undefined); return u.origin + u.pathname; }
+      catch(_err){ return String(endpoint || '').slice(0, 180); }
+    }
+
     function buildExtractionForm(file, attempt){
       const form = new FormData();
       form.append('file', file, file.name || 'presentation');
@@ -1753,23 +1769,32 @@ Previous output to repair:
     }
     async function postExtractionAttempt(endpoint, headers, form, attempt){
       let res;
+      const startedAt = Date.now();
+      stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend…', endpoint:stage42sCompactEndpoint(endpoint), attempt:attempt && attempt.label || '', extractEngine:attempt && attempt.extractEngine || extractionEngineValue(), pending:true });
       try{
         res = await fetch(endpoint, { method:'POST', headers, body:form, cache:'no-store', mode:'cors' });
       }catch(fetchErr){
+        stage42sPublishImportStatus({ phase:'backend-fetch-error', pending:false, ok:false, message:'Extraction backend request failed before a response was received.', error:fetchErr && fetchErr.message ? fetchErr.message : String(fetchErr || 'Fetch failed'), elapsedMs:Date.now()-startedAt });
         throw new Error(await describeExtractionFetchFailure(endpoint, fetchErr));
       }
+      stage42sPublishImportStatus({ phase:'reading-backend-response', message:'Backend responded; reading extracted slides…', httpStatus:res.status, elapsedMs:Date.now()-startedAt, pending:true });
       const text = await res.text();
       let payload = null;
       try{ payload = text ? JSON.parse(text) : null; }
       catch(_err){ payload = { ok:false, error:{ message: text ? text.slice(0, 500) : 'Empty response from extraction backend.' } }; }
       if(!res.ok || !payload || payload.ok === false){
         const msg = payload && payload.error && payload.error.message ? payload.error.message : ('Extraction backend failed with HTTP ' + res.status + '.');
+        stage42sPublishImportStatus({ phase:'backend-error', pending:false, ok:false, message:msg, httpStatus:res.status, responsePreview:text ? text.slice(0, 900) : '', elapsedMs:Date.now()-startedAt });
         const err = new Error(msg);
         err.status = res.status;
         err.attemptLabel = attempt && attempt.label || '';
         throw err;
       }
-      if(!Array.isArray(payload.slides) || !payload.slides.length) throw new Error('Extraction backend returned no slides.');
+      if(!Array.isArray(payload.slides) || !payload.slides.length){
+        stage42sPublishImportStatus({ phase:'backend-empty', pending:false, ok:false, message:'Extraction backend returned no slides.', httpStatus:res.status, elapsedMs:Date.now()-startedAt });
+        throw new Error('Extraction backend returned no slides.');
+      }
+      stage42sPublishImportStatus({ phase:'backend-success', pending:true, ok:true, message:'Backend returned ' + payload.slides.length + ' slide' + (payload.slides.length === 1 ? '' : 's') + '; preparing import…', slideCount:payload.slides.length, httpStatus:res.status, elapsedMs:Date.now()-startedAt, meta:payload.meta || null, source:payload.source || null });
       payload.warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
       if(attempt && attempt.label && !/^full/i.test(attempt.label)){
         payload.warnings.push('Stage 42F used ' + attempt.label + ' after the larger extraction attempt could not complete. The deck is loaded, but rendered image-review alternatives may be unavailable for some slides.');
@@ -1786,16 +1811,20 @@ Previous output to repair:
       const token = extractionTokenValue();
       if(token) headers.Authorization = 'Bearer ' + token;
       const attempts = extractionAttemptsForFile(file);
+      stage42sPublishImportStatus({ phase:'extract-start', message:'Starting extraction for ' + (file && file.name || 'selected file') + ' using ' + engine + '…', filename:file && file.name || '', fileSize:file && file.size || 0, endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, attemptCount:attempts.length, pending:true, startedAt:new Date().toISOString() });
       const errors = [];
       for(let i=0;i<attempts.length;i++){
         const attempt = attempts[i];
         try{
           try{ global.__LUMINA_STAGE41Z_EXTRACTION_ATTEMPT = { index:i + 1, count:attempts.length, label:attempt.label, at:new Date().toISOString() }; }catch(_err){}
+          stage42sPublishImportStatus({ phase:'extract-attempt', message:'Running extraction attempt ' + (i + 1) + ' of ' + attempts.length + ': ' + attempt.label, attemptIndex:i + 1, attemptCount:attempts.length, attempt:attempt.label, extractEngine:attempt.extractEngine || engine, pending:true });
           const payload = await postExtractionAttempt(endpoint, headers, buildExtractionForm(file, attempt), attempt);
           try{ global.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '', attempt:attempt.label, previousErrors:errors.slice() }; }catch(_err){}
+          stage42sPublishImportStatus({ phase:'extract-complete', message:'Extraction finished with ' + payload.slides.length + ' slide' + (payload.slides.length === 1 ? '' : 's') + '.', slideCount:payload.slides.length, pending:true, ok:true });
           return payload;
         }catch(err){
           const msg = err && err.message ? err.message : String(err || 'Extraction failed.');
+          stage42sPublishImportStatus({ phase:'extract-attempt-error', message:'Extraction attempt failed: ' + msg, attempt:attempt.label, attemptIndex:i + 1, attemptCount:attempts.length, pending:i < attempts.length - 1, ok:false, error:msg });
           errors.push(attempt.label + ': ' + msg);
           try{ global.__LUMINA_STAGE41Z_EXTRACTION_ERRORS = errors.slice(); }catch(_err){}
           if(i >= attempts.length - 1 || !extractionErrorLooksRetryable(msg)){
@@ -1993,6 +2022,7 @@ Previous output to repair:
       initExtractionFields();
       const files = Array.from(fileList || []);
       if(!files.length) throw new Error('Choose one or more files first.');
+      stage42sPublishImportStatus({ phase:'import-start', message:'Import started for ' + files.length + ' file' + (files.length === 1 ? '' : 's') + '.', fileCount:files.length, filenames:files.map(function(f){ return f && f.name || 'file'; }), pending:true, ok:null, startedAt:new Date().toISOString() });
       let imported = [];
       let deckTitle = '';
       const warnings = [];
@@ -2003,6 +2033,7 @@ Previous output to repair:
 
         if(isExtractablePresentationFile(file)){
           if(extractionBackendEnabled()){
+            stage42sPublishImportStatus({ phase:'extract-file', message:'Sending ' + (file.name || 'presentation') + ' to extraction backend…', filename:file.name || '', pending:true });
             try{
               const payload = await extractPresentationFile(file);
               usedExtractionBackend = true;
@@ -2054,7 +2085,9 @@ Previous output to repair:
         imported = markStage42eImportBatch(imported, batchId);
         rawBatch = imported;
       }
+      stage42sPublishImportStatus({ phase:'applying-slides', message:'Loading ' + imported.length + ' imported slide' + (imported.length === 1 ? '' : 's') + ' into the deck…', slideCount:imported.length, pending:true });
       applyImportedSlides(imported, { mode, deckTitle, theme: importDeck.theme, presentationOptions: importDeck.presentationOptions });
+      stage42sPublishImportStatus({ phase:'import-complete', message:'Imported ' + imported.length + ' slide' + (imported.length === 1 ? '' : 's') + '.', slideCount:imported.length, pending:false, ok:true, finishedAt:new Date().toISOString() });
       if(warnings.length) showToast(warnings[0]);
       if(importDeck.aiRepairPending){
         showToast('Imported source slides. AI repair is running in the background…');
@@ -2132,7 +2165,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42s-import-progress-visible-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
