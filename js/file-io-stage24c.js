@@ -169,7 +169,7 @@
       initExtractionFields();
       const el = doc().getElementById('extractionEngineSelect');
       let value = String((el && el.value) || storageGet(STORAGE_ENGINE, 'hybrid') || 'hybrid').trim().toLowerCase();
-      if(!['pymupdf','marker','hybrid','docai'].includes(value)) value = 'hybrid';
+      if(!['pymupdf','pymupdf-math-image','marker','hybrid','docai'].includes(value)) value = 'hybrid';
       storageSet(STORAGE_ENGINE, value);
       return value;
     }
@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42t-docai-fast-nonblocking-import-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42w-pymupdf-math-image-hybrid-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42t-docai-fast-nonblocking-import-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1325,7 +1325,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42t-docai-fast-nonblocking-import-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1663,7 +1663,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage42t-docai-fast-nonblocking-import-20260512-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1688,10 +1688,15 @@ Previous output to repair:
       form.append('includePdfReviewAlternates', String(attempt.includePdfReviewAlternates));
       form.append('includePdfRender', String(attempt.includePdfRender));
       form.append('extractEngine', String(attempt.extractEngine || extractionEngineValue()));
+      if(String(attempt.extractEngine || '').toLowerCase().includes('math-image')){
+        form.append('mathAsImage', '1');
+        form.append('mathImageZoom', '2.25');
+      }
       if(String(attempt.extractEngine || '').toLowerCase().includes('docai')){
         form.append('semanticAi', '0');
         form.append('semanticMode', 'docai-fast-no-ai-rebuild');
-        form.append('preserveFigures', '1');
+        form.append('preserveFigures', '0');
+        form.append('docAiTimeoutMs', '30000');
         form.append('allowFullPageBackground', '0');
         form.append('semanticProvider', aiReviewProviderValue());
         form.append('semanticModel', aiReviewModelValue());
@@ -1706,19 +1711,46 @@ Previous output to repair:
     }
     function extractionAttemptsForFile(file){
       const engine = extractionEngineValue();
-      if(engine === 'docai'){
+      if(engine === 'pymupdf-math-image'){
         return [{
-          label:'Google Document AI fast editable import (no backend AI rebuild)',
-          extractEngine:'docai-semantic',
-          includePdfReviewAlternates:'0',
-          includePdfRender:'0',
+          label:'PyMuPDF hybrid: editable text with math/equation regions preserved as cropped images',
+          extractEngine:'pymupdf-math-image',
+          includePdfReviewAlternates:'1',
+          includePdfRender:'1',
           includePdfBackground:'0',
           maxImagesPerSlide:24,
+          reviewRenderZoom:0.45,
+          reviewJpegQuality:48,
+          vectorRenderZoom:0.95,
+          vectorJpegQuality:58,
+          httpSafeMb:16
+        },{
+          label:'lean retry: PyMuPDF math-image without rendered review alternates',
+          extractEngine:'pymupdf-math-image',
+          includePdfReviewAlternates:'0',
+          includePdfRender:'1',
+          includePdfBackground:'0',
+          maxImagesPerSlide:12,
           reviewRenderZoom:0.30,
           reviewJpegQuality:42,
           vectorRenderZoom:0.70,
+          vectorJpegQuality:48,
+          httpSafeMb:10
+        }];
+      }
+      if(engine === 'docai'){
+        return [{
+          label:'Google Document AI editable import with review choices (30s timeout, no backend AI rebuild)',
+          extractEngine:'docai-semantic',
+          includePdfReviewAlternates:'1',
+          includePdfRender:'1',
+          includePdfBackground:'0',
+          maxImagesPerSlide:0,
+          reviewRenderZoom:0.36,
+          reviewJpegQuality:48,
+          vectorRenderZoom:0.70,
           vectorJpegQuality:50,
-          httpSafeMb:20
+          httpSafeMb:22
         }];
       }
       return [
@@ -1771,7 +1803,7 @@ Previous output to repair:
     async function postExtractionAttempt(endpoint, headers, form, attempt){
       let res;
       const startedAt = Date.now();
-      stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend… Document AI fast mode is on, so backend AI rebuild is skipped.', endpoint:stage42sCompactEndpoint(endpoint), attempt:attempt && attempt.label || '', extractEngine:attempt && attempt.extractEngine || extractionEngineValue(), pending:true });
+      stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend… Document AI fast mode is on: backend AI rebuild is skipped, but rendered review choices are requested.', endpoint:stage42sCompactEndpoint(endpoint), attempt:attempt && attempt.label || '', extractEngine:attempt && attempt.extractEngine || extractionEngineValue(), pending:true });
       try{
         res = await fetch(endpoint, { method:'POST', headers, body:form, cache:'no-store', mode:'cors' });
       }catch(fetchErr){
@@ -2075,7 +2107,7 @@ Previous output to repair:
       if(usedExtractionBackend){
         imported = await reviewExtractedSlidesWithAlternates(imported, deckTitle);
         const skipBackgroundAiRepair = isDocAiSemanticImportedBatch(imported);
-        if(skipBackgroundAiRepair) warnings.push('Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits.');
+        if(skipBackgroundAiRepair) warnings.push('Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits. Use the import review dialog to choose editable extraction or rendered page image per slide.');
         importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:skipBackgroundAiRepair, aiRepairPending: aiReviewAfterImportEnabled() && !skipBackgroundAiRepair };
       }
       const mode = importModeValue();
@@ -2166,7 +2198,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42t-docai-fast-nonblocking-import-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42w-pymupdf-math-image-hybrid-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
