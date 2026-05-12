@@ -1,4 +1,4 @@
-/* Stage 42K file/import workflow helpers: patch-task AI repair avoids backend full-deck validation and preserves source math/figures.
+/* Stage 42L file/import workflow helpers: patch-task AI repair avoids backend full-deck validation and preserves source math/figures.
    Classic browser script; exposes window.LuminaFileIo.
    Adds backend extraction plus optional AI Copilot cleanup for PDF/PPTX/PPT imports.
 */
@@ -442,7 +442,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42k-import-batch-marker-preserve-20260511-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42l-import-flow-restore-ai-stale-fix-20260511-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -596,7 +596,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42k-import-batch-marker-preserve-20260511-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage42l-import-flow-restore-ai-stale-fix-20260511-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1191,7 +1191,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42k-import-batch-marker-preserve-20260511-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage42l-import-flow-restore-ai-stale-fix-20260511-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1254,7 +1254,7 @@ Previous output to repair:
     stats.changedCount = countPatchableChanges(stats);
     deck.aiPatchStats = stats;
     try{
-      globalThis.__LUMINA_STAGE42K_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
+      globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR = stats; globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR = stats;
       globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR = stats;
     }catch(_err){}
     return deck;
@@ -1308,9 +1308,9 @@ Previous output to repair:
         throw new Error('AI import repair still failed validation: ' + problems.join('; '));
       }
     }
-    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42K_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
+    const stats = deck && deck.aiPatchStats || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42C_SIMPLE_AI_IMPORT_REPAIR || null;
     try{
-      globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR = {
+      globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR = {
         ok:true,
         endpoint, provider, model,
         inputSlides:(slides||[]).length,
@@ -1321,12 +1321,12 @@ Previous output to repair:
         changedCount:stats && stats.changedCount || 0,
         at:new Date().toISOString()
       };
-      globalThis.__LUMINA_STAGE42J_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE42C_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE41V_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR;
-      globalThis.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42K_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE42J_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE42I_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE42H_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE42C_LAST_AI_IMPORT_REPAIR = globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE41V_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR;
+      globalThis.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = globalThis.__LUMINA_STAGE42L_LAST_AI_IMPORT_REPAIR;
     }catch(_err){}
     return deck;
   }
@@ -1335,7 +1335,7 @@ Previous output to repair:
       showToast('Asking AI Copilot to repair math/layout in the imported deck…');
       try{
         const deck = await callImportAiReview(deckTitle, importedSlides);
-        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42K_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
         const changedCount = stats && Number(stats.changedCount || 0) || 0;
         if(changedCount > 0) showToast('AI repair completed: applied ' + changedCount + ' patch change' + (changedCount === 1 ? '' : 's') + '.');
         else showToast('AI repair completed; no patch changes were needed.');
@@ -1722,74 +1722,44 @@ Previous output to repair:
       }catch(_err){}
     }
 
-    function stage42eImportBatchMeta(slide){
+
+    function stage42lBlocksForStaleCompare(slide){
       var s = slide || {};
+      try{ return (Array.isArray(s.leftBlocks) ? s.leftBlocks : []).concat(Array.isArray(s.rightBlocks) ? s.rightBlocks : []); }
+      catch(_err){ return []; }
+    }
+    function stage42lCompactImportedSlideSignature(slide){
+      var s = slide || {};
+      var blocks = stage42lBlocksForStaleCompare(s);
       var meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
-      return {
-        batchId: s.__stage42eImportBatchId || meta.__stage42eImportBatchId || meta.aiRepairBatchId || '',
-        batchIndex: (s.__stage42eImportBatchIndex !== undefined ? s.__stage42eImportBatchIndex : (meta.__stage42eImportBatchIndex !== undefined ? meta.__stage42eImportBatchIndex : meta.aiRepairBatchIndex)),
-        rawImported: !!(s.__stage42eRawImported || meta.__stage42eRawImported),
-        aiRepaired: !!(s.__stage42eAiRepaired || meta.__stage42eAiRepaired)
-      };
-    }
-    function attachStage42eImportBatchMeta(slide, batchId, index, flags){
-      var out = cloneJsonSafe(slide || {});
-      var meta = out.importMeta && typeof out.importMeta === 'object' ? cloneJsonSafe(out.importMeta) : {};
-      meta.__stage42eImportBatchId = batchId;
-      meta.__stage42eImportBatchIndex = index;
-      meta.aiRepairBatchId = batchId;
-      meta.aiRepairBatchIndex = index;
-      if(flags && flags.rawImported) meta.__stage42eRawImported = true;
-      if(flags && flags.aiRepaired) meta.__stage42eAiRepaired = true;
-      out.importMeta = meta;
-      out.__stage42eImportBatchId = batchId;
-      out.__stage42eImportBatchIndex = index;
-      if(flags && flags.rawImported) out.__stage42eRawImported = true;
-      if(flags && flags.aiRepaired) out.__stage42eAiRepaired = true;
-      return out;
-    }
-    function stage42eCompactSlideSignature(slide){
-      var s = slide || {};
-      var blocks = [];
-      try{ blocks = (Array.isArray(s.leftBlocks) ? s.leftBlocks : []).concat(Array.isArray(s.rightBlocks) ? s.rightBlocks : []); }catch(_err){ blocks = []; }
       return JSON.stringify({
         slideType:String(s.slideType || ''),
         title:String(s.title || ''),
-        importMeta:s.importMeta && typeof s.importMeta === 'object' ? {
-          sourcePage:s.importMeta.sourcePage || s.importMeta.page || s.importMeta.pageIndex || '',
-          sourceSlide:s.importMeta.sourceSlide || s.importMeta.slide || s.importMeta.slideIndex || '',
-          stage:s.importMeta.stage || ''
-        } : null,
+        sourcePage:String(meta.sourcePage || meta.page || meta.pageIndex || meta.sourceSlide || meta.slideIndex || ''),
         blockCount:blocks.length,
-        blockHints:blocks.slice(0, 8).map(function(b){
+        blockHints:blocks.slice(0, 10).map(function(b){
           return {
             mode:String(b && b.mode || ''),
             role:String(b && b.importRole || ''),
-            id:String(b && b.__aiSourceBlockId || ''),
-            text:String(b && b.content || '').replace(/\s+/g, ' ').slice(0, 120)
+            text:String(b && b.content || '').replace(/\s+/g, ' ').slice(0, 160)
           };
         })
       });
     }
-    function stage42eLooksLikeSameImportedSlide(currentSlide, rawSlide){
+    function stage42lLooksLikeSameImportedSlide(currentSlide, rawSlide){
       if(!currentSlide || !rawSlide) return false;
       try{
-        var currentMeta = stage42eImportBatchMeta(currentSlide);
-        var rawMeta = stage42eImportBatchMeta(rawSlide);
-        if(currentMeta.batchId && rawMeta.batchId && currentMeta.batchId === rawMeta.batchId) return true;
-        if(currentSlide.importMeta && rawSlide.importMeta){
-          var cm = currentSlide.importMeta || {};
-          var rm = rawSlide.importMeta || {};
-          var cPage = cm.sourcePage || cm.page || cm.pageIndex || cm.sourceSlide || cm.slideIndex || '';
-          var rPage = rm.sourcePage || rm.page || rm.pageIndex || rm.sourceSlide || rm.slideIndex || '';
-          if(cPage !== '' && rPage !== '' && String(cPage) === String(rPage) && String(currentSlide.title || '') === String(rawSlide.title || '')) return true;
-        }
-        return stage42eCompactSlideSignature(currentSlide) === stage42eCompactSlideSignature(rawSlide);
+        if(currentSlide.__stage42eImportBatchId && rawSlide.__stage42eImportBatchId && currentSlide.__stage42eImportBatchId === rawSlide.__stage42eImportBatchId) return true;
+        return stage42lCompactImportedSlideSignature(currentSlide) === stage42lCompactImportedSlideSignature(rawSlide);
       }catch(_err){ return false; }
     }
     function markStage42eImportBatch(slides, batchId){
       return (slides || []).map(function(slide, i){
-        return attachStage42eImportBatchMeta(slide, batchId, i, { rawImported:true });
+        var out = cloneJsonSafe(slide || {});
+        out.__stage42eImportBatchId = batchId;
+        out.__stage42eImportBatchIndex = i;
+        out.__stage42eRawImported = true;
+        return out;
       });
     }
     function applyStage42eBackgroundAiRepair(rawBatchSlides, repairedDeck, startIndex, batchId, deckTitle){
@@ -1797,27 +1767,27 @@ Previous output to repair:
       if(!repairedSlides.length) return false;
       var incoming = repairedSlides.map(function(slide, i){
         var out = normalizeSlide(slide);
-        return attachStage42eImportBatchMeta(out, batchId, i, { aiRepaired:true });
+        out.__stage42eImportBatchId = batchId;
+        out.__stage42eImportBatchIndex = i;
+        out.__stage42eAiRepaired = true;
+        return out;
       }).filter(Boolean);
       if(!incoming.length) return false;
       var current = getSlides();
       var replaceCount = (rawBatchSlides || []).length;
       var expectedStart = Math.max(0, Number(startIndex) || 0);
       var stillSameBatch = true;
-      var matchedByMeta = 0;
+      var matchedByMarker = 0;
       var matchedBySignature = 0;
       for(var i = 0; i < replaceCount; i++){
         var slide = current[expectedStart + i];
         var rawSlide = (rawBatchSlides || [])[i];
-        var meta = stage42eImportBatchMeta(slide);
-        if(slide && meta.batchId === batchId){ matchedByMeta += 1; continue; }
-        if(slide && stage42eLooksLikeSameImportedSlide(slide, rawSlide)){ matchedBySignature += 1; continue; }
-        stillSameBatch = false;
-        break;
+        if(slide && slide.__stage42eImportBatchId === batchId){ matchedByMarker += 1; continue; }
+        if(slide && stage42lLooksLikeSameImportedSlide(slide, rawSlide)){ matchedBySignature += 1; continue; }
+        stillSameBatch = false; break;
       }
       if(!stillSameBatch){
-        try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, skipped:true, stale:true, reason:'Imported batch changed before AI repair finished.', batchId:batchId, expectedStart:expectedStart, matchedByMeta:matchedByMeta, matchedBySignature:matchedBySignature, at:new Date().toISOString() }); }catch(_err){}
-        // Do not show a scary repair-failed banner for a genuinely stale async repair. The source/imported deck remains intact.
+        try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, skipped:true, stale:true, reason:'Imported batch changed before AI repair finished.', batchId:batchId, expectedStart:expectedStart, matchedByMarker:matchedByMarker, matchedBySignature:matchedBySignature, at:new Date().toISOString() }); }catch(_err){}
         try{ if(typeof showToast === 'function') showToast('AI repair skipped because the imported slides changed. Source slides stayed loaded.'); }catch(_err){}
         return false;
       }
@@ -1834,7 +1804,7 @@ Previous output to repair:
         globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:true, pending:false, applied:true, replacedSlides:replaceCount, repairedSlides:incoming.length, deckTitle:deckTitle || '', batchId:batchId, at:new Date().toISOString() });
       }catch(_err){}
       clearStage42fAiRepairNotice();
-      const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42K_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+      const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
       const patchChanged = patchStats && Number(patchStats.changedCount || 0) || 0;
       if(patchChanged > 0) showToast('AI repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
       else showToast('AI repair completed; source slides stayed loaded because no patch changes were needed.');
@@ -1981,7 +1951,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42k-import-batch-marker-preserve-20260511-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42l-import-flow-restore-ai-stale-fix-20260511-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
