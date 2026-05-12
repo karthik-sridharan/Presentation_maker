@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42p-docai-semantic-import-backend-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage42q-docai-nonempty-semantic-import-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42p-docai-semantic-import-backend-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -920,7 +920,7 @@ Previous output to repair:
           if(/https?:\/\//i.test(content)) found.push('custom block uses external URL on slide ' + (slideIndex + 1));
           if(/min-height\s*:\s*720px/i.test(content)) found.push('custom block uses body/stage min-height:720px on slide ' + (slideIndex + 1));
           if(/\.stage\s*\{[^}]*height\s*:\s*720px/i.test(content) && String(slide.slideType) === 'two-col') found.push('two-column custom animation uses fixed 720px stage height on slide ' + (slideIndex + 1));
-          if(!/(<svg\b|aria-label=)/i.test(content)) found.push('custom block should include an aria-labeled SVG/diagram on slide ' + (slideIndex + 1) + ', block ' + (blockIndex + 1));
+          if(!content.trim()) found.push('custom block is empty on slide ' + (slideIndex + 1) + ', block ' + (blockIndex + 1));
         });
       });
       return Array.from(new Set(found)).slice(0, 30);
@@ -1325,7 +1325,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42p-docai-semantic-import-backend-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1981,6 +1981,14 @@ Previous output to repair:
       else showToast('AI repair completed; source slides stayed loaded because no patch changes were needed.');
       return true;
     }
+    function isDocAiSemanticImportedBatch(slides){
+      return (slides || []).some(function(slide){
+        var meta = slide && slide.importMeta && typeof slide.importMeta === 'object' ? slide.importMeta : {};
+        var engine = String(meta.engine || meta.importEngine || meta.stage || '').toLowerCase();
+        return engine.indexOf('google-document-ai') >= 0 || engine.indexOf('docai') >= 0 || engine.indexOf('document-ai-semantic') >= 0;
+      });
+    }
+
     async function importSelectedFiles(fileList){
       initExtractionFields();
       const files = Array.from(fileList || []);
@@ -2034,7 +2042,9 @@ Previous output to repair:
       let importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:false, aiRepairPending:false };
       if(usedExtractionBackend){
         imported = await reviewExtractedSlidesWithAlternates(imported, deckTitle);
-        importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:false, aiRepairPending: aiReviewAfterImportEnabled() };
+        const skipBackgroundAiRepair = isDocAiSemanticImportedBatch(imported);
+        if(skipBackgroundAiRepair) warnings.push('Google Document AI semantic import already ran backend semantic reconstruction; skipped the extra background AI repair pass.');
+        importDeck = { deckTitle, slides: imported, theme:null, presentationOptions:null, aiReviewed:skipBackgroundAiRepair, aiRepairPending: aiReviewAfterImportEnabled() && !skipBackgroundAiRepair };
       }
       const mode = importModeValue();
       const startIndex = mode === 'replace' ? 0 : getSlides().length;
@@ -2122,7 +2132,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42p-docai-semantic-import-backend-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42q-docai-nonempty-semantic-import-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
