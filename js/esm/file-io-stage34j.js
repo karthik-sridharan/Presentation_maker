@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43f-safe-mathpix-merge-20260513-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43g-review-handoff-exact-import-20260513-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage43f-safe-mathpix-merge-20260513-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage43g-review-handoff-exact-import-20260513-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1336,7 +1336,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43f-safe-mathpix-merge-20260513-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43g-review-handoff-exact-import-20260513-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1618,8 +1618,8 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
             out.importChoiceSourceIndex = i;
             return out;
           });
-          try{ globalThis.__LUMINA_STAGE41W_IMPORT_REVIEW_CHOICES = { deckTitle:deckTitle || '', slideCount:selected.length, choices:choices.slice(), at:new Date().toISOString() }; }catch(_err){}
-          backdrop.remove(); resolve(selected);
+          try{ globalThis.__LUMINA_STAGE41W_IMPORT_REVIEW_CHOICES = { deckTitle:deckTitle || '', slideCount:selected.length, choices:choices.slice(), firstSlides:selected.slice(0,6).map(function(s,idx){ return { idx:idx, choice:choices[idx], title:s&&s.title||'', sourcePageNumber:s&&s.importMeta&&(s.importMeta.sourcePageNumber||s.importMeta.pageNumber)||null, blockCount:(s&&s.leftBlocks?s.leftBlocks.length:0)+(s&&s.rightBlocks?s.rightBlocks.length:0), firstHint:(s&&s.leftBlocks&&s.leftBlocks[0]&&(s.leftBlocks[0].sourceTextHint||s.leftBlocks[0].title||'')||'').slice(0,120) }; }), at:new Date().toISOString() }; }catch(_err){}
+          backdrop.remove(); resolve(selected.map(function(s){ return cloneJsonSafe(s); }));
         }
       });
       d.body.appendChild(backdrop);
@@ -1676,7 +1676,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage43f-safe-mathpix-merge-20260513-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage43g-review-handoff-exact-import-20260513-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1759,10 +1759,23 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
       });
     });
   }
+  function stage43gIsFreeformReviewSlide(slide) {
+    return !!(slide && slide.importMeta && (slide.importMeta.freeform || slide.importMeta.coordinateSystem || slide.importMeta.sourcePageNumber || slide.importMeta.sourcePageIndex));
+  }
+  function stage43gPrepareImportedSlide(slide, index) {
+    if(stage43gIsFreeformReviewSlide(slide)) {
+      var out = cloneJsonSafe(slide || {});
+      out.__stage43gExactReviewImport = true;
+      out.__stage43gReviewImportIndex = index;
+      out.importMeta = Object.assign({}, out.importMeta || {}, { stage43gExactReviewImport:true });
+      return out;
+    }
+    return normalizeSlide(slide);
+  }
   function applyImportedSlides(importedSlides, opts) {
     opts = opts || {};
-    var incoming = (importedSlides || []).map(normalizeSlide).filter(Boolean);
-    try { globalThis.__LUMINA_STAGE41M_LAST_IMPORT = { requestedSlides:(importedSlides||[]).length, normalizedSlides:incoming.length, mode:opts && opts.mode || 'append', at:new Date().toISOString() }; } catch (_err) {}
+    var incoming = (importedSlides || []).map(stage43gPrepareImportedSlide).filter(Boolean);
+    try { globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF = { requestedSlides:(importedSlides||[]).length, importedSlides:incoming.length, mode:opts && opts.mode || 'append', exactFreeformSlides:incoming.filter(stage43gIsFreeformReviewSlide).length, firstSlides:incoming.slice(0,6).map(function(s,i){return {i:i,title:s&&s.title||'',sourcePageNumber:s&&s.importMeta&&(s.importMeta.sourcePageNumber||s.importMeta.pageNumber)||null,blockCount:(s&&s.leftBlocks?s.leftBlocks.length:0)+(s&&s.rightBlocks?s.rightBlocks.length:0),firstHint:(s&&s.leftBlocks&&s.leftBlocks[0]&&(s.leftBlocks[0].sourceTextHint||s.leftBlocks[0].title||'')||'').slice(0,120)};}), at:new Date().toISOString() }; globalThis.__LUMINA_STAGE41M_LAST_IMPORT = globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF; } catch (_err) {}
     if (!incoming.length) throw new Error('No slides were imported.');
     syncPreviewFiguresToDraft(false);
     saveCurrentBlockToDraft();
@@ -2163,7 +2176,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43f-safe-mathpix-merge-20260513-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43g-review-handoff-exact-import-20260513-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
