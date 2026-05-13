@@ -169,7 +169,7 @@
       initExtractionFields();
       const el = doc().getElementById('extractionEngineSelect');
       let value = String((el && el.value) || storageGet(STORAGE_ENGINE, 'hybrid') || 'hybrid').trim().toLowerCase();
-      if(!['pymupdf','pymupdf-math-image','pymupdf-all-image','marker','hybrid','docai'].includes(value)) value = 'hybrid';
+      if(!['pymupdf','pymupdf-math-image','pymupdf-all-image','mineru-pymupdf','marker','hybrid','docai'].includes(value)) value = 'hybrid';
       storageSet(STORAGE_ENGINE, value);
       return value;
     }
@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43n-block-replace-move-undo-20260513-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43p-mineru-pymupdf-import-20260513-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage43n-block-replace-move-undo-20260513-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43p-mineru-pymupdf-import-20260513-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1377,7 +1377,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43n-block-replace-move-undo-20260513-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43p-mineru-pymupdf-import-20260513-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1715,7 +1715,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage43n-block-replace-move-undo-20260513-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43p-mineru-pymupdf-import-20260513-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1810,6 +1810,33 @@ Previous output to repair:
         },{
           label:'lean retry: PyMuPDF math-image without rendered review alternates',
           extractEngine:'pymupdf-math-image',
+          includePdfReviewAlternates:'0',
+          includePdfRender:'1',
+          includePdfBackground:'0',
+          maxImagesPerSlide:12,
+          reviewRenderZoom:0.30,
+          reviewJpegQuality:42,
+          vectorRenderZoom:0.70,
+          vectorJpegQuality:48,
+          httpSafeMb:10
+        }];
+      }
+      if(engine === 'mineru-pymupdf'){
+        return [{
+          label:'MinerU + PyMuPDF: MinerU semantic text/math with PyMuPDF rendered review alternatives',
+          extractEngine:'mineru-pymupdf',
+          includePdfReviewAlternates:'1',
+          includePdfRender:'1',
+          includePdfBackground:'0',
+          maxImagesPerSlide:24,
+          reviewRenderZoom:0.45,
+          reviewJpegQuality:48,
+          vectorRenderZoom:0.95,
+          vectorJpegQuality:58,
+          httpSafeMb:18
+        },{
+          label:'MinerU + PyMuPDF lean retry without rendered review alternatives',
+          extractEngine:'mineru-pymupdf',
           includePdfReviewAlternates:'0',
           includePdfRender:'1',
           includePdfBackground:'0',
@@ -2400,7 +2427,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43n-block-replace-move-undo-20260513-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43p-mineru-pymupdf-import-20260513-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
