@@ -406,14 +406,26 @@
       if(idx < 0 || idx >= arr.length){ showToast('Select a block first.'); return false; }
       const existing = arr[idx] || {};
       const patched = stage43hPreserveImportBlockMetadata(clone(nextBlock || {}), existing);
-      if(existing.layout && !patched.layout) patched.layout = clone(existing.layout);
-      if(existing.importSourceLayout && !patched.importSourceLayout) patched.importSourceLayout = clone(existing.importSourceLayout);
+      // Stage 43N: selected-block Mathpix/AI remake must replace the old block
+      // in-place, not create a second immovable block. Always preserve the
+      // exact existing geometry so the replacement remains movable/resizable
+      // in imported/freeform slides.
+      if(existing.layout) patched.layout = clone(existing.layout);
+      if(existing.importSourceLayout) patched.importSourceLayout = clone(existing.importSourceLayout);
+      if(!patched.layout){
+        patched.layout = { x: 120, y: 160, w: 640, h: 160, z: 30 + idx };
+      }
+      patched.stage43nReplacedInPlace = true;
+      patched.stage43nReplacementReason = reason || 'replace-selected-block';
       arr[idx] = patched;
       stage43kCommitDraftBlocksToActiveSlide(reason || 'replace-selected-block');
       loadSelectedBlockIntoEditor();
       renderBlockList();
       buildPreview();
       scheduleAutosave('Autosaved after selected block replacement.');
+      try{
+        window.__LUMINA_STAGE43N_LAST_BLOCK_REPLACE = { ok:true, column:name, index:idx, mode:patched.mode || '', title:patched.title || '', preservedLayout:!!existing.layout, reason:reason || 'replace-selected-block', at:new Date().toISOString() };
+      }catch(_err){}
       return true;
     }
     function clearBlockEditor(){

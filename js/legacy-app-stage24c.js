@@ -1951,6 +1951,71 @@ async function stage43kPostJson(endpoint, body){
   if(!res.ok || data.ok === false) throw new Error(data && data.error && data.error.message || raw || ('Backend request failed with HTTP ' + res.status));
   return data;
 }
+
+function stage43nSelectBlockInfo(info){
+  if(!info || !info.block || !Number.isFinite(Number(info.index))) return false;
+  const column = info.column === 'right' ? 'right' : 'left';
+  const idx = Number(info.index);
+  const arr = blockArray(column);
+  if(idx < 0 || idx >= arr.length) return false;
+  blockFields.column.value = column;
+  setSelectedIndex(column, idx);
+  loadSelectedBlockIntoEditor();
+  return true;
+}
+function stage43nReplacementBlockForInfo(info, replacement, reason){
+  const existing = info && info.block || {};
+  const next = clone(replacement || {});
+  if(existing.layout) next.layout = clone(existing.layout);
+  if(existing.importSourceLayout) next.importSourceLayout = clone(existing.importSourceLayout);
+  ['blockId','__aiSourceBlockId','sourceTextHint','mathImageSourceText','lineCount','visualBlobIndex','sourcePageNumber','sourcePageIndex'].forEach(function(key){
+    if(existing[key] != null && next[key] == null) next[key] = clone(existing[key]);
+  });
+  if(!next.layout) next.layout = { x:120, y:160, w:640, h:160, z:40 + (Number(info && info.index) || 0) };
+  next.stage43nSelectedBlockReplacement = true;
+  next.stage43nReplacementReason = reason || 'selected-block-replace';
+  return next;
+}
+function stage43nCheckpointBeforeBlockMutation(reason){
+  try{
+    saveCurrentBlockToDraft();
+    saveCurrentSlideToDeck();
+    persistAutosaveNow('Checkpoint before ' + (reason || 'selected block change') + '.');
+  }catch(_err){}
+}
+function stage43nReplaceBlockFromInfo(info, replacement, reason){
+  if(!info || !info.block){ showToast('Select a block first.'); return false; }
+  stage43nCheckpointBeforeBlockMutation(reason || 'selected block replacement');
+  if(!stage43nSelectBlockInfo(info)){
+    return replaceSelectedBlock(stage43nReplacementBlockForInfo(info, replacement, reason), reason || 'selected-block-replace');
+  }
+  const nextBlock = stage43nReplacementBlockForInfo(info, replacement, reason);
+  const ok = replaceSelectedBlock(nextBlock, reason || 'selected-block-replace');
+  try{
+    window.__LUMINA_STAGE43N_SELECTED_BLOCK_REPLACE = {
+      ok:!!ok,
+      column:info.column,
+      index:info.index,
+      mode:nextBlock.mode || '',
+      title:nextBlock.title || '',
+      preservedLayout:!!(info.block && info.block.layout),
+      reason:reason || 'selected-block-replace',
+      at:new Date().toISOString()
+    };
+  }catch(_err){}
+  return ok;
+}
+function stage43nDeleteSelectedBlock(){
+  const info = stage43kSelectedBlockInfo();
+  if(!info || !info.block){ showToast('Select a block first.'); return false; }
+  stage43nCheckpointBeforeBlockMutation('selected block delete');
+  if(!stage43nSelectBlockInfo(info)) return deleteBlock();
+  const ok = deleteBlock();
+  try{
+    window.__LUMINA_STAGE43N_LAST_BLOCK_DELETE = { ok:!!ok, column:info.column, index:info.index, title:info.block && info.block.title || '', at:new Date().toISOString() };
+  }catch(_err){}
+  return ok;
+}
 async function extractSelectedBlockWithMathpix(){
   const info = stage43kSelectedBlockInfo();
   if(!info.block){ showToast('Select a block first.'); return; }
@@ -1959,7 +2024,7 @@ async function extractSelectedBlockWithMathpix(){
     const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/mathpix-extract');
     const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:30000 });
     if(!data.block) throw new Error('Mathpix backend did not return a replacement block.');
-    replaceSelectedBlock(data.block, 'selected-block-mathpix');
+    stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mathpix');
     window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
     showToast('Selected block extracted with Mathpix.');
   }catch(err){
@@ -1987,7 +2052,7 @@ function openAiRemakeSelectedBlockDialog(){
         const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/ai-remake');
         const data = await stage43kPostJson(endpoint, { provider:stage43kAiProviderFromImportSettings(), model:stage43kAiModelFromImportSettings(), prompt, block:info.block, maxOutputTokens:10000 });
         if(!data.block) throw new Error('AI backend did not return a replacement block.');
-        replaceSelectedBlock(data.block, 'selected-block-ai-remake');
+        stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-ai-remake');
         window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_AI_REMAKE = { ok:true, column:info.column, index:info.index, endpoint, prompt, provider:data.provider || stage43kAiProviderFromImportSettings(), model:data.model || stage43kAiModelFromImportSettings(), at:new Date().toISOString() };
         overlay.remove();
         showToast('Selected block remade with AI.');
@@ -2006,17 +2071,15 @@ function openAiRemakeSelectedBlockDialog(){
 document.getElementById('addBlockBtn').addEventListener('click', addBlock);
 document.getElementById('updateBlockBtn').addEventListener('click', updateBlock);
 document.getElementById('duplicateBlockBtn').addEventListener('click', duplicateBlock);
-document.getElementById('deleteBlockBtn').addEventListener('click', deleteBlock);
+document.getElementById('deleteBlockBtn').addEventListener('click', stage43nDeleteSelectedBlock);
 document.getElementById('extractSelectedBlockMathpixBtn')?.addEventListener('click', extractSelectedBlockWithMathpix);
 document.getElementById('remakeSelectedBlockAiBtn')?.addEventListener('click', openAiRemakeSelectedBlockDialog);
 
 
 function stage43lSelectedBlockSummary(){
   try{
-    const column = currentColumnName();
-    const idx = selectedIndex(column);
-    const block = getDraftBlock(column, idx);
-    return { column, index:idx, block, hasBlock:!!block };
+    const info = stage43kSelectedBlockInfo();
+    return Object.assign({}, info || {}, { hasBlock:!!(info && info.block) });
   }catch(_err){ return { column:'left', index:-1, block:null, hasBlock:false }; }
 }
 function stage43lEnsureFloatingBlockActions(){
@@ -2031,7 +2094,7 @@ function stage43lEnsureFloatingBlockActions(){
     const info = stage43lSelectedBlockSummary();
     if(!info.hasBlock){ showToast('Select a block first.'); stage43lRefreshFloatingBlockActions(); return; }
     const action = btn.getAttribute('data-stage43l-action');
-    if(action === 'delete') deleteBlock();
+    if(action === 'delete') stage43nDeleteSelectedBlock();
     else if(action === 'mathpix') extractSelectedBlockWithMathpix();
     else if(action === 'ai') openAiRemakeSelectedBlockDialog();
     setTimeout(stage43lRefreshFloatingBlockActions, 60);
