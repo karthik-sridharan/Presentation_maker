@@ -70,6 +70,23 @@
         .replace(/\n[ \t]+/g, '\n')
         .trim();
     }
+    function stage43hIsFreeformImportSlide(slide){
+      const s = slide || {};
+      const type = String(s.slideType || '').toLowerCase();
+      return !!(s.importMeta && (s.importMeta.freeform || s.importMeta.coordinateSystem || s.importMeta.sourcePageNumber || s.importMeta.sourcePageIndex || s.importMeta.stage43gExactReviewImport))
+        || type === 'freeform' || type === 'freeform-import' || type === 'pdf-import' || type === 'ppt-import'
+        || !!s.__stage43gExactReviewImport;
+    }
+    function stage43hPreserveImportBlockMetadata(nextBlock, existing){
+      if(!existing || !nextBlock) return nextBlock;
+      [
+        'importRole','importSubmode','sourceTextHint','mathImageSourceText','lineCount','visualBlobIndex',
+        'importChoiceMode','importChoiceSourceIndex','__aiSourceBlockId','blockId','sourcePageNumber','sourcePageIndex'
+      ].forEach(function(key){ if(existing[key] != null && nextBlock[key] == null) nextBlock[key] = clone(existing[key]); });
+      if(existing.importSourceLayout && !nextBlock.importSourceLayout) nextBlock.importSourceLayout = clone(existing.importSourceLayout);
+      if(existing.layout && !nextBlock.layout) nextBlock.layout = clone(existing.layout);
+      return nextBlock;
+    }
     function currentDraftSlide(){
       if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
@@ -77,14 +94,18 @@
       const rightBlocks = clone(draftBlocks.right);
       const name = currentColumnName();
       const idx = selectedIndex(name);
+      const existingSlide = getSlides()[getActiveIndex()] || {};
       const edited = currentBlockFromEditor();
       const target = name === 'right' ? rightBlocks : leftBlocks;
       if(idx >= 0 && idx < target.length){
-        target[idx] = edited;
+        const existingArr = name === 'right' ? (existingSlide.rightBlocks || []) : (existingSlide.leftBlocks || []);
+        target[idx] = stage43hPreserveImportBlockMetadata(edited, existingArr[idx]);
       }
-      const existingSlide = getSlides()[getActiveIndex()] || {};
+      const freeformImport = stage43hIsFreeformImportSlide(existingSlide);
+      const preservedSlideType = freeformImport ? (existingSlide.slideType || 'freeform-import') : fields.slideType.value;
+      const twoCol = !freeformImport && fields.slideType.value === 'two-col';
       const draftSlide = {
-        slideType: fields.slideType.value,
+        slideType: preservedSlideType,
         headingLevel: fields.headingLevel.value,
         bgColor: fields.bgColor.value,
         fontColor: fields.fontColor.value,
@@ -95,11 +116,29 @@
         titleStyle: clone(getDraftTitleStyle()),
         titleAnimation: clone(getDraftTitleAnimation()),
         leftBlocks: leftBlocks,
-        rightBlocks: fields.slideType.value === 'two-col' ? rightBlocks : [],
+        rightBlocks: twoCol ? rightBlocks : (freeformImport ? rightBlocks : []),
         notesTitle: fields.notesTitle.value,
         notesBody: fields.notesBody.value
       };
       if(existingSlide.importMeta) draftSlide.importMeta = clone(existingSlide.importMeta);
+      if(freeformImport){
+        draftSlide.importMeta = Object.assign({}, draftSlide.importMeta || {}, { stage43hFreeformDraftPreserved:true });
+        ['__stage43gExactReviewImport','__stage43gReviewImportIndex','importChoiceMode','importChoiceSourceIndex'].forEach(function(key){
+          if(existingSlide[key] != null) draftSlide[key] = clone(existingSlide[key]);
+        });
+      }
+      try{
+        if(freeformImport){
+          window.__LUMINA_STAGE43H_FREEFORM_DRAFT_PRESERVE = {
+            preserved:true,
+            activeIndex:getActiveIndex(),
+            slideType:draftSlide.slideType,
+            fieldSlideType:fields.slideType.value,
+            blockCount:(leftBlocks.length || 0) + (rightBlocks.length || 0),
+            at:new Date().toISOString()
+          };
+        }
+      }catch(_err){}
       return draftSlide;
     }
     function applySlideToForm(slide){
@@ -179,6 +218,11 @@
       if(existing && existing.layout) nextBlock.layout = clone(existing.layout);
       if(existing && existing.importSourceLayout) nextBlock.importSourceLayout = clone(existing.importSourceLayout);
       if(existing && existing.importRole) nextBlock.importRole = existing.importRole;
+      if(existing){
+        ['importSubmode','sourceTextHint','mathImageSourceText','lineCount','visualBlobIndex','__aiSourceBlockId','blockId'].forEach(function(key){
+          if(existing[key] != null && nextBlock[key] == null) nextBlock[key] = clone(existing[key]);
+        });
+      }
       if(existing && Array.isArray(existing.importRuns)){
         const oldContent = cleanEditableContent(existing.content || '', existing.mode || 'panel');
         if(nextContent === oldContent){
