@@ -1960,6 +1960,62 @@ document.getElementById('duplicateBlockBtn').addEventListener('click', duplicate
 document.getElementById('deleteBlockBtn').addEventListener('click', deleteBlock);
 document.getElementById('extractSelectedBlockMathpixBtn')?.addEventListener('click', extractSelectedBlockWithMathpix);
 document.getElementById('remakeSelectedBlockAiBtn')?.addEventListener('click', openAiRemakeSelectedBlockDialog);
+
+
+function stage43lSelectedBlockSummary(){
+  try{
+    const column = currentColumnName();
+    const idx = selectedIndex(column);
+    const block = getDraftBlock(column, idx);
+    return { column, index:idx, block, hasBlock:!!block };
+  }catch(_err){ return { column:'left', index:-1, block:null, hasBlock:false }; }
+}
+function stage43lEnsureFloatingBlockActions(){
+  if(document.getElementById('stage43lFloatingBlockActions')) return;
+  const bar = document.createElement('div');
+  bar.id = 'stage43lFloatingBlockActions';
+  bar.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:999996;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 24px);overflow:auto;background:rgba(15,23,42,.96);color:#f8fafc;border:1px solid rgba(148,163,184,.45);border-radius:999px;box-shadow:0 16px 50px rgba(15,23,42,.28);padding:8px 10px;font:600 12px system-ui,-apple-system,Segoe UI,sans-serif;';
+  bar.innerHTML = '<span data-stage43l-label style="white-space:nowrap;opacity:.92;padding:0 6px">No block selected</span><button type="button" data-stage43l-action="delete" style="border:1px solid rgba(248,113,113,.55);background:#7f1d1d;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Delete block</button><button type="button" data-stage43l-action="mathpix" style="border:1px solid rgba(96,165,250,.55);background:#1d4ed8;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Mathpix extract</button><button type="button" data-stage43l-action="ai" style="border:1px solid rgba(52,211,153,.55);background:#047857;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Remake with AI</button>';
+  bar.addEventListener('click', function(evt){
+    const btn = evt.target && evt.target.closest ? evt.target.closest('[data-stage43l-action]') : null;
+    if(!btn) return;
+    const info = stage43lSelectedBlockSummary();
+    if(!info.hasBlock){ showToast('Select a block first.'); stage43lRefreshFloatingBlockActions(); return; }
+    const action = btn.getAttribute('data-stage43l-action');
+    if(action === 'delete') deleteBlock();
+    else if(action === 'mathpix') extractSelectedBlockWithMathpix();
+    else if(action === 'ai') openAiRemakeSelectedBlockDialog();
+    setTimeout(stage43lRefreshFloatingBlockActions, 60);
+  });
+  document.body.appendChild(bar);
+  stage43lRefreshFloatingBlockActions();
+}
+function stage43lRefreshFloatingBlockActions(){
+  const bar = document.getElementById('stage43lFloatingBlockActions');
+  if(!bar) return;
+  const info = stage43lSelectedBlockSummary();
+  const label = bar.querySelector('[data-stage43l-label]');
+  if(label){
+    label.textContent = info.hasBlock ? ('Selected: ' + (info.block.title || ('Block ' + (info.index + 1))) + ' • ' + (info.block.mode || 'block')) : 'No block selected';
+  }
+  bar.querySelectorAll('button').forEach(function(btn){
+    btn.disabled = !info.hasBlock;
+    btn.style.opacity = info.hasBlock ? '1' : '.42';
+    btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
+  });
+  try{
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', at:new Date().toISOString() };
+  }catch(_err){}
+}
+setTimeout(stage43lEnsureFloatingBlockActions, 800);
+setInterval(stage43lRefreshFloatingBlockActions, 1000);
+['click','pointerup','keyup','change'].forEach(function(evtName){
+  document.addEventListener(evtName, function(evt){
+    if(evt && evt.target && evt.target.closest && (evt.target.closest('#preview') || evt.target.closest('#blockList') || evt.target.closest('#blockColumn') || evt.target.closest('#blockMode'))){
+      setTimeout(stage43lRefreshFloatingBlockActions, 80);
+    }
+  }, true);
+});
 document.getElementById('clearBlockBtn').addEventListener('click', clearBlockEditor);
 document.getElementById('addFigureBtn').addEventListener('click', openFigureModal);
 const toolsAddFigureBtn = document.getElementById('toolsAddFigureBtn');
