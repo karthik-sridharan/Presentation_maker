@@ -1883,13 +1883,62 @@ function stage43kAiProviderFromImportSettings(){
 function stage43kAiModelFromImportSettings(){
   return String(document.getElementById('importAiModelInput')?.value || 'gpt-4.1-mini').trim();
 }
+function stage43mExtractFirstImageSrcFromHtml(value){
+  const s = String(value || '');
+  const direct = s.trim();
+  if(/^data:image\//i.test(direct)) return direct;
+  const m = s.match(/<img\b[^>]*\bsrc=["']([^"']+)["']/i);
+  if(m && /^data:image\//i.test(m[1])) return m[1];
+  const any = s.match(/data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+/i);
+  return any ? any[0].replace(/\s+/g, '') : '';
+}
+function stage43mFigureBoxSelectedBlockInfo(){
+  try{
+    const boxes = typeof getSelectedFigureBoxes === 'function' ? getSelectedFigureBoxes() : [];
+    if(!boxes || !boxes.length) return null;
+    const box = boxes[0];
+    const embed = box.closest && box.closest('.figure-embed[data-column]');
+    if(!embed) return null;
+    const column = embed.dataset.column === 'right' ? 'right' : 'left';
+    const idx = Number(embed.dataset.blockIndex);
+    const arr = blockArray(column);
+    if(!Number.isFinite(idx) || idx < 0 || idx >= arr.length) return null;
+    const block = arr[idx];
+    const media = box.querySelector && box.querySelector('img,canvas,svg') || embed.querySelector && embed.querySelector('img,canvas,svg');
+    let imageSrc = '';
+    if(media){
+      if(media.tagName && media.tagName.toLowerCase() === 'canvas'){
+        try{ imageSrc = media.toDataURL('image/png'); }catch(_err){}
+      } else if(media.getAttribute){
+        imageSrc = media.getAttribute('src') || '';
+      }
+    }
+    if(!/^data:image\//i.test(imageSrc)) imageSrc = stage43mExtractFirstImageSrcFromHtml(block && block.content || '');
+    const blockForRequest = Object.assign({}, block || {});
+    if(imageSrc && !stage43mExtractFirstImageSrcFromHtml(blockForRequest.content || '')){
+      blockForRequest.content = '\\begin{figurehtml}\n<figure data-figure-kind="image"><img src="' + imageSrc + '" alt="Selected image block" /></figure>\n\\end{figurehtml}';
+      blockForRequest.mode = blockForRequest.mode || 'import-image';
+    }
+    return { column, index:idx, block:blockForRequest, imageSrc, fromFigureBox:true };
+  }catch(_err){ return null; }
+}
 function stage43kSelectedBlockInfo(){
   saveCurrentBlockToDraft();
+  const figureInfo = stage43mFigureBoxSelectedBlockInfo();
+  if(figureInfo && figureInfo.block) return figureInfo;
+  const target = typeof selectedPreviewTarget === 'function' ? selectedPreviewTarget() : null;
+  if(target && target.type === 'block'){
+    const column = target.column === 'right' ? 'right' : 'left';
+    const idx = Number(target.index);
+    const arr = blockArray(column);
+    const block = Number.isFinite(idx) && idx >= 0 && idx < arr.length ? arr[idx] : null;
+    return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromPreviewTarget:true };
+  }
   const column = currentColumnName();
   const idx = selectedIndex(column);
   const arr = blockArray(column);
   const block = idx >= 0 && idx < arr.length ? arr[idx] : null;
-  return { column, index:idx, block };
+  return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromBlockEditor:true };
 }
 async function stage43kPostJson(endpoint, body){
   const headers = { 'Content-Type':'application/json' };
@@ -1908,13 +1957,13 @@ async function extractSelectedBlockWithMathpix(){
   try{
     showToast('Extracting selected block with Mathpix…');
     const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/mathpix-extract');
-    const data = await stage43kPostJson(endpoint, { block:info.block, timeoutMs:30000 });
+    const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:30000 });
     if(!data.block) throw new Error('Mathpix backend did not return a replacement block.');
     replaceSelectedBlock(data.block, 'selected-block-mathpix');
-    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, stats:data.stats || null, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
     showToast('Selected block extracted with Mathpix.');
   }catch(err){
-    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:false, column:info.column, index:info.index, error:err && err.message ? err.message : String(err), at:new Date().toISOString() };
+    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:false, column:info.column, index:info.index, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, error:err && err.message ? err.message : String(err), at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
     alert('Could not extract selected block with Mathpix: ' + (err && err.message ? err.message : String(err)));
   }
 }
@@ -1996,7 +2045,7 @@ function stage43lRefreshFloatingBlockActions(){
   const info = stage43lSelectedBlockSummary();
   const label = bar.querySelector('[data-stage43l-label]');
   if(label){
-    label.textContent = info.hasBlock ? ('Selected: ' + (info.block.title || ('Block ' + (info.index + 1))) + ' • ' + (info.block.mode || 'block')) : 'No block selected';
+    label.textContent = info.hasBlock ? ('Selected: ' + (info.block.title || ('Block ' + (info.index + 1))) + ' • ' + (info.block.mode || 'block') + (info.imageSrc ? ' • image-ready' : '')) : 'No block selected';
   }
   bar.querySelectorAll('button').forEach(function(btn){
     btn.disabled = !info.hasBlock;
@@ -2004,7 +2053,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
