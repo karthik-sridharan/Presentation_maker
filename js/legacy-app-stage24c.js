@@ -685,6 +685,7 @@ const {
   duplicateBlock,
   deleteBlock,
   moveBlock,
+  replaceSelectedBlock,
   clearBlockEditor
 } = blockEditorApi;
 
@@ -1859,10 +1860,106 @@ document.querySelectorAll('[data-history-action="undo"]').forEach(btn=>btn.addEv
 document.querySelectorAll('[data-history-action="redo"]').forEach(btn=>btn.addEventListener('click', redoHistory));
 updateHistoryButtons();
 
+
+function stage43kAiEndpointFromImportSettings(){
+  const explicit = String(document.getElementById('importAiEndpointInput')?.value || '').trim();
+  if(explicit) return explicit;
+  const extraction = String(document.getElementById('extractionEndpointInput')?.value || '').trim();
+  if(/\/api\/lumina\/extract\/?$/i.test(extraction)) return extraction.replace(/\/api\/lumina\/extract\/?$/i, '/api/lumina/ai');
+  return extraction ? extraction.replace(/\/?$/, '/api/lumina/ai') : '/api/lumina/ai';
+}
+function stage43kEndpoint(base, suffix){
+  const value = String(base || '').trim();
+  if(/\/api\/lumina\/ai\/?$/i.test(value)) return value.replace(/\/api\/lumina\/ai\/?$/i, suffix);
+  if(/\/api\/lumina\/extract\/?$/i.test(value)) return value.replace(/\/api\/lumina\/extract\/?$/i, suffix);
+  return value.replace(/\/?$/, suffix);
+}
+function stage43kAiTokenFromImportSettings(){
+  return String(document.getElementById('importAiTokenInput')?.value || document.getElementById('extractionTokenInput')?.value || '').trim();
+}
+function stage43kAiProviderFromImportSettings(){
+  return String(document.getElementById('importAiProviderSelect')?.value || 'openai').trim().toLowerCase();
+}
+function stage43kAiModelFromImportSettings(){
+  return String(document.getElementById('importAiModelInput')?.value || 'gpt-4.1-mini').trim();
+}
+function stage43kSelectedBlockInfo(){
+  saveCurrentBlockToDraft();
+  const column = currentColumnName();
+  const idx = selectedIndex(column);
+  const arr = blockArray(column);
+  const block = idx >= 0 && idx < arr.length ? arr[idx] : null;
+  return { column, index:idx, block };
+}
+async function stage43kPostJson(endpoint, body){
+  const headers = { 'Content-Type':'application/json' };
+  const token = stage43kAiTokenFromImportSettings();
+  if(token) headers.Authorization = 'Bearer ' + token;
+  const res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body), cache:'no-store', mode:'cors' });
+  const raw = await res.text();
+  let data = null;
+  try{ data = raw ? JSON.parse(raw) : {}; }catch(_err){ data = { ok:false, error:{ message:raw || 'Non-JSON backend response.' } }; }
+  if(!res.ok || data.ok === false) throw new Error(data && data.error && data.error.message || raw || ('Backend request failed with HTTP ' + res.status));
+  return data;
+}
+async function extractSelectedBlockWithMathpix(){
+  const info = stage43kSelectedBlockInfo();
+  if(!info.block){ showToast('Select a block first.'); return; }
+  try{
+    showToast('Extracting selected block with Mathpix…');
+    const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/mathpix-extract');
+    const data = await stage43kPostJson(endpoint, { block:info.block, timeoutMs:30000 });
+    if(!data.block) throw new Error('Mathpix backend did not return a replacement block.');
+    replaceSelectedBlock(data.block, 'selected-block-mathpix');
+    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, stats:data.stats || null, at:new Date().toISOString() };
+    showToast('Selected block extracted with Mathpix.');
+  }catch(err){
+    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:false, column:info.column, index:info.index, error:err && err.message ? err.message : String(err), at:new Date().toISOString() };
+    alert('Could not extract selected block with Mathpix: ' + (err && err.message ? err.message : String(err)));
+  }
+}
+function openAiRemakeSelectedBlockDialog(){
+  const info = stage43kSelectedBlockInfo();
+  if(!info.block){ showToast('Select a block first.'); return; }
+  const existing = document.getElementById('stage43kAiRemakeOverlay');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'stage43kAiRemakeOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000000;background:rgba(15,23,42,.42);display:flex;align-items:center;justify-content:center;padding:18px;';
+  overlay.innerHTML = '<div style="width:min(720px,calc(100vw - 28px));background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.28);padding:16px;color:#0f172a"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><div><div class="smallcaps">Selected block AI remake</div><h2 style="margin:.2rem 0 .15rem">Remake selected block</h2><div class="help">Describe how to transform this block. Examples: make this a clean SVG figure; make an interactive demo; convert to concise bullets; animate the concept.</div></div><button class="btn mini" type="button" data-stage43k-close>×</button></div><textarea id="stage43kAiRemakePrompt" class="code" style="width:100%;min-height:150px;margin-top:12px" placeholder="Example: remake this as an interactive custom HTML demo explaining self-attention, preserving the main equation."></textarea><div class="toolbar" style="margin-top:12px"><button class="btn primary" type="button" data-stage43k-submit>Submit remake</button><button class="btn" type="button" data-stage43k-close>Cancel</button></div></div>';
+  overlay.addEventListener('click', async function(evt){
+    if(evt.target === overlay || evt.target.closest('[data-stage43k-close]')){ overlay.remove(); return; }
+    if(evt.target.closest('[data-stage43k-submit]')){
+      const prompt = String(document.getElementById('stage43kAiRemakePrompt')?.value || '').trim();
+      if(!prompt){ alert('Enter a remake prompt first.'); return; }
+      const submit = evt.target.closest('[data-stage43k-submit]');
+      submit.disabled = true; submit.textContent = 'Remaking…';
+      try{
+        const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/ai-remake');
+        const data = await stage43kPostJson(endpoint, { provider:stage43kAiProviderFromImportSettings(), model:stage43kAiModelFromImportSettings(), prompt, block:info.block, maxOutputTokens:10000 });
+        if(!data.block) throw new Error('AI backend did not return a replacement block.');
+        replaceSelectedBlock(data.block, 'selected-block-ai-remake');
+        window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_AI_REMAKE = { ok:true, column:info.column, index:info.index, endpoint, prompt, provider:data.provider || stage43kAiProviderFromImportSettings(), model:data.model || stage43kAiModelFromImportSettings(), at:new Date().toISOString() };
+        overlay.remove();
+        showToast('Selected block remade with AI.');
+      }catch(err){
+        window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_AI_REMAKE = { ok:false, column:info.column, index:info.index, prompt, error:err && err.message ? err.message : String(err), at:new Date().toISOString() };
+        alert('Could not remake selected block with AI: ' + (err && err.message ? err.message : String(err)));
+        submit.disabled = false; submit.textContent = 'Submit remake';
+      }
+    }
+  });
+  document.body.appendChild(overlay);
+  const ta = document.getElementById('stage43kAiRemakePrompt');
+  if(ta) ta.focus();
+}
+
 document.getElementById('addBlockBtn').addEventListener('click', addBlock);
 document.getElementById('updateBlockBtn').addEventListener('click', updateBlock);
 document.getElementById('duplicateBlockBtn').addEventListener('click', duplicateBlock);
 document.getElementById('deleteBlockBtn').addEventListener('click', deleteBlock);
+document.getElementById('extractSelectedBlockMathpixBtn')?.addEventListener('click', extractSelectedBlockWithMathpix);
+document.getElementById('remakeSelectedBlockAiBtn')?.addEventListener('click', openAiRemakeSelectedBlockDialog);
 document.getElementById('clearBlockBtn').addEventListener('click', clearBlockEditor);
 document.getElementById('addFigureBtn').addEventListener('click', openFigureModal);
 const toolsAddFigureBtn = document.getElementById('toolsAddFigureBtn');
@@ -2138,6 +2235,7 @@ window.LuminaAppCommands = {
   duplicateBlock,
   deleteBlock,
   moveBlock,
+  replaceSelectedBlock,
   clearBlockEditor,
   undo: () => undoHistory(),
   redo: () => redoHistory(),

@@ -109,6 +109,27 @@
       }catch(_err){}
       return out;
     }
+    function stage43kCommitDraftBlocksToActiveSlide(reason){
+      const activeIndex = getActiveIndex();
+      const slides = getSlides();
+      const slide = slides && slides[activeIndex];
+      if(!slide) return false;
+      const draftBlocks = getDraftBlocks();
+      slide.leftBlocks = clone(draftBlocks.left || []);
+      slide.rightBlocks = clone(draftBlocks.right || []);
+      slide.importMeta = Object.assign({}, slide.importMeta || {}, { stage43kDraftBlocksCommitted:true, stage43kCommitReason:reason || 'block-edit', stage43kCommittedAt:new Date().toISOString() });
+      try{
+        window.__LUMINA_STAGE43K_IMPORT_BLOCK_EDIT_COMMIT = {
+          ok:true,
+          reason:reason || 'block-edit',
+          activeIndex:activeIndex,
+          leftBlocks:slide.leftBlocks.length,
+          rightBlocks:slide.rightBlocks.length,
+          at:new Date().toISOString()
+        };
+      }catch(_err){}
+      return true;
+    }
     function currentDraftSlide(){
       if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
@@ -320,6 +341,7 @@
       const arr = blockArray(name);
       arr.push(currentBlockFromEditor());
       setSelectedIndex(name, arr.length - 1);
+      stage43kCommitDraftBlocksToActiveSlide('add-block');
       renderBlockList();
       buildPreview();
       showToast('Added block.');
@@ -332,6 +354,7 @@
       const idx = selectedIndex(name);
       if(idx < 0 || idx >= arr.length){ showToast('Select a block first.'); return; }
       arr[idx] = currentBlockFromEditor();
+      stage43kCommitDraftBlocksToActiveSlide('update-block');
       renderBlockList();
       buildPreview();
       persistAutosaveNow('Autosaved after block update.');
@@ -344,6 +367,7 @@
       if(idx < 0 || idx >= arr.length){ showToast('Select a block first.'); return; }
       arr.splice(idx + 1, 0, clone(arr[idx]));
       setSelectedIndex(name, idx + 1);
+      stage43kCommitDraftBlocksToActiveSlide('duplicate-block');
       renderBlockList();
       buildPreview();
       showToast('Duplicated block.');
@@ -356,6 +380,7 @@
       if(idx < 0 || idx >= arr.length){ showToast('Select a block first.'); return; }
       arr.splice(idx, 1);
       setSelectedIndex(name, arr.length ? Math.min(idx, arr.length - 1) : -1);
+      stage43kCommitDraftBlocksToActiveSlide('delete-block');
       loadSelectedBlockIntoEditor();
       buildPreview();
       showToast('Deleted block.');
@@ -369,9 +394,27 @@
       if(idx < 0 || idx >= arr.length || next < 0 || next >= arr.length) return;
       const tmp = arr[idx]; arr[idx] = arr[next]; arr[next] = tmp;
       setSelectedIndex(name, next);
+      stage43kCommitDraftBlocksToActiveSlide('move-block');
       renderBlockList();
       buildPreview();
       scheduleAutosave('Autosaved after block move.');
+    }
+    function replaceSelectedBlock(nextBlock, reason){
+      const name = currentColumnName();
+      const arr = blockArray(name);
+      const idx = selectedIndex(name);
+      if(idx < 0 || idx >= arr.length){ showToast('Select a block first.'); return false; }
+      const existing = arr[idx] || {};
+      const patched = stage43hPreserveImportBlockMetadata(clone(nextBlock || {}), existing);
+      if(existing.layout && !patched.layout) patched.layout = clone(existing.layout);
+      if(existing.importSourceLayout && !patched.importSourceLayout) patched.importSourceLayout = clone(existing.importSourceLayout);
+      arr[idx] = patched;
+      stage43kCommitDraftBlocksToActiveSlide(reason || 'replace-selected-block');
+      loadSelectedBlockIntoEditor();
+      renderBlockList();
+      buildPreview();
+      scheduleAutosave('Autosaved after selected block replacement.');
+      return true;
     }
     function clearBlockEditor(){
       blockFields.mode.value = 'panel';
@@ -401,6 +444,7 @@
       duplicateBlock,
       deleteBlock,
       moveBlock,
+      replaceSelectedBlock,
       clearBlockEditor
     };
   }
