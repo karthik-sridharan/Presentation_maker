@@ -87,6 +87,28 @@
       if(existing.layout && !nextBlock.layout) nextBlock.layout = clone(existing.layout);
       return nextBlock;
     }
+    function stage43jIsImportPreviewLocked(slide){
+      const s = slide || {};
+      const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
+      return !!(s.__stage43jPreviewLocked || meta.stage43jPreviewLocked || s.__stage43gExactReviewImport || meta.stage43gExactReviewImport);
+    }
+    function stage43jCloneLockedFreeformSlide(slide){
+      const out = clone(slide || {});
+      out.__stage43jPreviewLockPreserved = true;
+      out.importMeta = Object.assign({}, out.importMeta || {}, { stage43jPreviewLockPreserved:true });
+      try{
+        window.__LUMINA_STAGE43J_FREEFORM_IMPORT_PREVIEW_LOCK = {
+          ok:true,
+          activeIndex:getActiveIndex(),
+          title:out.title || '',
+          sourcePageNumber:out.importMeta && (out.importMeta.sourcePageNumber || out.importMeta.pageNumber) || null,
+          blockCount:(Array.isArray(out.leftBlocks)?out.leftBlocks.length:0)+(Array.isArray(out.rightBlocks)?out.rightBlocks.length:0),
+          reason:'Returned stored imported freeform slide directly instead of rebuilding it from editor fields.',
+          at:new Date().toISOString()
+        };
+      }catch(_err){}
+      return out;
+    }
     function currentDraftSlide(){
       if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
@@ -102,6 +124,9 @@
         target[idx] = stage43hPreserveImportBlockMetadata(edited, existingArr[idx]);
       }
       const freeformImport = stage43hIsFreeformImportSlide(existingSlide);
+      if(freeformImport && stage43jIsImportPreviewLocked(existingSlide)){
+        return stage43jCloneLockedFreeformSlide(existingSlide);
+      }
       const preservedSlideType = freeformImport ? (existingSlide.slideType || 'freeform-import') : fields.slideType.value;
       const twoCol = !freeformImport && fields.slideType.value === 'two-col';
       const draftSlide = {
