@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43b-mathpix-latex-escape-fix-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43c-mathpix-apply-stale-guard-fix-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage43b-mathpix-latex-escape-fix-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43c-mathpix-apply-stale-guard-fix-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1377,7 +1377,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43b-mathpix-latex-escape-fix-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43c-mathpix-apply-stale-guard-fix-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1715,7 +1715,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage43b-mathpix-latex-escape-fix-20260512-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43c-mathpix-apply-stale-guard-fix-20260512-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -2103,7 +2103,28 @@ Previous output to repair:
         stillSameBatch = false; break;
       }
       if(!stillSameBatch){
-        try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, skipped:true, stale:true, reason:'Imported batch changed before AI repair finished.', batchId:batchId, expectedStart:expectedStart, matchedByMarker:matchedByMarker, matchedBySignature:matchedBySignature, at:new Date().toISOString() }); }catch(_err){}
+        var mathpixStatsForForce = repairedDeck && (repairedDeck.aiPatchStats || repairedDeck.mathpixPatchStats || null) || null;
+        var mathpixChangedForForce = mathpixStatsForForce && Number(mathpixStatsForForce.changedCount || mathpixStatsForForce.convertedText || 0) || 0;
+        var canForceMathpixApply = !!(repairedDeck && repairedDeck.mathpixReviewed && incoming.length === replaceCount && current && current.length >= expectedStart + replaceCount && mathpixChangedForForce > 0);
+        if(canForceMathpixApply){
+          stillSameBatch = true;
+          try{
+            globalThis.__LUMINA_STAGE43C_MATHPIX_STALE_GUARD_FIX = {
+              appliedDespiteStaleGuard:true,
+              reason:'Mathpix repair returned concrete patch conversions and the imported slide range still exists; applying despite lost temporary batch markers.',
+              batchId:batchId,
+              expectedStart:expectedStart,
+              replaceCount:replaceCount,
+              changedCount:mathpixChangedForForce,
+              matchedByMarker:matchedByMarker,
+              matchedBySignature:matchedBySignature,
+              at:new Date().toISOString()
+            };
+          }catch(_err){}
+        }
+      }
+      if(!stillSameBatch){
+        try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, skipped:true, stale:true, reason:'Imported batch changed before Mathpix repair finished.', batchId:batchId, expectedStart:expectedStart, matchedByMarker:matchedByMarker, matchedBySignature:matchedBySignature, at:new Date().toISOString() }); }catch(_err){}
         try{ if(typeof showToast === 'function') showToast('Mathpix patch repair skipped because the imported slides changed. Source slides stayed loaded.'); }catch(_err){}
         return false;
       }
@@ -2115,7 +2136,7 @@ Previous output to repair:
       if(slidesNow[expectedStart]) applySlideToForm(slidesNow[expectedStart]);
       renderDeckList();
       buildPreview();
-      scheduleAutosave('Autosaved after AI import repair.');
+      scheduleAutosave('Autosaved after Mathpix patch repair.');
       try{
         globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:true, pending:false, applied:true, replacedSlides:replaceCount, repairedSlides:incoming.length, deckTitle:deckTitle || '', batchId:batchId, at:new Date().toISOString() });
       }catch(_err){}
@@ -2281,7 +2302,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43b-mathpix-latex-escape-fix-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43c-mathpix-apply-stale-guard-fix-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
