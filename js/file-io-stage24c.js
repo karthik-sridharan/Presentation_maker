@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43e-visual-blob-deoverlap-cover-filter-20260513-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43f-safe-mathpix-merge-20260513-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage43e-visual-blob-deoverlap-cover-filter-20260513-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43f-safe-mathpix-merge-20260513-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1377,7 +1377,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43e-visual-blob-deoverlap-cover-filter-20260513-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43f-safe-mathpix-merge-20260513-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1715,7 +1715,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage43e-visual-blob-deoverlap-cover-filter-20260513-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43f-safe-mathpix-merge-20260513-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -2078,8 +2078,76 @@ Previous output to repair:
         return out;
       });
     }
+
+    function stage43fSlidePageNumber(slide, fallbackIndex){
+      var meta = slide && slide.importMeta && typeof slide.importMeta === 'object' ? slide.importMeta : {};
+      var raw = meta.sourcePageNumber || meta.pageNumber || meta.sourcePage || meta.page || meta.pageIndex || meta.sourceSlide || '';
+      var n = Number(raw);
+      if(Number.isFinite(n) && n > 0) return n;
+      if(Number.isFinite(n) && n === 0) return 1;
+      return Number(fallbackIndex || 0) + 1;
+    }
+    function stage43fLooksLikeCoverArtifact(value){
+      var s = String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if(!s) return false;
+      return /Instructors:\s*Sarah Dean|Thorsten Joachims|John Thickstun|CS3780\/CS5780|Attention\s+and\s+Transformers|Introduction\s+to\s+Machine\s+Learning/i.test(s);
+    }
+    function stage43fIsMathpixConvertedBlock(block){
+      var role = String(block && block.importRole || '').toLowerCase();
+      var sub = String(block && block.importSubmode || '').toLowerCase();
+      return !!(block && (block.mathpix || role.indexOf('mathpix-') === 0 || sub.indexOf('mathpix-') === 0));
+    }
+    function stage43fMergeMathpixRepairOntoSourceSlides(sourceSlides, repairedSlides){
+      var sources = Array.isArray(sourceSlides) ? sourceSlides : [];
+      var repairs = Array.isArray(repairedSlides) ? repairedSlides : [];
+      if(!sources.length || !repairs.length || sources.length !== repairs.length) return repairs;
+      var merged = sources.map(function(sourceSlide, slideIndex){
+        var out = cloneJsonSafe(sourceSlide || {});
+        var repaired = repairs[slideIndex] || {};
+        ['leftBlocks','rightBlocks'].forEach(function(column){
+          var sourceList = Array.isArray(out[column]) ? out[column] : [];
+          var repairList = Array.isArray(repaired[column]) ? repaired[column] : [];
+          out[column] = sourceList.map(function(sourceBlock, blockIndex){
+            var rb = repairList[blockIndex];
+            if(!stage43fIsMathpixConvertedBlock(rb)) return sourceBlock;
+            var pageNumber = stage43fSlidePageNumber(out, slideIndex);
+            var repairedText = String((rb && (rb.content || rb.title || '')) || '');
+            if(pageNumber > 1 && stage43fLooksLikeCoverArtifact(repairedText)){
+              try{
+                globalThis.__LUMINA_STAGE43F_SKIPPED_COVER_MATHPIX_BLOCKS = globalThis.__LUMINA_STAGE43F_SKIPPED_COVER_MATHPIX_BLOCKS || [];
+                globalThis.__LUMINA_STAGE43F_SKIPPED_COVER_MATHPIX_BLOCKS.push({ slideIndex:slideIndex, pageNumber:pageNumber, column:column, blockIndex:blockIndex, preview:repairedText.slice(0,160), at:new Date().toISOString() });
+              }catch(_err){}
+              return sourceBlock;
+            }
+            var nextBlock = cloneJsonSafe(rb);
+            // Preserve the exact source placement and source label. Mathpix should only
+            // replace the inside of the patch, never the slide/page identity or geometry.
+            nextBlock.layout = cloneJsonSafe(sourceBlock && sourceBlock.layout || nextBlock.layout || {});
+            if(sourceBlock && sourceBlock.importSourceLayout) nextBlock.importSourceLayout = cloneJsonSafe(sourceBlock.importSourceLayout);
+            if(sourceBlock && sourceBlock.title) nextBlock.title = sourceBlock.title;
+            nextBlock.sourceTextHint = nextBlock.sourceTextHint || (sourceBlock && (sourceBlock.sourceTextHint || sourceBlock.mathImageSourceText)) || '';
+            nextBlock.originalImagePatchContent = nextBlock.originalImagePatchContent || (sourceBlock && sourceBlock.content) || '';
+            nextBlock.stage43fSafeMerged = true;
+            return nextBlock;
+          });
+        });
+        out.title = sourceSlide && sourceSlide.title || out.title || repaired.title || '';
+        out.kicker = sourceSlide && sourceSlide.kicker || out.kicker || '';
+        out.lede = sourceSlide && sourceSlide.lede || out.lede || '';
+        out.notesTitle = sourceSlide && sourceSlide.notesTitle || out.notesTitle || '';
+        out.notesBody = sourceSlide && sourceSlide.notesBody || out.notesBody || '';
+        out.importMeta = cloneJsonSafe(sourceSlide && sourceSlide.importMeta || out.importMeta || {});
+        out.mathpixReviewed = true;
+        return out;
+      });
+      try{ globalThis.__LUMINA_STAGE43F_SAFE_MATHPIX_MERGE = { ok:true, sourceSlides:sources.length, repairedSlides:repairs.length, at:new Date().toISOString() }; }catch(_err){}
+      return merged;
+    }
     function applyStage42eBackgroundAiRepair(rawBatchSlides, repairedDeck, startIndex, batchId, deckTitle){
       var repairedSlides = repairedDeck && Array.isArray(repairedDeck.slides) ? repairedDeck.slides : [];
+      if(repairedDeck && repairedDeck.mathpixReviewed){
+        repairedSlides = stage43fMergeMathpixRepairOntoSourceSlides(rawBatchSlides, repairedSlides);
+      }
       if(!repairedSlides.length) return false;
       var incoming = repairedSlides.map(function(slide, i){
         var out = normalizeSlide(slide);
@@ -2302,7 +2370,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43e-visual-blob-deoverlap-cover-filter-20260513-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43f-safe-mathpix-merge-20260513-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
