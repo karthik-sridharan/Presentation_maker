@@ -24,7 +24,8 @@
   function expectedDomIds() { return (W.LuminaModuleManifest && W.LuminaModuleManifest.domIds ? W.LuminaModuleManifest.domIds : ['leftTabs','slideType','preview','deckList','blockList','deckTitle']).slice(); }
   function esmStatus(esm) { return esm ? (esm.status || (esm.ok === true ? 'passed' : 'failed')) : 'not-started'; }
   function pickAiPatchStats() {
-    return W.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR
+    return W.__LUMINA_STAGE43A_MATHPIX_REPAIR
+      || W.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR
       || W.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR
@@ -51,39 +52,39 @@
     var didRun = !!(bg || patch);
     var worked = null;
     var state = didRun ? 'unknown' : 'idle';
-    var message = didRun ? 'AI repair status is available below.' : 'No AI repair has run in this page session yet.';
+    var message = didRun ? 'Mathpix patch repair status is available below.' : 'No Mathpix patch repair has run in this page session yet.';
 
     if (bg && bg.pending) {
       worked = null;
       state = 'pending';
-      message = 'AI repair is still running' + (importedSlides ? ' for ' + importedSlides + ' imported slide' + (importedSlides === 1 ? '' : 's') : '') + '.';
+      message = 'Mathpix patch repair is still running' + (importedSlides ? ' for ' + importedSlides + ' imported slide' + (importedSlides === 1 ? '' : 's') : '') + '.';
     } else if (bg && (bg.ok === true || bg.applied === true)) {
       worked = true;
       if (changedCount > 0) {
         state = 'applied';
-        message = 'AI repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + (changeTrackingUnavailable ? '. Per-slide detail was not recorded for this completed run; Stage 42P records it on the next import' : '') + '.';
+        message = 'Mathpix patch repair worked. It repaired ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ' and applied ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + (changedSlideCount ? ' across ' + changedSlideCount + ' slide' + (changedSlideCount === 1 ? '' : 's') : '') + (changeTrackingUnavailable ? '. Per-slide detail was not recorded for this completed run; Stage 42P records it on the next import' : '') + '.';
       } else {
         state = 'completed-no-changes';
-        message = 'AI repair completed for ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ', but no patch changes were needed.';
+        message = 'Mathpix patch repair completed for ' + (repairedSlides || importedSlides || 0) + ' slide' + ((repairedSlides || importedSlides || 0) === 1 ? '' : 's') + ', but no patch changes were needed.';
       }
     } else if (bg && bg.skipped && bg.stale) {
       worked = false;
       state = 'skipped-stale';
-      message = 'AI repair finished, but it was skipped because the imported slides changed before repair finished.';
+      message = 'Mathpix patch repair finished, but it was skipped because the imported slides changed before repair finished.';
     } else if (bg && bg.keptSource) {
       worked = false;
       state = 'kept-source';
-      message = 'AI repair did not apply. The source-extracted slides stayed loaded.';
+      message = 'Mathpix patch repair did not apply. The source-extracted slides stayed loaded.';
       if (bg.reason) message += ' Reason: ' + bg.reason;
       else if (bg.error) message += ' Error: ' + bg.error;
     } else if (patch && changedCount > 0) {
       worked = true;
       state = 'patch-ready';
-      message = 'AI repair produced ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + ', but final apply status was not captured.';
+      message = 'Mathpix patch repair produced ' + changedCount + ' change' + (changedCount === 1 ? '' : 's') + ', but final apply status was not captured.';
     } else if (patch) {
       worked = true;
       state = 'parsed-no-changes';
-      message = 'AI repair returned patch data, but there were no patch changes to apply.';
+      message = 'Mathpix patch repair returned patch data, but there were no patch changes to apply.';
     }
 
     return {
@@ -204,9 +205,9 @@
     var left = document.createElement('div');
     var heading = document.createElement('div');
     heading.style.cssText = 'font:700 14px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;margin-bottom:6px';
-    heading.textContent = 'AI repair status';
+    heading.textContent = 'Mathpix patch repair status';
     var body = document.createElement('div');
-    body.textContent = String(status && status.message || 'No AI repair information yet.');
+    body.textContent = String(status && status.message || 'No Mathpix patch repair information yet.');
     left.appendChild(heading);
     left.appendChild(body);
     var chip = document.createElement('div');
@@ -256,7 +257,7 @@
     } else {
       changedList.textContent = status && status.changedSlideTrackingUnavailable
         ? 'Changes were counted, but per-slide detail was not recorded for this completed run. Re-import after Stage 42P to get slide-by-slide summaries.'
-        : (status && status.didRun ? 'No per-slide changes were recorded.' : 'No AI repair run recorded yet.');
+        : (status && status.didRun ? 'No per-slide changes were recorded.' : 'No Mathpix patch repair run recorded yet.');
     }
     if (status && status.updatedAt) {
       var meta = document.createElement('div');
@@ -293,7 +294,7 @@
     var panel = document.createElement('div'); panel.id = 'luminaAiRepairPanel';
     panel.style.cssText = 'position:fixed;right:12px;bottom:102px;z-index:999998;width:min(520px,calc(100vw - 24px));max-height:70vh;overflow:auto;background:#ffffff;color:#0f172a;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 18px 55px rgba(0,0,0,.22);padding:14px;';
     var title = document.createElement('div'); title.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;font:600 14px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;';
-    title.innerHTML = '<span>AI repair monitor</span>';
+    title.innerHTML = '<span>Mathpix patch repair monitor</span>';
     var controls = document.createElement('span'); controls.style.cssText = 'display:flex;gap:6px;';
     function mkButton(label, primary) { var b=document.createElement('button'); b.type='button'; b.textContent=label; b.style.cssText='font:12px system-ui;padding:6px 10px;border-radius:9px;border:1px solid ' + (primary ? '#1d4ed8' : '#cbd5e1') + ';background:' + (primary ? '#1d4ed8' : '#fff') + ';color:' + (primary ? '#fff' : '#0f172a') + ';cursor:pointer;'; return b; }
     var refresh = mkButton('Refresh', false);
@@ -330,11 +331,11 @@
     btn.style.color = tone.text;
     btn.style.borderColor = tone.border;
     btn.title = status.message;
-    var label = 'AI repair';
-    if (status.state === 'pending') label = 'AI repair • pending';
-    else if (status.state === 'applied') label = 'AI repair • worked';
-    else if (status.state === 'completed-no-changes' || status.state === 'parsed-no-changes') label = 'AI repair • no changes';
-    else if (status.state === 'kept-source' || status.state === 'skipped-stale') label = 'AI repair • issue';
+    var label = 'Mathpix repair';
+    if (status.state === 'pending') label = 'Mathpix • pending';
+    else if (status.state === 'applied') label = 'Mathpix • worked';
+    else if (status.state === 'completed-no-changes' || status.state === 'parsed-no-changes') label = 'Mathpix • no changes';
+    else if (status.state === 'kept-source' || status.state === 'skipped-stale') label = 'Mathpix • issue';
     btn.textContent = label;
   }
   function ensureButton() {

@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage42z-pymupdf-visual-blob-patches-20260512-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43a-mathpix-patch-repair-20260512-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage42z-pymupdf-visual-blob-patches-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43a-mathpix-patch-repair-20260512-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1155,6 +1155,58 @@ Previous output to repair:
       return text;
     }
   
+  function mathpixRepairEndpointFromAiEndpoint(endpoint){
+    var value = String(endpoint || '').trim();
+    if(!value) return value;
+    if(/\/api\/lumina\/ai\/?$/i.test(value)) return value.replace(/\/api\/lumina\/ai\/?$/i, '/api/lumina/patch/mathpix-repair');
+    if(/\/api\/lumina\/extract\/?$/i.test(value)) return value.replace(/\/api\/lumina\/extract\/?$/i, '/api/lumina/patch/mathpix-repair');
+    return value.replace(/\/?$/, '/api/lumina/patch/mathpix-repair');
+  }
+  function deckHasImagePatchesForMathpix(slides){
+    var found = false;
+    (slides || []).forEach(function(slide){
+      ['leftBlocks','rightBlocks'].forEach(function(key){
+        (Array.isArray(slide && slide[key]) ? slide[key] : []).forEach(function(block){
+          if(found || !block) return;
+          var role = String(block.importRole || '').toLowerCase();
+          var submode = String(block.importSubmode || block.mode || '').toLowerCase();
+          var content = String(block.content || '');
+          if(/data:image\//i.test(content) && (role === 'text-image' || role === 'math-image' || /visual-blob-patch|text-image-patch|math-image|patch/.test(submode))) found = true;
+        });
+      });
+    });
+    return found;
+  }
+  async function callMathpixPatchRepair(deckTitle, slides){
+    var endpoint = mathpixRepairEndpointFromAiEndpoint(aiReviewEndpointValue());
+    if(!endpoint) throw new Error('Set an AI review/backend endpoint first. Use your Lumina backend URL ending in /api/lumina/ai.');
+    var token = aiReviewTokenValue();
+    var headers = { 'Content-Type':'application/json' };
+    if(token) headers.Authorization = 'Bearer ' + token;
+    var body = { deck: { deckTitle:deckTitle || 'Imported deck', slides:slides || [] }, maxBlocks:120, timeoutMs:25000 };
+    var startedAt = Date.now();
+    try{ globalThis.__LUMINA_STAGE43A_MATHPIX_REPAIR = { pending:true, endpoint:endpoint, inputSlides:(slides||[]).length, at:new Date().toISOString() }; }catch(_err){}
+    var res;
+    try{
+      res = await fetch(endpoint, { method:'POST', headers:headers, body:JSON.stringify(body), cache:'no-store', mode:'cors' });
+    }catch(err){
+      throw new Error('Could not reach Mathpix repair backend at ' + endpoint + ': ' + (err && err.message ? err.message : String(err)));
+    }
+    var raw = await res.text();
+    var payload = null;
+    try{ payload = raw ? JSON.parse(raw) : null; }catch(_err){ payload = null; }
+    if(!res.ok || !payload || payload.ok === false){
+      var msg = payload && payload.error && payload.error.message ? payload.error.message : raw || ('Mathpix repair failed with HTTP ' + res.status + '.');
+      throw new Error(msg);
+    }
+    var deck = { deckTitle: payload.deckTitle || deckTitle || 'Imported deck', slides: payload.slides || [], theme:payload.theme || null, presentationOptions:payload.presentationOptions || null, aiReviewed:true, mathpixReviewed:true, aiPatchStats:payload.aiPatchStats || payload.mathpixPatchStats || null };
+    try{
+      var stats = deck.aiPatchStats || {};
+      globalThis.__LUMINA_STAGE43A_MATHPIX_REPAIR = Object.assign({}, stats, { pending:false, ok:true, endpoint:endpoint, inputSlides:(slides||[]).length, outputSlides:deck.slides.length, elapsedMs:Date.now()-startedAt, at:new Date().toISOString() });
+    }catch(_err){}
+    return deck;
+  }
+
   function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const jsonText = extractJsonText(text);
     let parsed;
@@ -1325,7 +1377,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage42z-pymupdf-visual-blob-patches-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43a-mathpix-patch-repair-20260512-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1480,14 +1532,14 @@ Previous output to repair:
   }
   async function maybeReviewImportedDeckWithAi(importedSlides, deckTitle){
       if(!aiReviewAfterImportEnabled()) return { deckTitle, slides:importedSlides, theme:null, presentationOptions:null, aiReviewed:false };
-      showToast('Asking AI Copilot to repair math/layout in the imported deck…');
+      showToast('Asking Mathpix backend to analyze image patches…');
       try{
-        const deck = await callImportAiReview(deckTitle, importedSlides);
-        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || global.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
+        const deck = await callMathpixPatchRepair(deckTitle, importedSlides);
+        const stats = deck && deck.aiPatchStats || global.__LUMINA_STAGE43A_MATHPIX_REPAIR || null;
         const changedCount = stats && Number(stats.changedCount || 0) || 0;
-        if(changedCount > 0) showToast('AI repair completed: applied ' + changedCount + ' patch change' + (changedCount === 1 ? '' : 's') + '.');
-        else showToast('AI repair completed; no patch changes were needed.');
-        return Object.assign({ aiReviewed:true }, deck);
+        if(changedCount > 0) showToast('Mathpix patch repair completed: converted ' + changedCount + ' image patch' + (changedCount === 1 ? '' : 'es') + '.');
+        else showToast('Mathpix patch repair completed; no image patches were converted.');
+        return Object.assign({ aiReviewed:true, mathpixReviewed:true }, deck);
       }catch(err){
         const message = err && err.message ? err.message : String(err);
         // Stage 42F: do not leave the user with no slides when the AI preserve-merge path
@@ -1505,7 +1557,7 @@ Previous output to repair:
           };
           global.__LUMINA_STAGE41R_LAST_AI_IMPORT_REVIEW = Object.assign({}, global.__LUMINA_STAGE41V_LAST_AI_IMPORT_FALLBACK);
         }catch(_err){}
-        showToast('AI repair failed validation; kept the source-extracted slides already loaded.');
+        showToast('Mathpix patch repair failed; kept the source-extracted slides already loaded.');
         return {
           deckTitle,
           slides:fallbackSlides,
@@ -1568,7 +1620,7 @@ Previous output to repair:
           }
           return '<div class="stage41w-import-review-slide" data-slide-index="'+i+'"><div class="stage41w-import-review-slide-title"><span>'+(i+1)+'. '+title+'</span><span>Choose version</span></div><div class="stage41w-import-review-choices"><label class="stage41w-import-choice stage41w-selected" data-choice="semantic"><input name="stage41w-choice-'+i+'" type="radio" value="semantic" checked> Editable semantic extraction'+renderImportChoicePreview(slide, 'Editable extraction')+'</label><label class="stage41w-import-choice" data-choice="image"><input name="stage41w-choice-'+i+'" type="radio" value="image"> Rendered image/background'+renderImportChoicePreview(imageSlide, 'Rendered image')+'</label></div></div>';
         }).join('');
-        backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. AI repair starts after Continue, while the chosen slides load immediately.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
+        backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. Mathpix patch repair starts after Continue, while the chosen slides load immediately.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
         function refresh(){
           Array.from(backdrop.querySelectorAll('.stage41w-import-review-slide')).forEach(row=>{
             Array.from(row.querySelectorAll('.stage41w-import-choice')).forEach(choice=>{
@@ -1663,7 +1715,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage42z-pymupdf-visual-blob-patches-20260512-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43a-mathpix-patch-repair-20260512-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1947,7 +1999,7 @@ Previous output to repair:
       }catch(_err){}
     }
     function notifyStage42fAiRepairIssue(message, detail){
-      var msg = String(message || 'AI repair did not go through; kept the source-extracted slides.');
+      var msg = String(message || 'Mathpix patch repair did not go through; kept the source-extracted slides.');
       var details = String(detail || 'The imported source slides remain loaded, so no content was lost.');
       try{
         globalThis.__LUMINA_STAGE42F_AI_REPAIR_NOTIFICATION = {
@@ -1973,7 +2025,7 @@ Previous output to repair:
           box.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:99999;max-width:min(460px,calc(100vw - 36px));background:#fff7ed;color:#7c2d12;border:1px solid #fdba74;border-left:6px solid #f97316;border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.22);padding:14px 14px 12px 14px;font:14px/1.42 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
           d.body.appendChild(box);
         }
-        box.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div><strong style="display:block;margin-bottom:4px">AI repair did not complete</strong><div>'+stage42fEscapeHtml(msg)+'</div><div style="font-size:12px;margin-top:6px;color:#9a3412">'+stage42fEscapeHtml(details)+'</div></div><button type="button" data-stage42f-close style="border:1px solid rgba(124,45,18,.25);background:#fff;color:#7c2d12;border-radius:999px;padding:4px 9px;font-weight:700;cursor:pointer">Close</button></div>';
+        box.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div><strong style="display:block;margin-bottom:4px">Mathpix patch repair did not complete</strong><div>'+stage42fEscapeHtml(msg)+'</div><div style="font-size:12px;margin-top:6px;color:#9a3412">'+stage42fEscapeHtml(details)+'</div></div><button type="button" data-stage42f-close style="border:1px solid rgba(124,45,18,.25);background:#fff;color:#7c2d12;border-radius:999px;padding:4px 9px;font-weight:700;cursor:pointer">Close</button></div>';
         var close = box.querySelector('[data-stage42f-close]');
         if(close) close.onclick = function(){ clearStage42fAiRepairNotice(); };
       }catch(_err){}
@@ -1982,7 +2034,7 @@ Previous output to repair:
       try{
         var status = globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {};
         if(!status.pending || (batchId && status.batchId !== batchId)) return;
-        notifyStage42fAiRepairIssue('AI repair is taking longer than expected; source-extracted slides are already loaded.', 'You can keep editing. If AI repair succeeds later, it will replace only this imported batch; otherwise the source slides stay loaded.');
+        notifyStage42fAiRepairIssue('Mathpix patch repair is taking longer than expected; source-extracted slides are already loaded.', 'You can keep editing. If Mathpix repair succeeds later, it will replace only this imported batch; otherwise the source slides stay loaded.');
       }catch(_err){}
     }
 
@@ -2052,7 +2104,7 @@ Previous output to repair:
       }
       if(!stillSameBatch){
         try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, skipped:true, stale:true, reason:'Imported batch changed before AI repair finished.', batchId:batchId, expectedStart:expectedStart, matchedByMarker:matchedByMarker, matchedBySignature:matchedBySignature, at:new Date().toISOString() }); }catch(_err){}
-        try{ if(typeof showToast === 'function') showToast('AI repair skipped because the imported slides changed. Source slides stayed loaded.'); }catch(_err){}
+        try{ if(typeof showToast === 'function') showToast('Mathpix patch repair skipped because the imported slides changed. Source slides stayed loaded.'); }catch(_err){}
         return false;
       }
       var next = cloneJsonSafe(current || []);
@@ -2070,8 +2122,8 @@ Previous output to repair:
       clearStage42fAiRepairNotice();
       const patchStats = repairedDeck && repairedDeck.aiPatchStats || globalThis.__LUMINA_STAGE42O_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42N_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42L_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42J_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42I_PATCH_AI_IMPORT_REPAIR || globalThis.__LUMINA_STAGE42H_PATCH_AI_IMPORT_REPAIR || null;
       const patchChanged = patchStats && Number(patchStats.changedCount || 0) || 0;
-      if(patchChanged > 0) showToast('AI repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
-      else showToast('AI repair completed; source slides stayed loaded because no patch changes were needed.');
+      if(patchChanged > 0) showToast('Mathpix patch repair applied to ' + incoming.length + ' imported slide' + (incoming.length === 1 ? '' : 's') + '.');
+      else showToast('Mathpix patch repair completed; source slides stayed loaded because no patch changes were needed.');
       return true;
     }
     function isDocAiSemanticImportedBatch(slides){
@@ -2154,7 +2206,7 @@ Previous output to repair:
       stage42sPublishImportStatus({ phase:'import-complete', message:'Imported ' + imported.length + ' slide' + (imported.length === 1 ? '' : 's') + '.', slideCount:imported.length, pending:false, ok:true, finishedAt:new Date().toISOString() });
       if(warnings.length) showToast(warnings[0]);
       if(importDeck.aiRepairPending){
-        showToast('Imported source slides. AI repair is running in the background…');
+        showToast('Imported source slides. Mathpix patch repair is running in the background…');
         try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = { ok:null, pending:true, applied:false, batchId, startIndex, slideCount:rawBatch.length, at:new Date().toISOString() }; }catch(_err){}
         setTimeout(function(){ notifyStage42fAiRepairSlow(batchId); }, 60000);
         maybeReviewImportedDeckWithAi(rawBatch, deckTitle).then(function(repairedDeck){
@@ -2162,11 +2214,11 @@ Previous output to repair:
             applyStage42eBackgroundAiRepair(rawBatch, repairedDeck, startIndex, batchId, deckTitle);
           }else{
             try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, applied:false, keptSource:true, reason:repairedDeck && repairedDeck.aiReviewError || 'AI repair did not return a repaired deck.', at:new Date().toISOString() }); }catch(_err){}
-            notifyStage42fAiRepairIssue('AI repair did not produce changes; kept the source-extracted slides.', repairedDeck && repairedDeck.aiReviewError || 'The AI did not return a valid repaired deck.');
+            notifyStage42fAiRepairIssue('Mathpix patch repair did not produce changes; kept the source-extracted slides.', repairedDeck && repairedDeck.aiReviewError || 'The Mathpix backend did not return a valid repaired deck.');
           }
         }).catch(function(err){
           try{ globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR = Object.assign({}, globalThis.__LUMINA_STAGE42E_BACKGROUND_AI_REPAIR || {}, { ok:false, pending:false, applied:false, keptSource:true, error:err && err.message ? err.message : String(err), at:new Date().toISOString() }); }catch(_err){}
-          notifyStage42fAiRepairIssue('AI repair failed; kept the source-extracted slides.', err && err.message ? err.message : String(err));
+          notifyStage42fAiRepairIssue('Mathpix patch repair failed; kept the source-extracted slides.', err && err.message ? err.message : String(err));
         });
       }
     }
@@ -2229,7 +2281,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage42z-pymupdf-visual-blob-patches-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43a-mathpix-patch-repair-20260512-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
