@@ -2032,6 +2032,27 @@ async function extractSelectedBlockWithMathpix(){
     alert('Could not extract selected block with Mathpix: ' + (err && err.message ? err.message : String(err)));
   }
 }
+
+async function extractSelectedBlockWithMineru(){
+  const info = stage43kSelectedBlockInfo();
+  if(!info.block){ showToast('Select a block first.'); return; }
+  if(!info.imageSrc){
+    alert('MinerU selected-block extraction needs an image patch or visible image/figure block. Select the image region itself, then try again.');
+    return;
+  }
+  try{
+    showToast('Extracting selected block with MinerU…');
+    const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/mineru-extract');
+    const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:900000 });
+    if(!data.block) throw new Error('MinerU backend did not return a replacement block.');
+    stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mineru');
+    window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, meta:data.meta || null, at:new Date().toISOString() };
+    showToast('Selected block extracted with MinerU.');
+  }catch(err){
+    window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:false, column:info.column, index:info.index, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, error:err && err.message ? err.message : String(err), at:new Date().toISOString() };
+    alert('Could not extract selected block with MinerU: ' + (err && err.message ? err.message : String(err)));
+  }
+}
 function openAiRemakeSelectedBlockDialog(){
   const info = stage43kSelectedBlockInfo();
   if(!info.block){ showToast('Select a block first.'); return; }
@@ -2073,6 +2094,7 @@ document.getElementById('updateBlockBtn').addEventListener('click', updateBlock)
 document.getElementById('duplicateBlockBtn').addEventListener('click', duplicateBlock);
 document.getElementById('deleteBlockBtn').addEventListener('click', stage43nDeleteSelectedBlock);
 document.getElementById('extractSelectedBlockMathpixBtn')?.addEventListener('click', extractSelectedBlockWithMathpix);
+document.getElementById('extractSelectedBlockMineruBtn')?.addEventListener('click', extractSelectedBlockWithMineru);
 document.getElementById('remakeSelectedBlockAiBtn')?.addEventListener('click', openAiRemakeSelectedBlockDialog);
 
 
@@ -2087,7 +2109,7 @@ function stage43lEnsureFloatingBlockActions(){
   const bar = document.createElement('div');
   bar.id = 'stage43lFloatingBlockActions';
   bar.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:999996;display:flex;align-items:center;gap:8px;max-width:calc(100vw - 24px);overflow:auto;background:rgba(15,23,42,.96);color:#f8fafc;border:1px solid rgba(148,163,184,.45);border-radius:999px;box-shadow:0 16px 50px rgba(15,23,42,.28);padding:8px 10px;font:600 12px system-ui,-apple-system,Segoe UI,sans-serif;';
-  bar.innerHTML = '<span data-stage43l-label style="white-space:nowrap;opacity:.92;padding:0 6px">No block selected</span><button type="button" data-stage43l-action="delete" style="border:1px solid rgba(248,113,113,.55);background:#7f1d1d;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Delete block</button><button type="button" data-stage43l-action="mathpix" style="border:1px solid rgba(96,165,250,.55);background:#1d4ed8;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Mathpix extract</button><button type="button" data-stage43l-action="ai" style="border:1px solid rgba(52,211,153,.55);background:#047857;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Remake with AI</button>';
+  bar.innerHTML = '<span data-stage43l-label style="white-space:nowrap;opacity:.92;padding:0 6px">No block selected</span><button type="button" data-stage43l-action="delete" style="border:1px solid rgba(248,113,113,.55);background:#7f1d1d;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Delete block</button><button type="button" data-stage43l-action="mathpix" style="border:1px solid rgba(96,165,250,.55);background:#1d4ed8;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Mathpix extract</button><button type="button" data-stage43l-action="mineru" style="border:1px solid rgba(251,191,36,.65);background:#92400e;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">MinerU extract</button><button type="button" data-stage43l-action="ai" style="border:1px solid rgba(52,211,153,.55);background:#047857;color:#fff;border-radius:999px;padding:7px 10px;font:700 12px system-ui;cursor:pointer;white-space:nowrap">Remake with AI</button>';
   bar.addEventListener('click', function(evt){
     const btn = evt.target && evt.target.closest ? evt.target.closest('[data-stage43l-action]') : null;
     if(!btn) return;
@@ -2096,6 +2118,7 @@ function stage43lEnsureFloatingBlockActions(){
     const action = btn.getAttribute('data-stage43l-action');
     if(action === 'delete') stage43nDeleteSelectedBlock();
     else if(action === 'mathpix') extractSelectedBlockWithMathpix();
+    else if(action === 'mineru') extractSelectedBlockWithMineru();
     else if(action === 'ai') openAiRemakeSelectedBlockDialog();
     setTimeout(stage43lRefreshFloatingBlockActions, 60);
   });
@@ -2116,7 +2139,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43r-selected-block-mineru-extract-20260513-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
