@@ -187,6 +187,9 @@ export function createApi(deps){
     return { scale: scale, ox: (tw - sw * scale) / 2, oy: (th - sh * scale) / 2, tw: tw, th: th, sw: sw, sh: sh };
   }
   function sourceProjectedLayout(block, slide){
+    // Stage 43O: prefer live Lumina layout after import/remake edits so
+    // replacement blocks stay movable/resizable.
+    if(block && block.layout) return block.layout;
     var src = block && block.importSourceLayout;
     var fit = freeformFitMeta(slide);
     if(!src || !fit) return block && block.layout;
@@ -196,8 +199,8 @@ export function createApi(deps){
       y: fit.oy + l.y * fit.scale,
       w: l.w * fit.scale,
       h: l.h * fit.scale,
-      z: block && block.layout ? block.layout.z : l.z,
-      rotate: block && block.layout ? block.layout.rotate : l.rotate
+      z: l.z,
+      rotate: l.rotate
     };
   }
   function runStyle(run){
@@ -214,7 +217,7 @@ export function createApi(deps){
   function renderFreeformBlock(block, idx, slide){
     var mode = String(block && block.mode || 'panel');
     var roleClass = block && block.importRole ? ' import-role-' + escapeAttr(block.importRole) : '';
-    var outerAttrs = ' data-freeform-index="' + idx + '" style="' + layoutStyle(sourceProjectedLayout(block, slide)) + '"';
+    var outerAttrs = ' data-freeform-index="' + idx + '" data-column="left" data-block-index="' + idx + '" data-block-mode="' + escapeAttr(mode) + '" style="' + layoutStyle(sourceProjectedLayout(block, slide)) + '"';
     if(mode === 'import-text'){
       return '<div class="freeform-block freeform-text-block' + roleClass + '"' + outerAttrs + '><div class="preview-block" data-column="left" data-block-index="' + idx + '" data-block-mode="import-text"' + animationDataAttrs(block.animation) + ' style="' + blockWrapperStyle(block) + '">' + renderImportText(block) + '</div></div>';
     }

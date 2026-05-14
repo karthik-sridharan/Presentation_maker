@@ -624,6 +624,155 @@ function ensureInteractiveFigureBox(embed){
   }
   return box;
 }
+
+function ensureFreeformInteractionStyles(){
+  if(document.getElementById('stage43oFreeformInteractionStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'stage43oFreeformInteractionStyles';
+  style.textContent = '.slide.freeform-import .freeform-block{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}.slide.freeform-import .freeform-block.stage43o-freeform-selected{outline:2px solid #2563eb!important;outline-offset:3px;box-shadow:0 0 0 4px rgba(37,99,235,.14)!important}.slide.freeform-import .freeform-block .stage43o-freeform-resize-handle{position:absolute;right:-9px;bottom:-9px;width:18px;height:18px;border-radius:999px;background:#2563eb;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:nwse-resize;z-index:1000;display:none;pointer-events:auto}.slide.freeform-import .freeform-block .stage43o-freeform-move-handle{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:999px;background:#16a34a;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:grab;z-index:1001;display:none;pointer-events:auto}.slide.freeform-import .freeform-block.stage43o-freeform-selected .stage43o-freeform-resize-handle,.slide.freeform-import .freeform-block.stage43o-freeform-selected .stage43o-freeform-move-handle{display:block}.slide.freeform-import .freeform-block.stage43o-freeform-dragging{cursor:grabbing!important}';
+  document.head.appendChild(style);
+}
+function parsePx(value, fallback){
+  const n = parseFloat(String(value || ''));
+  return Number.isFinite(n) ? n : fallback;
+}
+function getFreeformBlockIndex(el){
+  const n = Number(el && (el.dataset.freeformIndex || el.dataset.blockIndex));
+  return Number.isFinite(n) ? n : -1;
+}
+function getFreeformBlockLayoutFromEl(el){
+  return {
+    x: Math.round(parsePx(el.style.left, el.offsetLeft || 0) * 10) / 10,
+    y: Math.round(parsePx(el.style.top, el.offsetTop || 0) * 10) / 10,
+    w: Math.max(1, Math.round(parsePx(el.style.width, el.offsetWidth || 100) * 10) / 10),
+    h: Math.max(1, Math.round(parsePx(el.style.height, el.offsetHeight || 60) * 10) / 10),
+    z: Math.max(0, Math.round(parsePx(el.style.zIndex, 1))),
+    rotate: 0
+  };
+}
+function saveFreeformBlockElementToDraft(el, reason){
+  const idx = getFreeformBlockIndex(el);
+  if(idx < 0) return false;
+  const arr = blockArray('left');
+  const block = arr && arr[idx];
+  if(!block) return false;
+  block.layout = getFreeformBlockLayoutFromEl(el);
+  block.stage43oUserMovedOrResized = true;
+  if(typeof setSelectedIndex === 'function') setSelectedIndex('left', idx);
+  if(typeof renderBlockList === 'function') renderBlockList();
+  if(typeof loadSelectedBlockIntoEditor === 'function') loadSelectedBlockIntoEditor();
+  if(snippetOutput){
+    try{ snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2); }catch(_err){}
+  }
+  if(typeof saveCurrentSlideToDeck === 'function') saveCurrentSlideToDeck();
+  if(typeof scheduleAutosave === 'function') scheduleAutosave('Autosaved after freeform block ' + (reason || 'edit') + '.');
+  try{
+    window.__LUMINA_STAGE43O_LAST_FREEFORM_BLOCK_GEOMETRY = { ok:true, index:idx, layout:block.layout, reason:reason || '', at:new Date().toISOString() };
+  }catch(_err){}
+  return true;
+}
+function selectFreeformBlock(el){
+  if(!el) return;
+  const scope = preview || document;
+  scope.querySelectorAll('.freeform-block.stage43o-freeform-selected').forEach(node=>{ if(node !== el) node.classList.remove('stage43o-freeform-selected'); });
+  el.classList.add('stage43o-freeform-selected');
+  const idx = getFreeformBlockIndex(el);
+  if(idx >= 0 && typeof setSelectedIndex === 'function'){
+    try{ setSelectedIndex('left', idx); }catch(_err){}
+    try{ if(typeof renderBlockList === 'function') renderBlockList(); }catch(_err){}
+    try{ if(typeof loadSelectedBlockIntoEditor === 'function') loadSelectedBlockIntoEditor(); }catch(_err){}
+  }
+}
+function ensureInteractiveFreeformBlock(el){
+  if(!el || el.__stage43oFreeformReady) return;
+  el.__stage43oFreeformReady = true;
+  el.style.touchAction = 'none';
+  el.style.userSelect = 'none';
+  el.style.webkitUserSelect = 'none';
+  el.style.cursor = el.style.cursor || 'grab';
+  el.querySelectorAll('img,svg,canvas,iframe,figure').forEach(node=>{
+    node.style.touchAction = 'none';
+    node.style.userSelect = 'none';
+    node.style.webkitUserSelect = 'none';
+    try{ node.setAttribute('draggable', 'false'); }catch(_err){}
+  });
+  if(!el.querySelector(':scope > .stage43o-freeform-move-handle')){
+    const moveHandle = document.createElement('div');
+    moveHandle.className = 'stage43o-freeform-move-handle';
+    moveHandle.setAttribute('aria-label', 'Move block');
+    el.appendChild(moveHandle);
+  }
+  if(!el.querySelector(':scope > .stage43o-freeform-resize-handle')){
+    const handle = document.createElement('div');
+    handle.className = 'stage43o-freeform-resize-handle';
+    handle.setAttribute('aria-label', 'Resize block');
+    el.appendChild(handle);
+  }
+}
+function initFreeformBlockInteractions(root){
+  ensureFreeformInteractionStyles();
+  const scope = root || document;
+  scope.querySelectorAll('.slide.freeform-import .freeform-block').forEach(ensureInteractiveFreeformBlock);
+  if(scope.__stage43oFreeformInteractionsBound) return;
+  scope.__stage43oFreeformInteractionsBound = true;
+  let activeFreeform = null;
+  scope.addEventListener('pointerdown', (e)=>{
+    if(e.defaultPrevented) return;
+    const handle = e.target.closest('.stage43o-freeform-resize-handle');
+    const moveHandle = e.target.closest('.stage43o-freeform-move-handle');
+    const blockEl = e.target.closest('.slide.freeform-import .freeform-block');
+    if(!blockEl) return;
+    // Let nested figure-box interactions keep their existing behavior unless the
+    // outer freeform resize handle was used.
+    if(!handle && !moveHandle && e.target.closest('.figure-box,.figure-resize-handle')) return;
+    ensureInteractiveFreeformBlock(blockEl);
+    selectFreeformBlock(blockEl);
+    const slideEl = blockEl.closest('.slide, .deck-slide, .print-slide') || blockEl.parentElement || document.body;
+    const scale = getInteractionScale(slideEl);
+    const startLayout = getFreeformBlockLayoutFromEl(blockEl);
+    activeFreeform = {
+      mode: handle ? 'resize' : 'move',
+      el: blockEl,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      startLayout: startLayout,
+      scaleX: scale.x || 1,
+      scaleY: scale.y || 1
+    };
+    blockEl.classList.add('stage43o-freeform-dragging');
+    blockEl.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  if(!window.__stage43oFreeformWindowHandlersBound){
+    window.__stage43oFreeformWindowHandlersBound = true;
+    window.addEventListener('pointermove', (e)=>{
+      if(!activeFreeform) return;
+      const a = activeFreeform;
+      const dx = (e.clientX - a.startX) / (a.scaleX || 1);
+      const dy = (e.clientY - a.startY) / (a.scaleY || 1);
+      if(a.mode === 'resize'){
+        a.el.style.width = Math.max(24, a.startLayout.w + dx).toFixed(2) + 'px';
+        a.el.style.height = Math.max(18, a.startLayout.h + dy).toFixed(2) + 'px';
+      }else{
+        a.el.style.left = (a.startLayout.x + dx).toFixed(2) + 'px';
+        a.el.style.top = (a.startLayout.y + dy).toFixed(2) + 'px';
+      }
+      e.preventDefault();
+    }, { passive:false });
+    function finishFreeform(reason){
+      if(!activeFreeform) return;
+      const el = activeFreeform.el;
+      el.classList.remove('stage43o-freeform-dragging');
+      saveFreeformBlockElementToDraft(el, reason || activeFreeform.mode);
+      activeFreeform = null;
+    }
+    window.addEventListener('pointerup', ()=>finishFreeform('move-resize'), { passive:true });
+    window.addEventListener('pointercancel', ()=>finishFreeform('cancel'), { passive:true });
+  }
+}
+
 function initFigureInteractions(root){
   const scope = root || document;
   if(scope.__figureInitDone){
@@ -747,6 +896,7 @@ function fitFiguresIn(root){
   const scope = root || document;
   scope.querySelectorAll('.figure-embed[data-column]').forEach(embed=>ensureInteractiveFigureBox(embed));
   scope.querySelectorAll('.slide, .deck-slide, .print-cell .slide').forEach(fitFiguresInSlide);
+  initFreeformBlockInteractions(scope);
 }
 
 
@@ -781,7 +931,8 @@ function fitFiguresIn(root){
       getInteractionScale,
       ensureInteractiveFigureBox,
       initFigureInteractions,
-      fitFiguresIn
+      fitFiguresIn,
+      initFreeformBlockInteractions
     };
   }
 
