@@ -164,6 +164,10 @@ function freeformFitMeta(slide){
   return { scale: scale, ox: (tw - sw * scale) / 2, oy: (th - sh * scale) / 2, tw: tw, th: th, sw: sw, sh: sh };
 }
 function sourceProjectedLayout(block, slide){
+  // Stage 43O: once a freeform/imported block has a Lumina layout, prefer it
+  // over the original PDF source projection. This is what makes Mathpix/AI
+  // replacement blocks stay movable/resizable after the user edits geometry.
+  if(block && block.layout) return block.layout;
   const src = block && block.importSourceLayout;
   const fit = freeformFitMeta(slide);
   if(!src || !fit) return block && block.layout;
@@ -173,8 +177,8 @@ function sourceProjectedLayout(block, slide){
     y: fit.oy + l.y * fit.scale,
     w: l.w * fit.scale,
     h: l.h * fit.scale,
-    z: block && block.layout ? block.layout.z : l.z,
-    rotate: block && block.layout ? block.layout.rotate : l.rotate
+    z: l.z,
+    rotate: l.rotate
   };
 }
 function runStyle(run){
@@ -191,7 +195,7 @@ function renderImportText(block){
 function renderFreeformBlock(block, idx, slide){
   const mode = String(block && block.mode || 'panel');
   const roleClass = block && block.importRole ? ' import-role-' + escapeAttr(block.importRole) : '';
-  const outerAttrs = ' data-freeform-index="' + idx + '" style="' + layoutStyle(sourceProjectedLayout(block, slide)) + '"';
+  const outerAttrs = ' data-freeform-index="' + idx + '" data-column="left" data-block-index="' + idx + '" data-block-mode="' + escapeAttr(mode) + '" style="' + layoutStyle(sourceProjectedLayout(block, slide)) + '"';
   if(mode === 'import-text'){
     return '<div class="freeform-block freeform-text-block' + roleClass + '"' + outerAttrs + '><div class="preview-block" data-column="left" data-block-index="' + idx + '" data-block-mode="import-text"' + animationDataAttrs(block.animation) + ' style="' + blockWrapperStyle(block) + '">' + renderImportText(block) + '</div></div>';
   }

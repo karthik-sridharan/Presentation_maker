@@ -1874,6 +1874,21 @@ function stage43kEndpoint(base, suffix){
   if(/\/api\/lumina\/extract\/?$/i.test(value)) return value.replace(/\/api\/lumina\/extract\/?$/i, suffix);
   return value.replace(/\/?$/, suffix);
 }
+function stage43sLuminaBackendEndpoint(suffix){
+  const extraction = String(document.getElementById('extractionEndpointInput')?.value || '').trim();
+  const ai = String(document.getElementById('importAiEndpointInput')?.value || '').trim();
+  const candidates = [extraction, ai].filter(Boolean);
+  for(const candidate of candidates){
+    if(/\/api\/lumina\/extract\/?$/i.test(candidate) || /\/api\/lumina\/ai\/?$/i.test(candidate)){
+      return stage43kEndpoint(candidate, suffix);
+    }
+    if(/lumina-backend|run\.app|localhost|127\.0\.0\.1/i.test(candidate) && !/api\.openai\.com|generativelanguage\.googleapis\.com|anthropic\.com/i.test(candidate)){
+      return candidate.replace(/\/?$/, suffix);
+    }
+  }
+  if(extraction) return stage43kEndpoint(extraction, suffix);
+  return suffix;
+}
 function stage43kAiTokenFromImportSettings(){
   return String(document.getElementById('importAiTokenInput')?.value || document.getElementById('extractionTokenInput')?.value || '').trim();
 }
@@ -1944,7 +1959,16 @@ async function stage43kPostJson(endpoint, body){
   const headers = { 'Content-Type':'application/json' };
   const token = stage43kAiTokenFromImportSettings();
   if(token) headers.Authorization = 'Bearer ' + token;
-  const res = await fetch(endpoint, { method:'POST', headers, body:JSON.stringify(body), cache:'no-store', mode:'cors' });
+  const payload = JSON.stringify(body);
+  try{ window.__LUMINA_STAGE43S_LAST_BLOCK_ACTION_REQUEST = { endpoint, payloadBytes:payload.length, at:new Date().toISOString() }; }catch(_err){}
+  let res;
+  try{
+    res = await fetch(endpoint, { method:'POST', headers, body:payload, cache:'no-store', mode:'cors' });
+  }catch(err){
+    const msg = err && err.message ? String(err.message) : String(err || 'Load failed');
+    try{ window.__LUMINA_STAGE43S_LAST_BLOCK_ACTION_REQUEST = Object.assign({}, window.__LUMINA_STAGE43S_LAST_BLOCK_ACTION_REQUEST || {}, { ok:false, networkError:msg, endpoint, at:new Date().toISOString() }); }catch(_err){}
+    throw new Error('Could not reach Lumina backend at ' + endpoint + '. Check that the Extraction endpoint field points to https://lumina-backend-1046042377096.us-east1.run.app/api/lumina/extract and that the Stage 43R+ backend is deployed. Browser error: ' + msg);
+  }
   const raw = await res.text();
   let data = null;
   try{ data = raw ? JSON.parse(raw) : {}; }catch(_err){ data = { ok:false, error:{ message:raw || 'Non-JSON backend response.' } }; }
@@ -2021,7 +2045,7 @@ async function extractSelectedBlockWithMathpix(){
   if(!info.block){ showToast('Select a block first.'); return; }
   try{
     showToast('Extracting selected block with Mathpix…');
-    const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/mathpix-extract');
+    const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/mathpix-extract');
     const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:30000 });
     if(!data.block) throw new Error('Mathpix backend did not return a replacement block.');
     stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mathpix');
@@ -2042,7 +2066,7 @@ async function extractSelectedBlockWithMineru(){
   }
   try{
     showToast('Extracting selected block with MinerU…');
-    const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/mineru-extract');
+    const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/mineru-extract');
     const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:900000 });
     if(!data.block) throw new Error('MinerU backend did not return a replacement block.');
     stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mineru');
@@ -2070,7 +2094,7 @@ function openAiRemakeSelectedBlockDialog(){
       const submit = evt.target.closest('[data-stage43k-submit]');
       submit.disabled = true; submit.textContent = 'Remaking…';
       try{
-        const endpoint = stage43kEndpoint(stage43kAiEndpointFromImportSettings(), '/api/lumina/block/ai-remake');
+        const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/ai-remake');
         const data = await stage43kPostJson(endpoint, { provider:stage43kAiProviderFromImportSettings(), model:stage43kAiModelFromImportSettings(), prompt, block:info.block, maxOutputTokens:10000 });
         if(!data.block) throw new Error('AI backend did not return a replacement block.');
         stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-ai-remake');
@@ -2139,7 +2163,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43r-selected-block-mineru-extract-20260513-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43s-block-action-backend-endpoint-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
