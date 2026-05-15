@@ -93,7 +93,7 @@ export function createApi(deps) {
       engine.__luminaExtractionEngineInit = true;
     }
     if (aiEnabled && !aiEnabled.__luminaAiReviewInit) {
-      aiEnabled.checked = storageGet(STORAGE_AI_ENABLED, 'false') === 'true';
+      aiEnabled.checked = storageGet(STORAGE_AI_ENABLED, 'true') !== 'false';
       aiEnabled.__luminaAiReviewInit = true;
     }
     var derivedAiEndpoint = deriveAiEndpointFromExtractionEndpoint(endpoint && endpoint.value ? endpoint.value : storageGet(STORAGE_ENDPOINT, '/api/lumina/extract'));
@@ -157,9 +157,11 @@ export function createApi(deps) {
   function aiReviewAfterImportEnabled(){
     initExtractionFields();
     const el = doc().getElementById('aiReviewAfterImportCheckbox');
-    if(!el) return false;
-    storageSet(STORAGE_AI_ENABLED, el.checked ? 'true' : 'false');
-    return !!el.checked;
+    // Stage 43AD: automatic background Mathpix repair is disabled by default.
+    // Manual selected-block Mathpix/MinerU extraction remains available.
+    try { if(el) el.checked = false; storageSet(STORAGE_AI_ENABLED, 'false'); } catch(_err) {}
+    try { globalThis.__LUMINA_STAGE43AD_BACKGROUND_MATHPIX_DISABLED = { ok:true, at:new Date().toISOString() }; } catch(_err) {}
+    return false;
   }
   function isDirectProviderAiEndpoint(endpoint){
     return /(?:^|\/)api\.openai\.com\/v1\/(?:responses|chat\/completions)|api\.anthropic\.com\/v1\/messages|generativelanguage\.googleapis\.com/i.test(String(endpoint || ''));
@@ -410,7 +412,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43ac-frontend-reset-no-auto-mathpix-import-20260515-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43ad-43v-reset-safe-import-mathpix-text-20260515-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +568,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage43ac-frontend-reset-no-auto-mathpix-import-20260515-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1336,7 +1338,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43ac-frontend-reset-no-auto-mathpix-import-20260515-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1577,7 +1579,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
         }
         return '<div class="stage41w-import-review-slide" data-slide-index="'+i+'"><div class="stage41w-import-review-slide-title"><span>'+(i+1)+'. '+title+'</span><span>Choose version</span></div><div class="stage41w-import-review-choices"><label class="stage41w-import-choice stage41w-selected" data-choice="semantic"><input name="stage41w-choice-'+i+'" type="radio" value="semantic" checked> Editable semantic extraction'+renderImportChoicePreview(slide, 'Editable extraction')+'</label><label class="stage41w-import-choice" data-choice="image"><input name="stage41w-choice-'+i+'" type="radio" value="image"> Rendered image/background'+renderImportChoicePreview(imageSlide, 'Rendered image')+'</label></div></div>';
       }).join('');
-      backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. Mathpix patch repair starts after Continue, while the chosen slides load immediately.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
+      backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. Automatic Mathpix patch repair is off in this safe reset; use the selected-block Mathpix button after import.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
       function refresh(){
         Array.from(backdrop.querySelectorAll('.stage41w-import-review-slide')).forEach(function(row){
           Array.from(row.querySelectorAll('.stage41w-import-choice')).forEach(function(choice){
@@ -1676,7 +1678,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage43ac-frontend-reset-no-auto-mathpix-import-20260515-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1776,15 +1778,15 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function applyImportedSlides(importedSlides, opts) {
     opts = opts || {};
     var incoming = (importedSlides || []).map(stage43gPrepareImportedSlide).filter(Boolean);
-    try { globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF = { requestedSlides:(importedSlides||[]).length, importedSlides:incoming.length, mode:opts && opts.mode || 'append', exactFreeformSlides:incoming.filter(stage43gIsFreeformReviewSlide).length, previewLockedSlides:incoming.filter(function(s){return !!(s&&s.__stage43jPreviewLocked);}).length, firstSlides:incoming.slice(0,6).map(function(s,i){return {i:i,title:s&&s.title||'',sourcePageNumber:s&&s.importMeta&&(s.importMeta.sourcePageNumber||s.importMeta.pageNumber)||null,previewLocked:!!(s&&s.__stage43jPreviewLocked),blockCount:(s&&s.leftBlocks?s.leftBlocks.length:0)+(s&&s.rightBlocks?s.rightBlocks.length:0),firstHint:(s&&s.leftBlocks&&s.leftBlocks[0]&&(s.leftBlocks[0].sourceTextHint||s.leftBlocks[0].title||'')||'').slice(0,120)};}), at:new Date().toISOString() }; globalThis.__LUMINA_STAGE43J_IMPORT_PREVIEW_LOCKED_BATCH = { ok:true, lockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, totalSlides:incoming.length, at:new Date().toISOString() }; globalThis.__LUMINA_STAGE41M_LAST_IMPORT = globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF; } catch (_err) {}
+    var mode = opts.mode === 'replace' ? 'replace' : 'append';
+    try { globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF = { requestedSlides:(importedSlides||[]).length, importedSlides:incoming.length, mode:mode, exactFreeformSlides:incoming.filter(stage43gIsFreeformReviewSlide).length, previewLockedSlides:incoming.filter(function(s){return !!(s&&s.__stage43jPreviewLocked);}).length, at:new Date().toISOString() }; globalThis.__LUMINA_STAGE43J_IMPORT_PREVIEW_LOCKED_BATCH = { ok:true, lockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, totalSlides:incoming.length, at:new Date().toISOString() }; globalThis.__LUMINA_STAGE41M_LAST_IMPORT = globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF; } catch (_err) {}
     if (!incoming.length) throw new Error('No slides were imported.');
-    // Stage 43AC: do not sync the pre-import preview/editor into the deck during import.
-    // The old preview can still contain cover/title-slide image patches and can overwrite
-    // the freshly imported slide range on Safari/iPad. Imported slides are installed from
-    // the backend payload below.
+    try { globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE = true; var previewEl0 = doc().getElementById('preview'); if(previewEl0) previewEl0.innerHTML = ''; } catch(_err) {}
+    if(mode !== 'replace') {
+      try { syncPreviewFiguresToDraft(false); saveCurrentBlockToDraft(); saveCurrentSlideToDeck(); } catch(_err) {}
+    }
     if (opts.theme) applyThemeToForm(opts.theme);
     if (opts.presentationOptions) applyPresentationOptions(opts.presentationOptions);
-    var mode = opts.mode === 'replace' ? 'replace' : 'append';
     if (mode === 'replace') {
       setSlides(incoming);
       setActiveIndex(0);
@@ -1799,19 +1801,11 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     }
     var slides = getSlides();
     var activeIndex = getActiveIndex();
-    // Stage 43I: isolate the import handoff from the previous preview DOM.
-    // buildPreview() calls currentDraftSlide(), which normally syncs figure positions
-    // from the existing preview before rendering. Right after importing, that existing
-    // preview still belongs to the pre-import slide, so syncing it can overwrite the
-    // freshly reviewed imported blocks with stale/cover-slide figure data.
-    try {
-      var previewEl = doc().getElementById('preview');
-      if (previewEl) previewEl.innerHTML = '';
-      globalThis.__LUMINA_STAGE43I_IMPORT_PREVIEW_SYNC_ISOLATED = { ok:true, activeIndex:activeIndex, importedSlides:incoming.length, mode:mode, at:new Date().toISOString() };
-    } catch (_err) {}
+    try { var previewEl = doc().getElementById('preview'); if (previewEl) previewEl.innerHTML = ''; globalThis.__LUMINA_STAGE43I_IMPORT_PREVIEW_SYNC_ISOLATED = { ok:true, stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', activeIndex:activeIndex, importedSlides:incoming.length, mode:mode, at:new Date().toISOString() }; globalThis.__LUMINA_STAGE43AD_IMPORT_QUARANTINE = { ok:true, mode:mode, importedSlides:incoming.length, at:new Date().toISOString() }; } catch (_err) {}
     applySlideToForm(slides[activeIndex]);
     renderDeckList();
     buildPreview();
+    try { globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE = false; } catch(_err) {}
     scheduleAutosave('Autosaved after import.');
     showToast('Imported ' + incoming.length + ' slide' + (incoming.length === 1 ? '' : 's') + '.');
   }
@@ -2109,7 +2103,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
         imported = reviewedSlides;
         var skipBackgroundAiRepair = isDocAiSemanticImportedBatch(reviewedSlides);
         if(skipBackgroundAiRepair) warnings.push('Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits. Use the import review dialog to choose editable extraction or rendered page image per slide.');
-        return { deckTitle:deckTitle, slides:reviewedSlides, theme:null, presentationOptions:null, aiReviewed:skipBackgroundAiRepair, aiRepairPending:false };
+        return { deckTitle:deckTitle, slides:reviewedSlides, theme:null, presentationOptions:null, aiReviewed:skipBackgroundAiRepair, aiRepairPending:aiReviewAfterImportEnabled() && !skipBackgroundAiRepair };
       });
     }).then(function (importDeck) {
       imported = importDeck.slides || imported;
@@ -2188,7 +2182,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43ac-frontend-reset-no-auto-mathpix-import-20260515-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;

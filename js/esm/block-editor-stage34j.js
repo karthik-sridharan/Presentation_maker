@@ -66,7 +66,7 @@ function required(deps, name){
         .replace(/\n[ \t]+/g, '\n')
         .trim();
     }
-    function stage43vIsFreeformImportSlide(slide){
+    function stage43adIsFreeformImportSlide(slide){
       const s = slide || {};
       const type = String(s.slideType || '').toLowerCase();
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
@@ -74,12 +74,12 @@ function required(deps, name){
         || !!(meta.freeform || meta.coordinateSystem || meta.sourcePageNumber || meta.sourcePageIndex || meta.stage43gExactReviewImport)
         || !!s.__stage43gExactReviewImport;
     }
-    function stage43vIsLockedImportSlide(slide){
+    function stage43adIsLockedImportSlide(slide){
       const s = slide || {};
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
       return !!(s.__stage43jPreviewLocked || meta.stage43jPreviewLocked || s.__stage43gExactReviewImport || meta.stage43gExactReviewImport);
     }
-    function stage43vPreserveImportBlockMetadata(nextBlock, existing){
+    function stage43adPreserveImportBlockMetadata(nextBlock, existing){
       if(!existing || !nextBlock) return nextBlock;
       ['importRole','importSubmode','sourceTextHint','mathImageSourceText','lineCount','visualBlobIndex','importChoiceMode','importChoiceSourceIndex','__aiSourceBlockId','blockId','sourcePageNumber','sourcePageIndex'].forEach(function(key){
         if(existing[key] != null && nextBlock[key] == null) nextBlock[key] = clone(existing[key]);
@@ -89,7 +89,7 @@ function required(deps, name){
       return nextBlock;
     }
     function currentDraftSlide(){
-      if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
+      if(!globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE && !isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
       const leftBlocks = clone(draftBlocks.left);
       const rightBlocks = clone(draftBlocks.right);
@@ -100,11 +100,11 @@ function required(deps, name){
       const target = name === 'right' ? rightBlocks : leftBlocks;
       if(idx >= 0 && idx < target.length){
         const existingArr = name === 'right' ? (existingSlide.rightBlocks || []) : (existingSlide.leftBlocks || []);
-        target[idx] = stage43vPreserveImportBlockMetadata(edited, existingArr[idx]);
+        target[idx] = stage43adPreserveImportBlockMetadata(edited, existingArr[idx]);
       }
-      const freeformImport = stage43vIsFreeformImportSlide(existingSlide);
+      const freeformImport = stage43adIsFreeformImportSlide(existingSlide);
       const preservedSlideType = freeformImport ? (existingSlide.slideType || 'freeform-import') : fields.slideType.value;
-      const draftSlide = freeformImport && stage43vIsLockedImportSlide(existingSlide) ? clone(existingSlide) : {};
+      const draftSlide = freeformImport && stage43adIsLockedImportSlide(existingSlide) ? clone(existingSlide) : {};
       Object.assign(draftSlide, {
         slideType: preservedSlideType,
         headingLevel: fields.headingLevel.value,
@@ -123,8 +123,8 @@ function required(deps, name){
       });
       if(existingSlide.importMeta) draftSlide.importMeta = clone(existingSlide.importMeta);
       if(freeformImport){
-        draftSlide.importMeta = Object.assign({}, draftSlide.importMeta || {}, { stage43vFreeformDraftEditsMerged:true });
-        draftSlide.__stage43vLockedFreeformEditsMerged = true;
+        draftSlide.importMeta = Object.assign({}, draftSlide.importMeta || {}, { stage43adFreeformDraftEditsMerged:true });
+        draftSlide.__stage43adLockedFreeformEditsMerged = true;
       }
       try{
         if(freeformImport){
@@ -219,6 +219,7 @@ function required(deps, name){
       return nextBlock;
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){
+      if(globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE) return;
       if(isSyncingPreviewFigures()) return;
       setSyncingPreviewFigures(true);
       try{
