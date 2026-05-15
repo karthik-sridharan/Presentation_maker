@@ -1939,21 +1939,25 @@ function stage43mFigureBoxSelectedBlockInfo(){
 }
 function stage43kSelectedBlockInfo(){
   saveCurrentBlockToDraft();
-  const figureInfo = stage43mFigureBoxSelectedBlockInfo();
-  if(figureInfo && figureInfo.block) return figureInfo;
+  // Stage 43V: prefer the current preview/block-editor selection before a
+  // previously selected figure box. Otherwise stale figure selection can make
+  // a newly clicked text block look like a figure.
   const target = typeof selectedPreviewTarget === 'function' ? selectedPreviewTarget() : null;
   if(target && target.type === 'block'){
     const column = target.column === 'right' ? 'right' : 'left';
     const idx = Number(target.index);
     const arr = blockArray(column);
     const block = Number.isFinite(idx) && idx >= 0 && idx < arr.length ? arr[idx] : null;
-    return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromPreviewTarget:true };
+    if(block) return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromPreviewTarget:true };
   }
   const column = currentColumnName();
   const idx = selectedIndex(column);
   const arr = blockArray(column);
   const block = idx >= 0 && idx < arr.length ? arr[idx] : null;
-  return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromBlockEditor:true };
+  if(block) return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromBlockEditor:true };
+  const figureInfo = stage43mFigureBoxSelectedBlockInfo();
+  if(figureInfo && figureInfo.block) return figureInfo;
+  return { column, index:idx, block:null, imageSrc:'', fromBlockEditor:true };
 }
 async function stage43kPostJson(endpoint, body){
   const headers = { 'Content-Type':'application/json' };
@@ -2163,7 +2167,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43s-block-action-backend-endpoint-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);

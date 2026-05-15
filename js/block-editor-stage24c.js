@@ -56,7 +56,7 @@
         .replace(/\\r\\n/g, '\n')
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\n')
-        .replace(/\\t/g, ' ');
+        .replace(/\\t(?![A-Za-z{])/g, ' ');
     }
     function cleanEditableContent(value, mode){
       const resolvedMode = String(mode || '').toLowerCase();
@@ -92,10 +92,21 @@
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
       return !!(s.__stage43jPreviewLocked || meta.stage43jPreviewLocked || s.__stage43gExactReviewImport || meta.stage43gExactReviewImport);
     }
-    function stage43jCloneLockedFreeformSlide(slide){
+    function stage43jCloneLockedFreeformSlide(slide, editedLeftBlocks, editedRightBlocks){
       const out = clone(slide || {});
+      // Stage 43V: locked imported/freeform slides still need to accept edits
+      // from the block editor. The old lock returned the stored slide verbatim,
+      // so manual edits such as fixing ext{...} -> \text{...} could disappear.
+      if(Array.isArray(editedLeftBlocks)) out.leftBlocks = clone(editedLeftBlocks);
+      if(Array.isArray(editedRightBlocks)) out.rightBlocks = clone(editedRightBlocks);
+      out.title = fields.title.value || out.title || '';
+      out.kicker = fields.kicker.value || out.kicker || '';
+      out.lede = fields.lede.value || out.lede || '';
+      out.notesTitle = fields.notesTitle.value || out.notesTitle || 'Speaker notes';
+      out.notesBody = fields.notesBody.value || out.notesBody || '';
       out.__stage43jPreviewLockPreserved = true;
-      out.importMeta = Object.assign({}, out.importMeta || {}, { stage43jPreviewLockPreserved:true });
+      out.__stage43vLockedFreeformEditsMerged = true;
+      out.importMeta = Object.assign({}, out.importMeta || {}, { stage43jPreviewLockPreserved:true, stage43vLockedFreeformEditsMerged:true });
       try{
         window.__LUMINA_STAGE43J_FREEFORM_IMPORT_PREVIEW_LOCK = {
           ok:true,
@@ -103,7 +114,8 @@
           title:out.title || '',
           sourcePageNumber:out.importMeta && (out.importMeta.sourcePageNumber || out.importMeta.pageNumber) || null,
           blockCount:(Array.isArray(out.leftBlocks)?out.leftBlocks.length:0)+(Array.isArray(out.rightBlocks)?out.rightBlocks.length:0),
-          reason:'Returned stored imported freeform slide directly instead of rebuilding it from editor fields.',
+          reason:'Returned locked imported freeform slide with current edited draft blocks merged in.',
+          stage43v:true,
           at:new Date().toISOString()
         };
       }catch(_err){}
@@ -146,7 +158,7 @@
       }
       const freeformImport = stage43hIsFreeformImportSlide(existingSlide);
       if(freeformImport && stage43jIsImportPreviewLocked(existingSlide)){
-        return stage43jCloneLockedFreeformSlide(existingSlide);
+        return stage43jCloneLockedFreeformSlide(existingSlide, leftBlocks, rightBlocks);
       }
       const preservedSlideType = freeformImport ? (existingSlide.slideType || 'freeform-import') : fields.slideType.value;
       const twoCol = !freeformImport && fields.slideType.value === 'two-col';
