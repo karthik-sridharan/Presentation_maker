@@ -1,0 +1,17 @@
+Upload the CONTENTS of this folder to the GitHub repo root, not the outer folder.
+
+Replace:
+- repo root index.html
+- repo root js/ folder
+
+After upload, open:
+index.html?v=stage43af-43v-clean-reset-text-command-fix-20260515-1&clearLuminaStorage=1
+
+Browser checks:
+window.LUMINA_STAGE === 'stage43af-43v-clean-reset-text-command-fix-20260515-1'
+window.__LUMINA_STAGE43AF_CLEAN_RESET
+window.__LUMINA_STAGE43I_IMPORT_PREVIEW_SYNC_ISOLATED after a successful import
+
+Fetch checks:
+await fetch('js/legacy-app-stage24c.js?v=check-'+Date.now()).then(r=>r.text()).then(t=>!t.includes('stage43adResolveSelectedBlockImageDataUrl'))
+await fetch('js/renderer-stage24c.js?v=check-'+Date.now()).then(r=>r.text()).then(t=>t.includes('stage43afRepairLatexTextCommands'))
