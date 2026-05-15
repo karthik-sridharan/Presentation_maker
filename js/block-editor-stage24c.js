@@ -94,7 +94,7 @@
     }
     function stage43jCloneLockedFreeformSlide(slide, editedLeftBlocks, editedRightBlocks){
       const out = clone(slide || {});
-      // Stage 43V: locked imported/freeform slides still need to accept edits
+      // Stage 43AD: locked imported/freeform slides still need to accept edits
       // from the block editor. The old lock returned the stored slide verbatim,
       // so manual edits such as fixing ext{...} -> \text{...} could disappear.
       if(Array.isArray(editedLeftBlocks)) out.leftBlocks = clone(editedLeftBlocks);
@@ -105,8 +105,8 @@
       out.notesTitle = fields.notesTitle.value || out.notesTitle || 'Speaker notes';
       out.notesBody = fields.notesBody.value || out.notesBody || '';
       out.__stage43jPreviewLockPreserved = true;
-      out.__stage43vLockedFreeformEditsMerged = true;
-      out.importMeta = Object.assign({}, out.importMeta || {}, { stage43jPreviewLockPreserved:true, stage43vLockedFreeformEditsMerged:true });
+      out.__stage43adLockedFreeformEditsMerged = true;
+      out.importMeta = Object.assign({}, out.importMeta || {}, { stage43jPreviewLockPreserved:true, stage43adLockedFreeformEditsMerged:true });
       try{
         window.__LUMINA_STAGE43J_FREEFORM_IMPORT_PREVIEW_LOCK = {
           ok:true,
@@ -115,7 +115,7 @@
           sourcePageNumber:out.importMeta && (out.importMeta.sourcePageNumber || out.importMeta.pageNumber) || null,
           blockCount:(Array.isArray(out.leftBlocks)?out.leftBlocks.length:0)+(Array.isArray(out.rightBlocks)?out.rightBlocks.length:0),
           reason:'Returned locked imported freeform slide with current edited draft blocks merged in.',
-          stage43v:true,
+          stage43ad:true,
           at:new Date().toISOString()
         };
       }catch(_err){}
@@ -143,7 +143,7 @@
       return true;
     }
     function currentDraftSlide(){
-      if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
+      if(!globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE && !isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
       const leftBlocks = clone(draftBlocks.left);
       const rightBlocks = clone(draftBlocks.right);
@@ -290,6 +290,7 @@
       return nextBlock;
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){
+      if(globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE) return;
       if(isSyncingPreviewFigures()) return;
       setSyncingPreviewFigures(true);
       try{
