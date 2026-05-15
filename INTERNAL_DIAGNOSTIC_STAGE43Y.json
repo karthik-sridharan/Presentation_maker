@@ -1,0 +1,17 @@
+{
+  "stage": "stage43y-import-safe-selected-block-mathpix-20260515-1",
+  "createdAt": "2026-05-15T00:00:00-04:00",
+  "changedFiles": [
+    "index.html",
+    "js/legacy-app-stage24c.js",
+    "js/file-io-stage24c.js",
+    "js/esm/file-io-stage34j.js"
+  ],
+  "fixes": [
+    "import button/file-input rescue hardened",
+    "legacy import handler suppressed when rescue active",
+    "import review dialog failure falls back to source slides",
+    "Stage 43W/43X math fixes preserved"
+  ],
+  "syntaxCheck": "node --check passed for all frontend JS files"
+}
