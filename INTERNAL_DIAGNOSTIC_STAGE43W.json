@@ -1,0 +1,40 @@
+{
+  "stage": "stage43w-mathpix-text-command-render-fix-20260514-1",
+  "checkedAt": "2026-05-14T23:59:00-04:00",
+  "fixSummary": [
+    "Preserves LaTeX commands beginning with \\t during literal newline/tab decoding, so \\text{...}, \\times, \\top, and \\theta are not converted into visible ext/imes/op/heta fragments.",
+    "Patches both preview renderer and export/normalizeSlide copies, including classic and ESM files.",
+    "Adds defensive selected-block replacement sanitization for Mathpix/MinerU/AI block replacements.",
+    "Runs local math repair on Mathpix patch decks before frontend return/merge and sanitizes merged Mathpix blocks.",
+    "Backend Mathpix normalization now also closes command-spacing gaps such as \\text { ... } -> \\text{... }."
+  ],
+  "changedFrontendFiles": [
+    "index.html",
+    "js/renderer-stage24c.js",
+    "js/esm/renderer-stage34j.js",
+    "js/export-stage24c.js",
+    "js/esm/export-stage34j.js",
+    "js/file-io-stage24c.js",
+    "js/esm/file-io-stage34j.js",
+    "js/legacy-app-stage24c.js"
+  ],
+  "changedBackendFiles": [
+    "server.mjs"
+  ],
+  "regressionChecks": {
+    "noOldStage43vString": true,
+    "noUnsafeLiteralTabDecode": true,
+    "safeLiteralTabDecodeFiles": [
+      "js/export-stage24c.js",
+      "js/renderer-stage24c.js",
+      "js/block-editor-stage24c.js",
+      "js/esm/export-stage34j.js",
+      "js/esm/renderer-stage34j.js",
+      "js/esm/block-editor-stage34j.js"
+    ],
+    "syntaxCheckedFrontendJsCount": 52,
+    "syntaxCheckedBackendServer": true,
+    "sampleInput": "\\[\\mathbf{Y}=f_{\\mathbf{w}}(\\mathbf{X}) \\in\\{ ext { positive, negative }\\}\\]",
+    "expectedOutput": "\\[\\mathbf{Y}=f_{\\mathbf{w}}(\\mathbf{X}) \\in\\{ \\text{positive, negative}\\}\\]"
+  }
+}
