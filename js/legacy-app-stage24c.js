@@ -1992,16 +1992,37 @@ function stage43xSelectedBlockElement(info){
     if(!info || !info.block || !Number.isFinite(Number(info.index))) return null;
     const column = info.column === 'right' ? 'right' : 'left';
     const idx = Number(info.index);
+    const root = preview && preview.querySelector ? preview : document;
+    // Stage 43Z: use the actually selected visible preview node first.
+    // Querying only by block index can accidentally find a stale/hidden duplicate
+    // when an import view has just re-rendered, and sending that to Mathpix is
+    // what caused title-slide OCR to overwrite later slides.
+    const selected = root.querySelector && root.querySelector('.preview-block.selected[data-column="' + column + '"][data-block-index="' + idx + '"]');
+    if(selected && preview.contains(selected)) return selected;
     const selectors = [
-      '.freeform-block[data-column="' + column + '"][data-block-index="' + idx + '"]',
-      '.preview-block[data-column="' + column + '"][data-block-index="' + idx + '"]'
+      '.preview-block[data-column="' + column + '"][data-block-index="' + idx + '"]',
+      '.freeform-block[data-column="' + column + '"][data-block-index="' + idx + '"]'
     ];
     for(const sel of selectors){
-      const el = preview && preview.querySelector ? preview.querySelector(sel) : document.querySelector(sel);
-      if(el) return el;
+      const el = root.querySelector && root.querySelector(sel);
+      if(el && (!preview || preview.contains(el))) return el;
     }
   }catch(_err){}
   return null;
+}
+function stage43zShouldCaptureVisibleSelectedBlockFirst(info){
+  const block = info && info.block || {};
+  const mode = String(block.mode || '').toLowerCase();
+  const role = String(block.importRole || '').toLowerCase();
+  const sub = String(block.importSubmode || '').toLowerCase();
+  // Imported PDF/PPT image patches often use a larger backing image clipped by
+  // the visible block rectangle. Sending the raw <img src> gives Mathpix the
+  // whole page (and sometimes the title page). Always OCR the visible crop.
+  return !!(info && (info.fromPreviewTarget || info.fromBlockEditor)) && (
+    mode === 'import-image' || mode === 'import-text' ||
+    /^import-/.test(mode) || role.indexOf('import') >= 0 || sub.indexOf('import') >= 0 ||
+    block.importSourceLayout || (block.layout && /data:image\//i.test(String(block.content || '')))
+  );
 }
 async function stage43xCaptureElementAsPng(el){
   try{
@@ -2042,18 +2063,30 @@ async function stage43xCaptureElementAsPng(el){
   }catch(_err){ return ''; }
 }
 async function stage43xResolveSelectedBlockImageSrc(info){
+  const el = stage43xSelectedBlockElement(info);
+  const shouldCaptureFirst = stage43zShouldCaptureVisibleSelectedBlockFirst(info);
+  if(el && shouldCaptureFirst){
+    const shot = await stage43xCaptureElementAsPng(el);
+    if(/^data:image\//i.test(shot)) return shot;
+  }
   let src = info && info.imageSrc ? String(info.imageSrc) : '';
+  if(/^data:image\//i.test(src) && !shouldCaptureFirst) return src;
+  if(src && !shouldCaptureFirst){
+    const converted = await stage43xFetchImageSrcAsDataUrl(src);
+    if(/^data:image\//i.test(converted)) return converted;
+  }
+  if(el){
+    // For normal embedded figures, raw media is acceptable. For imported image
+    // patches, raw media is deliberately after visible-crop capture.
+    const mediaDataUrl = shouldCaptureFirst ? '' : await stage43xMediaElementToDataUrl(el);
+    if(/^data:image\//i.test(mediaDataUrl)) return mediaDataUrl;
+    const shot = await stage43xCaptureElementAsPng(el);
+    if(/^data:image\//i.test(shot)) return shot;
+  }
   if(/^data:image\//i.test(src)) return src;
   if(src){
     const converted = await stage43xFetchImageSrcAsDataUrl(src);
     if(/^data:image\//i.test(converted)) return converted;
-  }
-  const el = stage43xSelectedBlockElement(info);
-  if(el){
-    const mediaDataUrl = await stage43xMediaElementToDataUrl(el);
-    if(/^data:image\//i.test(mediaDataUrl)) return mediaDataUrl;
-    const shot = await stage43xCaptureElementAsPng(el);
-    if(/^data:image\//i.test(shot)) return shot;
   }
   return '';
 }
@@ -2114,6 +2147,7 @@ function stage43mFigureBoxSelectedBlockInfo(){
 }
 function stage43kSelectedBlockInfo(){
   saveCurrentBlockToDraft();
+  const activeSlideIndex = getActiveIndex();
   // Stage 43V: prefer the current preview/block-editor selection before a
   // previously selected figure box. Otherwise stale figure selection can make
   // a newly clicked text block look like a figure.
@@ -2123,16 +2157,16 @@ function stage43kSelectedBlockInfo(){
     const idx = Number(target.index);
     const arr = blockArray(column);
     const block = Number.isFinite(idx) && idx >= 0 && idx < arr.length ? arr[idx] : null;
-    if(block) return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromPreviewTarget:true };
+    if(block) return { column, index:idx, block, activeIndex:activeSlideIndex, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromPreviewTarget:true };
   }
   const column = currentColumnName();
   const idx = selectedIndex(column);
   const arr = blockArray(column);
   const block = idx >= 0 && idx < arr.length ? arr[idx] : null;
-  if(block) return { column, index:idx, block, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromBlockEditor:true };
+  if(block) return { column, index:idx, block, activeIndex:activeSlideIndex, imageSrc:stage43mExtractFirstImageSrcFromHtml(block && block.content || ''), fromBlockEditor:true };
   const figureInfo = stage43mFigureBoxSelectedBlockInfo();
-  if(figureInfo && figureInfo.block) return figureInfo;
-  return { column, index:idx, block:null, imageSrc:'', fromBlockEditor:true };
+  if(figureInfo && figureInfo.block) return Object.assign({ activeIndex:activeSlideIndex }, figureInfo);
+  return { column, index:idx, block:null, activeIndex:activeSlideIndex, imageSrc:'', fromBlockEditor:true };
 }
 async function stage43kPostJson(endpoint, body){
   const headers = { 'Content-Type':'application/json' };
@@ -2224,24 +2258,62 @@ function stage43nReplacementBlockForInfo(info, replacement, reason){
 }
 function stage43nCheckpointBeforeBlockMutation(reason){
   try{
+    // Stage 43Z: do not save the entire current draft slide before a selected
+    // block Mathpix/MinerU replacement. In imported/freeform decks, this can
+    // write stale title-slide form fields into the active later slide. We only
+    // flush the selected block draft; the block replacement itself commits just
+    // the selected block array to the active slide.
     saveCurrentBlockToDraft();
-    saveCurrentSlideToDeck();
-    persistAutosaveNow('Checkpoint before ' + (reason || 'selected block change') + '.');
+    if(typeof recordHistoryChange === 'function') recordHistoryChange('Checkpoint before ' + (reason || 'selected block change') + '.');
   }catch(_err){}
+}
+function stage43zReplacementLooksLikeWrongTitleSlide(info, nextBlock){
+  try{
+    const ai = Number(info && info.activeIndex);
+    if(!Number.isFinite(ai) || ai <= 0) return false;
+    const all = getSlides && getSlides() || [];
+    const first = all && all[0] || null;
+    const current = all && all[ai] || null;
+    if(!first || !current) return false;
+    const text = String((nextBlock && (nextBlock.content || nextBlock.title || '')) || '').replace(/<[^>]+>/g, ' ').replace(/\[a-z]+/gi, ' ').replace(/[^A-Za-z0-9]+/g, ' ').toLowerCase();
+    const firstText = [first.title, first.kicker, first.lede].concat((first.leftBlocks||[]).slice(0,4).map(function(b){return b && (b.title + ' ' + b.content);})).join(' ').replace(/<[^>]+>/g, ' ').replace(/[^A-Za-z0-9]+/g, ' ').toLowerCase();
+    const currentText = [current.title, current.kicker, current.lede].concat((current.leftBlocks||[]).slice(0,4).map(function(b){return b && (b.title + ' ' + b.content);})).join(' ').replace(/<[^>]+>/g, ' ').replace(/[^A-Za-z0-9]+/g, ' ').toLowerCase();
+    const anchors = ['introduction to machine learning', String(first.title || '').toLowerCase()].filter(function(x){ return x && x.length > 8; });
+    const hasFirstAnchor = anchors.some(function(a){ return text.indexOf(a) >= 0 && currentText.indexOf(a) < 0; });
+    if(hasFirstAnchor) return true;
+    const words = firstText.split(/\s+/).filter(function(w){ return w.length >= 5; });
+    if(words.length < 8 || text.length < 80) return false;
+    const uniq = Array.from(new Set(words)).slice(0,80);
+    const hit = uniq.filter(function(w){ return text.indexOf(w) >= 0; }).length;
+    const curWords = new Set(currentText.split(/\s+/).filter(function(w){ return w.length >= 5; }));
+    const curHit = uniq.filter(function(w){ return curWords.has(w); }).length;
+    return hit >= Math.max(8, Math.ceil(uniq.length * 0.38)) && hit > curHit + 4;
+  }catch(_err){ return false; }
 }
 function stage43nReplaceBlockFromInfo(info, replacement, reason){
   if(!info || !info.block){ showToast('Select a block first.'); return false; }
+  if(Number.isFinite(Number(info.activeIndex)) && Number(info.activeIndex) !== getActiveIndex()){
+    showToast('Slide changed before extraction finished; no block was replaced.');
+    try{ window.__LUMINA_STAGE43Z_BLOCK_REPLACE_ABORTED = { ok:false, reason:'active-slide-changed', originalActiveIndex:info.activeIndex, currentActiveIndex:getActiveIndex(), at:new Date().toISOString() }; }catch(_err){}
+    return false;
+  }
   stage43nCheckpointBeforeBlockMutation(reason || 'selected block replacement');
   if(!stage43nSelectBlockInfo(info)){
     return replaceSelectedBlock(stage43nReplacementBlockForInfo(info, replacement, reason), reason || 'selected-block-replace');
   }
   const nextBlock = stage43nReplacementBlockForInfo(info, replacement, reason);
+  if(stage43zReplacementLooksLikeWrongTitleSlide(info, nextBlock)){
+    showToast('Rejected Mathpix result that matched the title slide; no block was replaced.');
+    try{ window.__LUMINA_STAGE43Z_BLOCK_REPLACE_ABORTED = { ok:false, reason:'title-slide-contamination-guard', originalActiveIndex:info.activeIndex, currentActiveIndex:getActiveIndex(), title:nextBlock.title || '', contentPreview:String(nextBlock.content || '').slice(0,240), at:new Date().toISOString() }; }catch(_err){}
+    return false;
+  }
   const ok = replaceSelectedBlock(nextBlock, reason || 'selected-block-replace');
   try{
     window.__LUMINA_STAGE43N_SELECTED_BLOCK_REPLACE = {
       ok:!!ok,
       column:info.column,
       index:info.index,
+      activeIndex:info.activeIndex,
       mode:nextBlock.mode || '',
       title:nextBlock.title || '',
       preservedLayout:!!(info.block && info.block.layout),
@@ -2399,7 +2471,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43y-import-safe-selected-block-mathpix-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43z-selected-block-crop-mathpix-no-title-bleed-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
