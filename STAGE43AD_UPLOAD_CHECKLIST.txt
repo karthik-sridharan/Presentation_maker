@@ -1,0 +1,11 @@
+Upload contents of this folder, not the folder itself.
+
+1. Replace repo-root index.html with this index.html.
+2. Replace/merge repo-root js/ with this js/ folder. Existing same-path JS files must be overwritten.
+3. Do not leave the outer overlay folder in the repo.
+4. Open: index.html?v=stage43ad-43v-reset-safe-import-mathpix-text-20260515-1&clearLuminaStorage=1
+5. Browser console checks:
+   window.LUMINA_STAGE
+   window.__LUMINA_STAGE43AD_BACKGROUND_MATHPIX_DISABLED
+   window.__LUMINA_STAGE43I_IMPORT_PREVIEW_SYNC_ISOLATED
+   await fetch('js/file-io-stage24c.js?v=' + Date.now()).then(r=>r.text()).then(t=>t.includes('Stage 43AD'))
