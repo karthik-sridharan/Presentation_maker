@@ -95,6 +95,20 @@ function decodeLiteralNewlines(value){
       if(existing.layout && !nextBlock.layout) nextBlock.layout = clone(existing.layout);
       return nextBlock;
     }
+
+    function stage43ahLooksLikeCoverTitle(value){
+      var s = String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      return !!s && /\bIntroduction\s+to\s+Machine\s+Learning\b|\bAttention\s+and\s+Transformers\b|\bCS\s*3780\s*\/\s*CS\s*5780\b|\bInstructors?\s*:\s*Sarah\s+Dean\b|\bThorsten\s+Joachims\b|\bJohn\s+Thickstun\b/i.test(s);
+    }
+    function stage43ahIsProtectedImageBlobSlide(slide){
+      var s = slide || {};
+      var meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
+      if(s.__stage43ahImageBlobProtected || meta.stage43ahImageBlobProtected) return true;
+      var blocks = [];
+      try{ blocks = (Array.isArray(s.leftBlocks) ? s.leftBlocks : []).concat(Array.isArray(s.rightBlocks) ? s.rightBlocks : []); }catch(_err){ blocks = []; }
+      return blocks.some(function(b){ var sub=String(b&&b.importSubmode||'').toLowerCase(); var role=String(b&&b.importRole||'').toLowerCase(); return sub.indexOf('visual-blob')>=0 || role==='text-image'; });
+    }
+
     function stage43jIsImportPreviewLocked(slide){
       const s = slide || {};
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
@@ -107,9 +121,15 @@ function decodeLiteralNewlines(value){
       // so manual edits such as fixing ext{...} -> \text{...} could disappear.
       if(Array.isArray(editedLeftBlocks)) out.leftBlocks = clone(editedLeftBlocks);
       if(Array.isArray(editedRightBlocks)) out.rightBlocks = clone(editedRightBlocks);
-      out.title = fields.title.value || out.title || '';
-      out.kicker = fields.kicker.value || out.kicker || '';
-      out.lede = fields.lede.value || out.lede || '';
+      if(stage43ahIsProtectedImageBlobSlide(out) && stage43ahLooksLikeCoverTitle(fields.title.value) && !(out.importMeta && Number(out.importMeta.sourcePageNumber || 1) === 1)){
+        out.title = out.title || ('Page ' + (out.importMeta && (out.importMeta.sourcePageNumber || out.importMeta.pageNumber) || ''));
+        out.kicker = out.kicker || 'Imported PDF page';
+        out.lede = out.lede || '';
+      }else{
+        out.title = fields.title.value || out.title || '';
+        out.kicker = fields.kicker.value || out.kicker || '';
+        out.lede = fields.lede.value || out.lede || '';
+      }
       out.notesTitle = fields.notesTitle.value || out.notesTitle || 'Speaker notes';
       out.notesBody = fields.notesBody.value || out.notesBody || '';
       out.__stage43jPreviewLockPreserved = true;
