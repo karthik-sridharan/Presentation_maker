@@ -2399,7 +2399,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43x-selected-block-raster-mathpix-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43y-import-safe-selected-block-mathpix-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
@@ -2573,7 +2573,7 @@ document.getElementById('importPptBtn')?.addEventListener('click', ()=>{
 document.getElementById('importFilesBtn')?.addEventListener('click', async ()=>{
   try{
     const btn = document.getElementById('importFilesBtn');
-    if(btn && btn.__luminaStage41SBound) return;
+    if(btn && (btn.__luminaStage41SBound || btn.__luminaStage42RBound || btn.__luminaStage43YImportSafeBound)) return;
     window.__LUMINA_STAGE41T_LEGACY_IMPORT_CLICK = { at:new Date().toISOString(), fileCount:(document.getElementById('importFilesInput')?.files || []).length }; window.__LUMINA_STAGE41S_LEGACY_IMPORT_CLICK = window.__LUMINA_STAGE41T_LEGACY_IMPORT_CLICK;
     await importSelectedFiles(document.getElementById('importFilesInput')?.files || []);
   }catch(err){
