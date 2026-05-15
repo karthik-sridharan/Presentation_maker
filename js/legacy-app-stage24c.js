@@ -1939,7 +1939,7 @@ function stage43mFigureBoxSelectedBlockInfo(){
 }
 function stage43kSelectedBlockInfo(){
   saveCurrentBlockToDraft();
-  // Stage 43AD: prefer the current preview/block-editor selection before a
+  // Stage 43V: prefer the current preview/block-editor selection before a
   // previously selected figure box. Otherwise stale figure selection can make
   // a newly clicked text block look like a figure.
   const target = typeof selectedPreviewTarget === 'function' ? selectedPreviewTarget() : null;
@@ -2050,23 +2050,10 @@ async function extractSelectedBlockWithMathpix(){
   try{
     showToast('Extracting selected block with Mathpix…');
     const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/mathpix-extract');
-    const imageSrc = await stage43adResolveSelectedBlockImageDataUrl(info);
-    const blockForRequest = stage43adBlockWithImageSource(info.block, imageSrc);
-    if(!imageSrc){
-      const locallyRepaired = stage43adBlockWithLocalLatexRepair(info.block);
-      if(locallyRepaired){
-        stage43nReplaceBlockFromInfo(info, locallyRepaired, 'selected-block-local-latex-repair');
-        window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, localRepair:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:false, at:new Date().toISOString() };
-        showToast('Selected block repaired locally.');
-        return;
-      }
-      throw new Error('Selected block does not contain an extractable image. Select an imported image patch/figure, or use Edit block for plain text.');
-    }
-    const data = await stage43kPostJson(endpoint, { block:blockForRequest, imageSrc:imageSrc, timeoutMs:30000 });
+    const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:30000 });
     if(!data.block) throw new Error('Mathpix backend did not return a replacement block.');
-    const repaired = stage43adBlockWithLocalLatexRepair(data.block) || data.block;
-    stage43nReplaceBlockFromInfo(info, repaired, 'selected-block-mathpix');
-    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!imageSrc, rasterized:!info.imageSrc && !!imageSrc, stats:data.stats || null, at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
+    stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mathpix');
+    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
     showToast('Selected block extracted with Mathpix.');
   }catch(err){
     window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:false, column:info.column, index:info.index, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, error:err && err.message ? err.message : String(err), at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
@@ -2077,18 +2064,17 @@ async function extractSelectedBlockWithMathpix(){
 async function extractSelectedBlockWithMineru(){
   const info = stage43kSelectedBlockInfo();
   if(!info.block){ showToast('Select a block first.'); return; }
+  if(!info.imageSrc){
+    alert('MinerU selected-block extraction needs an image patch or visible image/figure block. Select the image region itself, then try again.');
+    return;
+  }
   try{
     showToast('Extracting selected block with MinerU…');
-    const imageSrc = await stage43adResolveSelectedBlockImageDataUrl(info);
-    if(!imageSrc){
-      alert('MinerU selected-block extraction needs an image patch or visible image/figure block. Select the image region itself, then try again.');
-      return;
-    }
     const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/mineru-extract');
-    const data = await stage43kPostJson(endpoint, { block:stage43adBlockWithImageSource(info.block, imageSrc), imageSrc:imageSrc, timeoutMs:900000 });
+    const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:900000 });
     if(!data.block) throw new Error('MinerU backend did not return a replacement block.');
     stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mineru');
-    window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!imageSrc, stats:data.stats || null, meta:data.meta || null, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, meta:data.meta || null, at:new Date().toISOString() };
     showToast('Selected block extracted with MinerU.');
   }catch(err){
     window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:false, column:info.column, index:info.index, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, error:err && err.message ? err.message : String(err), at:new Date().toISOString() };
@@ -2181,7 +2167,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);

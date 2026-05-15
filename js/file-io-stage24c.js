@@ -200,12 +200,9 @@
     function aiReviewAfterImportEnabled(){
       initExtractionFields();
       const el = doc().getElementById('aiReviewAfterImportCheckbox');
-      // Stage 43AD: automatic background Mathpix repair is disabled by default.
-      // Selected-block Mathpix/MinerU buttons remain available. This prevents an
-      // async repair result from rewriting imported slides with stale cover/title content.
-      try{ if(el) el.checked = false; storageSet(STORAGE_AI_ENABLED, 'false'); }catch(_err){}
-      try{ globalThis.__LUMINA_STAGE43AD_BACKGROUND_MATHPIX_DISABLED = { ok:true, at:new Date().toISOString() }; }catch(_err){}
-      return false;
+      if(!el) return false;
+      storageSet(STORAGE_AI_ENABLED, el.checked ? 'true' : 'false');
+      return !!el.checked;
     }
     function isDirectProviderAiEndpoint(endpoint){
       return /(?:^|\/)api\.openai\.com\/v1\/(?:responses|chat\/completions)|api\.anthropic\.com\/v1\/messages|generativelanguage\.googleapis\.com/i.test(String(endpoint || ''));
@@ -456,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43ad-43v-reset-safe-import-mathpix-text-20260515-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43v-block-edit-mathpix-selection-fix-20260514-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -610,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1380,7 +1377,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1623,7 +1620,7 @@ Previous output to repair:
           }
           return '<div class="stage41w-import-review-slide" data-slide-index="'+i+'"><div class="stage41w-import-review-slide-title"><span>'+(i+1)+'. '+title+'</span><span>Choose version</span></div><div class="stage41w-import-review-choices"><label class="stage41w-import-choice stage41w-selected" data-choice="semantic"><input name="stage41w-choice-'+i+'" type="radio" value="semantic" checked> Editable semantic extraction'+renderImportChoicePreview(slide, 'Editable extraction')+'</label><label class="stage41w-import-choice" data-choice="image"><input name="stage41w-choice-'+i+'" type="radio" value="image"> Rendered image/background'+renderImportChoicePreview(imageSlide, 'Rendered image')+'</label></div></div>';
         }).join('');
-        backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. Automatic Mathpix patch repair is off in this safe reset; use the selected-block Mathpix button after import.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
+        backdrop.innerHTML = '<div class="stage41w-import-review-modal" role="dialog" aria-modal="true" aria-label="Review imported slide choices"><div class="stage41w-import-review-head"><div><h2>Review PDF import choices</h2><div class="help">Left is editable extraction; right is exact rendered page image. Editable is selected by default. Mathpix patch repair starts after Continue, while the chosen slides load immediately.</div></div><button type="button" data-stage41w-close>×</button></div><div class="stage41w-import-review-body">'+body+'</div><div class="stage41w-import-review-foot"><button type="button" data-stage41w-all-semantic>Use editable for all</button><button type="button" data-stage41w-all-image>Use image for all</button><button type="button" class="primary" data-stage41w-continue>Continue import</button></div></div>';
         function refresh(){
           Array.from(backdrop.querySelectorAll('.stage41w-import-review-slide')).forEach(row=>{
             Array.from(row.querySelectorAll('.stage41w-import-choice')).forEach(choice=>{
@@ -1718,7 +1715,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1998,22 +1995,14 @@ Previous output to repair:
     }
     function applyImportedSlides(importedSlides, opts={}){
       const incoming = (importedSlides || []).map(stage43gPrepareImportedSlide).filter(Boolean);
-      const mode = opts.mode === 'replace' ? 'replace' : 'append';
-      try{ global.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF = { requestedSlides:(importedSlides||[]).length, importedSlides:incoming.length, mode:mode, exactFreeformSlides:incoming.filter(stage43gIsFreeformReviewSlide).length, previewLockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, firstSlides:incoming.slice(0,6).map(function(s,i){ return { i, title:s&&s.title||'', sourcePageNumber:s&&s.importMeta&&(s.importMeta.sourcePageNumber||s.importMeta.pageNumber)||null, previewLocked:!!(s&&s.__stage43jPreviewLocked), blockCount:(s&&s.leftBlocks?s.leftBlocks.length:0)+(s&&s.rightBlocks?s.rightBlocks.length:0), firstHint:(s&&s.leftBlocks&&s.leftBlocks[0]&&(s.leftBlocks[0].sourceTextHint||s.leftBlocks[0].title||'')||'').slice(0,120) }; }), at:new Date().toISOString() }; global.__LUMINA_STAGE43J_IMPORT_PREVIEW_LOCKED_BATCH = { ok:true, lockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, totalSlides:incoming.length, at:new Date().toISOString() }; global.__LUMINA_STAGE41M_LAST_IMPORT = global.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF; }catch(_err){}
+      try{ global.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF = { requestedSlides:(importedSlides||[]).length, importedSlides:incoming.length, mode:opts && opts.mode || 'append', exactFreeformSlides:incoming.filter(stage43gIsFreeformReviewSlide).length, previewLockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, firstSlides:incoming.slice(0,6).map(function(s,i){ return { i, title:s&&s.title||'', sourcePageNumber:s&&s.importMeta&&(s.importMeta.sourcePageNumber||s.importMeta.pageNumber)||null, previewLocked:!!(s&&s.__stage43jPreviewLocked), blockCount:(s&&s.leftBlocks?s.leftBlocks.length:0)+(s&&s.rightBlocks?s.rightBlocks.length:0), firstHint:(s&&s.leftBlocks&&s.leftBlocks[0]&&(s.leftBlocks[0].sourceTextHint||s.leftBlocks[0].title||'')||'').slice(0,120) }; }), at:new Date().toISOString() }; global.__LUMINA_STAGE43J_IMPORT_PREVIEW_LOCKED_BATCH = { ok:true, lockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, totalSlides:incoming.length, at:new Date().toISOString() }; global.__LUMINA_STAGE41M_LAST_IMPORT = global.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF; }catch(_err){}
       if(!incoming.length) throw new Error('No slides were imported.');
-      // Stage 43AD: quarantine the previous preview/editor while installing an import batch.
-      // For replace-import, do not sync or save the visible pre-import slide at all; that was
-      // the route by which cover/title blocks could leak into newly imported pages.
-      try{
-        globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE = true;
-        const previewEl = doc().getElementById('preview');
-        if(previewEl) previewEl.innerHTML = '';
-      }catch(_err){}
-      if(mode !== 'replace'){
-        try{ syncPreviewFiguresToDraft(false); saveCurrentBlockToDraft(); saveCurrentSlideToDeck(); }catch(_err){}
-      }
+      syncPreviewFiguresToDraft(false);
+      saveCurrentBlockToDraft();
+      saveCurrentSlideToDeck();
       if(opts.theme) applyThemeToForm(opts.theme);
       if(opts.presentationOptions) applyPresentationOptions(opts.presentationOptions);
+      const mode = opts.mode === 'replace' ? 'replace' : 'append';
       if(mode === 'replace'){
         setSlides(incoming);
         setActiveIndex(0);
@@ -2028,16 +2017,25 @@ Previous output to repair:
       }
       const slides = getSlides();
       const activeIndex = getActiveIndex();
+      // Stage 43I: isolate the import handoff from the previous preview DOM.
+      // buildPreview() calls currentDraftSlide(), which normally syncs figure positions
+      // from the existing preview before rendering. Right after importing, that existing
+      // preview still belongs to the pre-import slide, so syncing it can overwrite the
+      // freshly reviewed imported blocks with stale/cover-slide figure data.
       try{
         const previewEl = doc().getElementById('preview');
         if(previewEl) previewEl.innerHTML = '';
-        global.__LUMINA_STAGE43I_IMPORT_PREVIEW_SYNC_ISOLATED = { ok:true, stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', activeIndex:activeIndex, importedSlides:incoming.length, mode:mode, at:new Date().toISOString() };
-        global.__LUMINA_STAGE43AD_IMPORT_QUARANTINE = { ok:true, mode:mode, importedSlides:incoming.length, at:new Date().toISOString() };
+        global.__LUMINA_STAGE43I_IMPORT_PREVIEW_SYNC_ISOLATED = {
+          ok:true,
+          activeIndex:activeIndex,
+          importedSlides:incoming.length,
+          mode:mode,
+          at:new Date().toISOString()
+        };
       }catch(_err){}
       applySlideToForm(slides[activeIndex]);
       renderDeckList();
       buildPreview();
-      try{ globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE = false; }catch(_err){}
       scheduleAutosave('Autosaved after import.');
       showToast('Imported ' + incoming.length + ' slide' + (incoming.length === 1 ? '' : 's') + '.');
     }
@@ -2429,7 +2427,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43ad-43v-reset-safe-import-mathpix-text-20260515-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
