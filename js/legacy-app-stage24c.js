@@ -1991,9 +1991,52 @@ function stage43nSelectBlockInfo(info){
   loadSelectedBlockIntoEditor();
   return true;
 }
+function stage43wRepairLatexCommandText(value){
+  let s = String(value == null ? '' : value);
+  if(!s) return s;
+  s = s.replace(/\r\n/g, '\n').replace(/\n/g, '\n').replace(/\r/g, '\n');
+  s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
+  s = s.replace(/\t(?=imes\b)/g, '\\t');
+  s = s.replace(/\t(?=op\b)/g, '\\t');
+  s = s.replace(/\t(?=heta\b)/g, '\\t');
+  s = s.replace(/\f(?=rac\s*\{)/g, '\\f');
+  s = s.replace(/\u0008(?=eta\b)/g, '\\b');
+  s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
+  s = s.replace(/(^|[^\\A-Za-z])rac\s*\{/g, '$1\\frac{');
+  s = s.replace(/(^|[^\\A-Za-z])imes\b/g, '$1\\times');
+  s = s.replace(/\^\s*op\b/g, '^\\top');
+  s = s.replace(/\\text\s+\{/g, '\\text{');
+  s = s.replace(/\\operatorname\s+\{/g, '\\operatorname{');
+  s = s.replace(/\\mathrm\s+\{/g, '\\mathrm{');
+  s = s.replace(/\\mathbf\s+\{/g, '\\mathbf{');
+  s = s.replace(/\\mathbb\s+\{/g, '\\mathbb{');
+  s = s.replace(/\\\\(?=[A-Za-z])/g, '\\');
+  return s;
+}
+function stage43wSanitizeMathpixLikeBlock(block){
+  const src = block || {};
+  const next = clone(src);
+  const mode = String(next.mode || '').toLowerCase();
+  const role = String(next.importRole || '').toLowerCase();
+  const sub = String(next.importSubmode || '').toLowerCase();
+  const content = String(next.content || '');
+  const looksCustom = mode === 'custom' || /<(?:svg|html|iframe|img)\b|data:image\//i.test(content);
+  const looksMathpixOrMath = !!(next.mathpix || role.indexOf('mathpix') >= 0 || sub.indexOf('mathpix') >= 0 || mode === 'pseudocode-latex' || /(?:\\\[|\\\(|\\mathbf|\\mathrm|\\mathbb|[_^{}=]|(^|[^A-Za-z])ext\s*\{)/.test(content));
+  if(!looksCustom && looksMathpixOrMath){
+    if(typeof next.content === 'string') next.content = stage43wRepairLatexCommandText(next.content);
+    if(typeof next.title === 'string') next.title = stage43wRepairLatexCommandText(next.title);
+    if(Array.isArray(next.importRuns)) next.importRuns = next.importRuns.map(function(run){
+      const nr = clone(run || {});
+      if(typeof nr.text === 'string') nr.text = stage43wRepairLatexCommandText(nr.text);
+      return nr;
+    });
+    next.stage43wMathpixTextCommandSanitized = true;
+  }
+  return next;
+}
 function stage43nReplacementBlockForInfo(info, replacement, reason){
   const existing = info && info.block || {};
-  const next = clone(replacement || {});
+  const next = stage43wSanitizeMathpixLikeBlock(replacement || {});
   if(existing.layout) next.layout = clone(existing.layout);
   if(existing.importSourceLayout) next.importSourceLayout = clone(existing.importSourceLayout);
   ['blockId','__aiSourceBlockId','sourceTextHint','mathImageSourceText','lineCount','visualBlobIndex','sourcePageNumber','sourcePageIndex'].forEach(function(key){
@@ -2167,7 +2210,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43w-mathpix-text-command-render-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);

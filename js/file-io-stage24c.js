@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43v-block-edit-mathpix-selection-fix-20260514-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43w-mathpix-text-command-render-fix-20260514-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43w-mathpix-text-command-render-fix-20260514-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -760,6 +760,11 @@ Previous output to repair:
       s = s.replace(/\t+op\b/g, '\\top');
       s = s.replace(/\t+operatorname\s*\{/g, '\\operatorname{');
       s = s.replace(/\t+mathbb\s*\{/g, '\\mathbb{');
+    s = s.replace(/\\text\s+\{/g, '\\text{');
+    s = s.replace(/\\operatorname\s+\{/g, '\\operatorname{');
+    s = s.replace(/\\mathrm\s+\{/g, '\\mathrm{');
+    s = s.replace(/\\mathbf\s+\{/g, '\\mathbf{');
+    s = s.replace(/\\mathbb\s+\{/g, '\\mathbb{');
       s = s.replace(/(^|[^A-Za-z])imes\b/g, '$1\\times');
       s = s.replace(/(^|[^A-Za-z])ext\s*\{/g, '$1\\text{');
       s = s.replace(/\^\s*op\b/g, '^\\top');
@@ -782,7 +787,8 @@ Previous output to repair:
       s = s.replace(/wfilter/g, 'w_{\\text{filter}}');
       s = s.replace(/w\s*filter/g, 'w_{\\text{filter}}');
       s = s.replace(/filter\s+2\s+R/g, 'filter \\in \\mathbb{R}');
-      s = s.replace(/\bpositive\s*,\s*negative\b/g, '\\text{positive}, \\text{negative}');
+      s = s.replace(/(^|[^\\{A-Za-z])positive\s*,\s*negative\b/g, '$1\\text{positive}, \\text{negative}');
+    s = s.replace(/\\text\{\s*\\text\{positive\}\s*,\s*\\text\{negative\}\s*\}/g, '\\text{positive, negative}');
       s = s.replace(/\s{2,}/g, ' ');
       return s.trim();
     }
@@ -1377,7 +1383,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43w-mathpix-text-command-render-fix-20260514-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1715,7 +1721,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43w-mathpix-text-command-render-fix-20260514-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -2427,7 +2433,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43w-mathpix-text-command-render-fix-20260514-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
