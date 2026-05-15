@@ -48,7 +48,7 @@ function required(deps, name){
       return { mode, title:'', content:'' };
     }
     function currentDraftSlide(){
-      if(!globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE && !isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
+      if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
       const leftBlocks = clone(draftBlocks.left);
       const rightBlocks = clone(draftBlocks.right);
@@ -150,7 +150,6 @@ function required(deps, name){
       };
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){
-      if(globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE) return;
       if(isSyncingPreviewFigures()) return;
       setSyncingPreviewFigures(true);
       try{

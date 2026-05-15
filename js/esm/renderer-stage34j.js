@@ -59,17 +59,16 @@ export function createApi(deps){
     var n = Number(value);
     return Number.isFinite(n) ? n : fallback;
   }
-  function repairDroppedLatexTextCommands(value){
-    let s = String(value || '');
-    s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
-    s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
-    s = s.replace(/(^|[^\\A-Za-z])rac\s*\{/g, '$1\\frac{');
-    s = s.replace(/(^|[^\\A-Za-z])imes\b/g, '$1\\times');
-    s = s.replace(/\^top\b/g, '^\\top');
-    return s;
-  }
-  function decodeLiteralNewlines(value){
-    return repairDroppedLatexTextCommands(String(value || '')
+  
+function stage43afRepairLatexTextCommands(value){
+  let s = String(value == null ? '' : value);
+  // Undo damage from earlier builds that decoded the leading "\\t" in "\\text" as a tab/space.
+  s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
+  s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
+  return s;
+}
+function decodeLiteralNewlines(value){
+    return stage43afRepairLatexTextCommands(String(value || '')
       .replace(/\\r\\n/g, '\n')
       .replace(/\\n/g, '\n')
       .replace(/\\r/g, '\n')

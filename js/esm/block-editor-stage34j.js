@@ -47,12 +47,20 @@ function required(deps, name){
     function blankBlock(mode='panel'){
       return { mode, title:'', content:'' };
     }
-    function decodeLiteralNewlines(value){
-      return String(value || '')
+    
+function stage43afRepairLatexTextCommands(value){
+  let s = String(value == null ? '' : value);
+  // Undo damage from earlier builds that decoded the leading "\\t" in "\\text" as a tab/space.
+  s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
+  s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
+  return s;
+}
+function decodeLiteralNewlines(value){
+      return stage43afRepairLatexTextCommands(String(value || '')
         .replace(/\\r\\n/g, '\n')
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\n')
-        .replace(/\\t(?![A-Za-z{])/g, ' ');
+        .replace(/\\t(?![A-Za-z])/g, ' '));
     }
     function cleanEditableContent(value, mode){
       const resolvedMode = String(mode || '').toLowerCase();
@@ -66,7 +74,7 @@ function required(deps, name){
         .replace(/\n[ \t]+/g, '\n')
         .trim();
     }
-    function stage43adIsFreeformImportSlide(slide){
+    function stage43vIsFreeformImportSlide(slide){
       const s = slide || {};
       const type = String(s.slideType || '').toLowerCase();
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
@@ -74,12 +82,12 @@ function required(deps, name){
         || !!(meta.freeform || meta.coordinateSystem || meta.sourcePageNumber || meta.sourcePageIndex || meta.stage43gExactReviewImport)
         || !!s.__stage43gExactReviewImport;
     }
-    function stage43adIsLockedImportSlide(slide){
+    function stage43vIsLockedImportSlide(slide){
       const s = slide || {};
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
       return !!(s.__stage43jPreviewLocked || meta.stage43jPreviewLocked || s.__stage43gExactReviewImport || meta.stage43gExactReviewImport);
     }
-    function stage43adPreserveImportBlockMetadata(nextBlock, existing){
+    function stage43vPreserveImportBlockMetadata(nextBlock, existing){
       if(!existing || !nextBlock) return nextBlock;
       ['importRole','importSubmode','sourceTextHint','mathImageSourceText','lineCount','visualBlobIndex','importChoiceMode','importChoiceSourceIndex','__aiSourceBlockId','blockId','sourcePageNumber','sourcePageIndex'].forEach(function(key){
         if(existing[key] != null && nextBlock[key] == null) nextBlock[key] = clone(existing[key]);
@@ -89,7 +97,7 @@ function required(deps, name){
       return nextBlock;
     }
     function currentDraftSlide(){
-      if(!globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE && !isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
+      if(!isSyncingPreviewFigures()) syncPreviewFiguresToDraft(false);
       const draftBlocks = getDraftBlocks();
       const leftBlocks = clone(draftBlocks.left);
       const rightBlocks = clone(draftBlocks.right);
@@ -100,11 +108,11 @@ function required(deps, name){
       const target = name === 'right' ? rightBlocks : leftBlocks;
       if(idx >= 0 && idx < target.length){
         const existingArr = name === 'right' ? (existingSlide.rightBlocks || []) : (existingSlide.leftBlocks || []);
-        target[idx] = stage43adPreserveImportBlockMetadata(edited, existingArr[idx]);
+        target[idx] = stage43vPreserveImportBlockMetadata(edited, existingArr[idx]);
       }
-      const freeformImport = stage43adIsFreeformImportSlide(existingSlide);
+      const freeformImport = stage43vIsFreeformImportSlide(existingSlide);
       const preservedSlideType = freeformImport ? (existingSlide.slideType || 'freeform-import') : fields.slideType.value;
-      const draftSlide = freeformImport && stage43adIsLockedImportSlide(existingSlide) ? clone(existingSlide) : {};
+      const draftSlide = freeformImport && stage43vIsLockedImportSlide(existingSlide) ? clone(existingSlide) : {};
       Object.assign(draftSlide, {
         slideType: preservedSlideType,
         headingLevel: fields.headingLevel.value,
@@ -123,8 +131,8 @@ function required(deps, name){
       });
       if(existingSlide.importMeta) draftSlide.importMeta = clone(existingSlide.importMeta);
       if(freeformImport){
-        draftSlide.importMeta = Object.assign({}, draftSlide.importMeta || {}, { stage43adFreeformDraftEditsMerged:true });
-        draftSlide.__stage43adLockedFreeformEditsMerged = true;
+        draftSlide.importMeta = Object.assign({}, draftSlide.importMeta || {}, { stage43vFreeformDraftEditsMerged:true });
+        draftSlide.__stage43vLockedFreeformEditsMerged = true;
       }
       try{
         if(freeformImport){
@@ -219,7 +227,6 @@ function required(deps, name){
       return nextBlock;
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){
-      if(globalThis.__LUMINA_STAGE43AD_IMPORT_HANDOFF_ACTIVE) return;
       if(isSyncingPreviewFigures()) return;
       setSyncingPreviewFigures(true);
       try{
