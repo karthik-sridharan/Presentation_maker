@@ -1,0 +1,11 @@
+{
+  "stage": "stage43x-selected-block-raster-mathpix-20260515-1",
+  "purpose": "Fix selected-block Mathpix extraction for non-data-image editable/freeform blocks by rasterizing the selected preview block before backend OCR.",
+  "frontendChecks": [
+    "legacy-app-stage24c.js syntax check passes",
+    "selected-block Mathpix resolves direct data:image, same-origin/blob image sources, canvas/svg media, then DOM raster fallback",
+    "selected-block MinerU uses the same raster fallback",
+    "local LaTeX command repair is used as a final fallback for repairable text/math blocks"
+  ],
+  "backendRequired": false
+}
