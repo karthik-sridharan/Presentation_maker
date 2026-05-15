@@ -1,0 +1,13 @@
+Upload the CONTENTS of this folder, not the folder itself.
+
+Replace in GitHub repo root:
+- index.html
+- js/  (entire folder contents)
+
+Then open:
+index.html?v=stage43ac-frontend-reset-no-auto-mathpix-import-20260515-1&clearLuminaStorage=1
+
+In the import controls, leave automatic AI/Mathpix repair off. Use manual selected-block Mathpix extraction after checking the imported slide images look correct.
+
+Backend check:
+Open your Cloud Run backend /health URL. It should contain stage43ac-backend-reset-cover-title-filter-20260515-1 or at least stage43v.
