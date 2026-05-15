@@ -1907,6 +1907,181 @@ function stage43mExtractFirstImageSrcFromHtml(value){
   const any = s.match(/data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=\r\n]+/i);
   return any ? any[0].replace(/\s+/g, '') : '';
 }
+
+function stage43xBlobToDataUrl(blob){
+  return new Promise(function(resolve){
+    try{
+      const reader = new FileReader();
+      reader.onload = function(){ resolve(String(reader.result || '')); };
+      reader.onerror = function(){ resolve(''); };
+      reader.readAsDataURL(blob);
+    }catch(_err){ resolve(''); }
+  });
+}
+async function stage43xFetchImageSrcAsDataUrl(src){
+  const value = String(src || '').trim();
+  if(!value || /^data:image\//i.test(value)) return value;
+  if(/^https?:/i.test(value) && typeof location !== 'undefined'){
+    try{
+      const u = new URL(value, location.href);
+      if(u.origin !== location.origin && !/\.run\.app$/i.test(u.hostname)) return '';
+    }catch(_err){ return ''; }
+  }
+  try{
+    const res = await fetch(value, { cache:'no-store' });
+    if(!res || !res.ok) return '';
+    const blob = await res.blob();
+    if(!/^image\//i.test(String(blob && blob.type || ''))) return '';
+    return await stage43xBlobToDataUrl(blob);
+  }catch(_err){ return ''; }
+}
+function stage43xLoadImage(src){
+  return new Promise(function(resolve){
+    try{
+      const img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = function(){ resolve(null); };
+      img.src = src;
+    }catch(_err){ resolve(null); }
+  });
+}
+async function stage43xSvgElementToPng(svgEl){
+  try{
+    if(!svgEl || typeof XMLSerializer === 'undefined') return '';
+    const rect = svgEl.getBoundingClientRect ? svgEl.getBoundingClientRect() : null;
+    const width = Math.max(1, Math.round((rect && rect.width) || Number(svgEl.getAttribute('width')) || 800));
+    const height = Math.max(1, Math.round((rect && rect.height) || Number(svgEl.getAttribute('height')) || 260));
+    const clone = svgEl.cloneNode(true);
+    if(!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    const xml = new XMLSerializer().serializeToString(clone);
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+    const img = await stage43xLoadImage(url);
+    if(!img) return '';
+    const scale = Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 2)));
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png');
+  }catch(_err){ return ''; }
+}
+async function stage43xMediaElementToDataUrl(el){
+  try{
+    if(!el) return '';
+    const media = el.matches && el.matches('canvas,img,svg') ? el : (el.querySelector && el.querySelector('canvas,img,svg'));
+    if(!media) return '';
+    const tag = String(media.tagName || '').toLowerCase();
+    if(tag === 'canvas'){
+      try{ return media.toDataURL('image/png'); }catch(_err){ return ''; }
+    }
+    if(tag === 'img'){
+      const src = media.currentSrc || media.getAttribute('src') || '';
+      if(/^data:image\//i.test(src)) return src;
+      const converted = await stage43xFetchImageSrcAsDataUrl(src);
+      if(/^data:image\//i.test(converted)) return converted;
+    }
+    if(tag === 'svg') return await stage43xSvgElementToPng(media);
+  }catch(_err){}
+  return '';
+}
+function stage43xSelectedBlockElement(info){
+  try{
+    if(!info || !info.block || !Number.isFinite(Number(info.index))) return null;
+    const column = info.column === 'right' ? 'right' : 'left';
+    const idx = Number(info.index);
+    const selectors = [
+      '.freeform-block[data-column="' + column + '"][data-block-index="' + idx + '"]',
+      '.preview-block[data-column="' + column + '"][data-block-index="' + idx + '"]'
+    ];
+    for(const sel of selectors){
+      const el = preview && preview.querySelector ? preview.querySelector(sel) : document.querySelector(sel);
+      if(el) return el;
+    }
+  }catch(_err){}
+  return null;
+}
+async function stage43xCaptureElementAsPng(el){
+  try{
+    if(!el || typeof XMLSerializer === 'undefined') return '';
+    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    const width = Math.max(12, Math.ceil((rect && rect.width) || el.offsetWidth || 1));
+    const height = Math.max(12, Math.ceil((rect && rect.height) || el.offsetHeight || 1));
+    if(width <= 12 || height <= 12) return '';
+    const cloneEl = el.cloneNode(true);
+    cloneEl.classList && cloneEl.classList.remove('selected');
+    cloneEl.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    try{
+      cloneEl.style.position = 'relative';
+      cloneEl.style.left = '0px';
+      cloneEl.style.top = '0px';
+      cloneEl.style.margin = '0';
+      cloneEl.style.transform = 'none';
+      cloneEl.style.width = width + 'px';
+      cloneEl.style.height = height + 'px';
+      cloneEl.style.boxSizing = 'border-box';
+      cloneEl.style.overflow = 'visible';
+      cloneEl.style.background = getComputedStyle(el).backgroundColor || '#ffffff';
+    }catch(_err){}
+    const cssText = (typeof collectCopilotCssText === 'function') ? collectCopilotCssText() : '';
+    const markup = new XMLSerializer().serializeToString(cloneEl);
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '"><foreignObject x="0" y="0" width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="margin:0;background:#fff;width:' + width + 'px;height:' + height + 'px;overflow:hidden"><style><![CDATA[' + cssText + ']]></style>' + markup + '</div></foreignObject></svg>';
+    const img = await stage43xLoadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+    if(!img) return '';
+    const scale = Math.min(3, Math.max(2, Math.ceil(window.devicePixelRatio || 2)));
+    const canvas = document.createElement('canvas');
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png');
+  }catch(_err){ return ''; }
+}
+async function stage43xResolveSelectedBlockImageSrc(info){
+  let src = info && info.imageSrc ? String(info.imageSrc) : '';
+  if(/^data:image\//i.test(src)) return src;
+  if(src){
+    const converted = await stage43xFetchImageSrcAsDataUrl(src);
+    if(/^data:image\//i.test(converted)) return converted;
+  }
+  const el = stage43xSelectedBlockElement(info);
+  if(el){
+    const mediaDataUrl = await stage43xMediaElementToDataUrl(el);
+    if(/^data:image\//i.test(mediaDataUrl)) return mediaDataUrl;
+    const shot = await stage43xCaptureElementAsPng(el);
+    if(/^data:image\//i.test(shot)) return shot;
+  }
+  return '';
+}
+function stage43xBlockWithImageSrc(block, imageSrc){
+  const next = Object.assign({}, block || {});
+  const src = String(imageSrc || '').trim();
+  if(/^data:image\//i.test(src) && !stage43mExtractFirstImageSrcFromHtml(next.content || '')){
+    next.content = '\\begin{figurehtml}\n<figure data-figure-kind="image"><img src="' + src.replace(/"/g, '&quot;') + '" alt="Selected block raster capture" /></figure>\n\\end{figurehtml}';
+    next.mode = next.mode || 'import-image';
+    next.stage43xRasterizedForSelectedExtraction = true;
+  }
+  return next;
+}
+function stage43xLocallyRepairSelectedMathBlock(info){
+  try{
+    const before = info && info.block ? info.block : null;
+    if(!before) return false;
+    const after = stage43wSanitizeMathpixLikeBlock(before);
+    if(after && (after.content !== before.content || after.title !== before.title)){
+      stage43nReplaceBlockFromInfo(info, after, 'selected-block-local-latex-repair');
+      window.__LUMINA_STAGE43X_LAST_LOCAL_SELECTED_REPAIR = { ok:true, column:info.column, index:info.index, at:new Date().toISOString() };
+      showToast('Selected block repaired locally.');
+      return true;
+    }
+  }catch(_err){}
+  return false;
+}
+
 function stage43mFigureBoxSelectedBlockInfo(){
   try{
     const boxes = typeof getSelectedFigureBoxes === 'function' ? getSelectedFigureBoxes() : [];
@@ -2091,12 +2266,21 @@ async function extractSelectedBlockWithMathpix(){
   const info = stage43kSelectedBlockInfo();
   if(!info.block){ showToast('Select a block first.'); return; }
   try{
+    const initialImageCandidate = info.imageSrc || stage43mExtractFirstImageSrcFromHtml(info.block && info.block.content || '');
+    if(!initialImageCandidate && stage43xLocallyRepairSelectedMathBlock(info)) return;
+    showToast('Preparing selected block image for Mathpix…');
+    const resolvedImageSrc = await stage43xResolveSelectedBlockImageSrc(info);
+    if(!/^data:image\//i.test(resolvedImageSrc)){
+      if(stage43xLocallyRepairSelectedMathBlock(info)) return;
+      throw new Error('Could not rasterize the selected block. Select the visible block in the preview, or select an image/figure patch, then try again.');
+    }
     showToast('Extracting selected block with Mathpix…');
     const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/mathpix-extract');
-    const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:30000 });
+    const requestBlock = stage43xBlockWithImageSrc(info.block, resolvedImageSrc);
+    const data = await stage43kPostJson(endpoint, { block:requestBlock, imageSrc:resolvedImageSrc, timeoutMs:30000 });
     if(!data.block) throw new Error('Mathpix backend did not return a replacement block.');
     stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mathpix');
-    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
+    window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, rasterizedImageSrc:!info.imageSrc && !!resolvedImageSrc, imageSrcBytes:String(resolvedImageSrc || '').length, stats:data.stats || null, at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
     showToast('Selected block extracted with Mathpix.');
   }catch(err){
     window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX = { ok:false, column:info.column, index:info.index, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, error:err && err.message ? err.message : String(err), at:new Date().toISOString() }; window.__LUMINA_STAGE43M_SELECTED_MATHPIX_IMAGE_DETECTION = window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX;
@@ -2107,17 +2291,22 @@ async function extractSelectedBlockWithMathpix(){
 async function extractSelectedBlockWithMineru(){
   const info = stage43kSelectedBlockInfo();
   if(!info.block){ showToast('Select a block first.'); return; }
-  if(!info.imageSrc){
-    alert('MinerU selected-block extraction needs an image patch or visible image/figure block. Select the image region itself, then try again.');
-    return;
-  }
   try{
+    const initialImageCandidate = info.imageSrc || stage43mExtractFirstImageSrcFromHtml(info.block && info.block.content || '');
+    if(!initialImageCandidate && stage43xLocallyRepairSelectedMathBlock(info)) return;
+    showToast('Preparing selected block image for MinerU…');
+    const resolvedImageSrc = await stage43xResolveSelectedBlockImageSrc(info);
+    if(!/^data:image\//i.test(resolvedImageSrc)){
+      if(stage43xLocallyRepairSelectedMathBlock(info)) return;
+      throw new Error('Could not rasterize the selected block. Select the visible block in the preview, or select an image/figure patch, then try again.');
+    }
     showToast('Extracting selected block with MinerU…');
     const endpoint = stage43sLuminaBackendEndpoint('/api/lumina/block/mineru-extract');
-    const data = await stage43kPostJson(endpoint, { block:info.block, imageSrc:info.imageSrc || null, timeoutMs:900000 });
+    const requestBlock = stage43xBlockWithImageSrc(info.block, resolvedImageSrc);
+    const data = await stage43kPostJson(endpoint, { block:requestBlock, imageSrc:resolvedImageSrc, timeoutMs:900000 });
     if(!data.block) throw new Error('MinerU backend did not return a replacement block.');
     stage43nReplaceBlockFromInfo(info, data.block, 'selected-block-mineru');
-    window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, stats:data.stats || null, meta:data.meta || null, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:true, column:info.column, index:info.index, endpoint, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, rasterizedImageSrc:!info.imageSrc && !!resolvedImageSrc, imageSrcBytes:String(resolvedImageSrc || '').length, stats:data.stats || null, meta:data.meta || null, at:new Date().toISOString() };
     showToast('Selected block extracted with MinerU.');
   }catch(err){
     window.__LUMINA_STAGE43R_LAST_SELECTED_BLOCK_MINERU = { ok:false, column:info.column, index:info.index, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, hadImageSrc:!!info.imageSrc, error:err && err.message ? err.message : String(err), at:new Date().toISOString() };
@@ -2210,7 +2399,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43w-mathpix-text-command-render-fix-20260514-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43x-selected-block-raster-mathpix-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
