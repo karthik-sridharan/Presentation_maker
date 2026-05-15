@@ -1,4 +1,4 @@
-/* Stage 42A JSON themes (registry-backed presets); Stage 5 migration: theme/style-builder workflow extracted from legacy-app.js.
+/* Stage 5 migration: theme/style-builder workflow extracted from legacy-app.js.
    Classic browser script; exposes window.LuminaTheme. */
 (function(global){
   'use strict';
@@ -37,17 +37,6 @@
         accentColor: themeFieldValue('accentColor', '#2f6fed'),
         panelRadius: themeFieldValue('panelRadius', '22'),
         titleScale: themeFieldValue('titleScale', '1'),
-        titleH1FontSize: themeFieldValue('titleH1FontSize', '5.6rem'),
-        titleH2FontSize: themeFieldValue('titleH2FontSize', '3.1rem'),
-        kickerFontSize: themeFieldValue('kickerFontSize', '1rem'),
-        ledeFontSize: themeFieldValue('ledeFontSize', '1.14rem'),
-        bodyFontSize: themeFieldValue('bodyFontSize', '1.26rem'),
-        bulletFontSize: themeFieldValue('bulletFontSize', '1.22rem'),
-        blockHeadingFontSize: themeFieldValue('blockHeadingFontSize', '1.3rem'),
-        mathFontSize: themeFieldValue('mathFontSize', '1.2rem'),
-        codeFontSize: themeFieldValue('codeFontSize', '1.08rem'),
-        cardFontSize: themeFieldValue('cardFontSize', '1.08rem'),
-        placeholderFontSize: themeFieldValue('placeholderFontSize', '1.12rem'),
         beamerStyle: themeFieldValue('beamerStyle', 'classic'),
         chromeColor: themeFieldValue('chromeColor', '#17365d'),
         chromeTextColor: themeFieldValue('chromeTextColor', '#ffffff'),
@@ -63,17 +52,6 @@
       setThemeFieldValue('accentColor', t.accentColor);
       setThemeFieldValue('panelRadius', String(t.panelRadius));
       setThemeFieldValue('titleScale', String(t.titleScale));
-      setThemeFieldValue('titleH1FontSize', String(t.titleH1FontSize));
-      setThemeFieldValue('titleH2FontSize', String(t.titleH2FontSize));
-      setThemeFieldValue('kickerFontSize', String(t.kickerFontSize));
-      setThemeFieldValue('ledeFontSize', String(t.ledeFontSize));
-      setThemeFieldValue('bodyFontSize', String(t.bodyFontSize));
-      setThemeFieldValue('bulletFontSize', String(t.bulletFontSize));
-      setThemeFieldValue('blockHeadingFontSize', String(t.blockHeadingFontSize));
-      setThemeFieldValue('mathFontSize', String(t.mathFontSize));
-      setThemeFieldValue('codeFontSize', String(t.codeFontSize));
-      setThemeFieldValue('cardFontSize', String(t.cardFontSize));
-      setThemeFieldValue('placeholderFontSize', String(t.placeholderFontSize));
       setThemeFieldValue('beamerStyle', t.beamerStyle);
       setThemeFieldValue('chromeColor', t.chromeColor);
       setThemeFieldValue('chromeTextColor', t.chromeTextColor);
@@ -208,14 +186,10 @@
         extra += 'background-image:radial-gradient(circle at 20% 15%, rgba(255,255,255,.055), transparent 25%),radial-gradient(circle at 80% 75%, rgba(255,255,255,.04), transparent 30%),linear-gradient(135deg, rgba(255,255,255,.025), transparent 45%, rgba(255,255,255,.018));';
         extra += 'text-shadow:0 0 1px rgba(255,255,255,.36);';
       }
-      return 'background-color:' + bg + ';color:' + font + ';--text:' + font + ';--muted:' + muted + ';--line:' + line + ';--accent:' + theme.accentColor + ';--radius:' + theme.panelRadius + 'px;--title-scale:' + theme.titleScale + ';--theme-title-h1-font-size:' + theme.titleH1FontSize + ';--theme-title-h2-font-size:' + theme.titleH2FontSize + ';--theme-kicker-font-size:' + theme.kickerFontSize + ';--theme-lede-font-size:' + theme.ledeFontSize + ';--theme-body-font-size:' + theme.bodyFontSize + ';--theme-bullet-font-size:' + theme.bulletFontSize + ';--theme-block-heading-font-size:' + theme.blockHeadingFontSize + ';--theme-math-font-size:' + theme.mathFontSize + ';--theme-code-font-size:' + theme.codeFontSize + ';--theme-card-font-size:' + theme.cardFontSize + ';--theme-placeholder-font-size:' + theme.placeholderFontSize + ';--chrome-fill:' + theme.chromeColor + ';--chrome-text:' + theme.chromeTextColor + ';--sidebar-width:' + theme.sidebarWidth + 'px;--title-transform:' + titleTransform + ';--title-letter-spacing:' + titleLetterSpacing + ';' + extra;
+      return 'background-color:' + bg + ';color:' + font + ';--text:' + font + ';--muted:' + muted + ';--line:' + line + ';--accent:' + theme.accentColor + ';--radius:' + theme.panelRadius + 'px;--title-scale:' + theme.titleScale + ';--chrome-fill:' + theme.chromeColor + ';--chrome-text:' + theme.chromeTextColor + ';--sidebar-width:' + theme.sidebarWidth + 'px;--title-transform:' + titleTransform + ';--title-letter-spacing:' + titleLetterSpacing + ';' + extra;
     }
     function beamerPresetTheme(name){
       const id = String(name || 'classic').toLowerCase();
-      // Stage 42A: JSON theme registry hook. Built-in themes are loaded from /theme/*.json.
-      const registry = global.LuminaThemeRegistry;
-      const fromJson = registry && typeof registry.getThemeSync === 'function' ? registry.getThemeSync(id) : null;
-      if(fromJson) return normalizeTheme(fromJson.theme || fromJson);
       const presets = {
         classic: {name:'Classic', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#2f6fed', panelRadius:22, titleScale:1, beamerStyle:'classic', chromeColor:'#17365d', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
         berkeley: {name:'Berkeley', bgColor:'#ffffff', fontColor:'#111111', accentColor:'#d4a017', panelRadius:18, titleScale:1, beamerStyle:'berkeley', chromeColor:'#17365d', chromeTextColor:'#ffffff', sidebarWidth:118, titleCaps:'0'},
@@ -249,7 +223,7 @@
       showToast('Updated master style.');
     }
     function randomizeStyleBuilder(){
-      const registry = global.LuminaThemeRegistry; const styles = registry && typeof registry.themeIds === 'function' && registry.themeIds().length ? registry.themeIds() : ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard'];
+      const styles = ['classic','berkeley','madrid','annarbor','cambridgeus','pittsburgh','notebook','chalkboard'];
       setThemeFieldValue('beamerStyle', styles[Math.floor(Math.random() * styles.length)]);
       setThemeFieldValue('chromeColor', randomHexColor());
       setThemeFieldValue('accentColor', randomHexColor());
