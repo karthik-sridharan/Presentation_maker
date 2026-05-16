@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43ah-image-blob-import-lock-no-title-leak-20260515-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage43ah-image-blob-import-lock-no-title-leak-20260515-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1336,7 +1336,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43ah-image-blob-import-lock-no-title-leak-20260515-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1531,80 +1531,6 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function hasImportReviewAlternates(slides){
     return (slides || []).some(function(slide){ return !!(slide && slide.importAlternates && slide.importAlternates.imageSlide); });
   }
-
-  function stage43ahCompactText(value){
-    return String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  }
-  function stage43ahLooksLikeCoverTitle(value){
-    var s = stage43ahCompactText(value);
-    if(!s) return false;
-    return /\bIntroduction\s+to\s+Machine\s+Learning\b|\bAttention\s+and\s+Transformers\b|\bCS\s*3780\s*\/\s*CS\s*5780\b|\bInstructors?\s*:\s*Sarah\s+Dean\b|\bThorsten\s+Joachims\b|\bJohn\s+Thickstun\b/i.test(s);
-  }
-  function stage43ahSlidePageNumber(slide, fallbackIndex){
-    var meta = slide && slide.importMeta && typeof slide.importMeta === 'object' ? slide.importMeta : {};
-    var raw = meta.sourcePageNumber || meta.pageNumber || meta.sourcePage || meta.page || meta.pageIndex || meta.sourceSlide || (Number(fallbackIndex || 0) + 1);
-    var n = Number(raw);
-    if(Number.isFinite(n) && n > 0) return n;
-    if(Number.isFinite(n) && n === 0) return 1;
-    return Number(fallbackIndex || 0) + 1;
-  }
-  function stage43ahIsImageBlobImportSlide(slide){
-    if(!slide) return false;
-    var meta = slide.importMeta && typeof slide.importMeta === 'object' ? slide.importMeta : {};
-    var engine = String(meta.engine || meta.importEngine || meta.stage || meta.coordinateSystem || '').toLowerCase();
-    var source = String(meta.importMode || meta.source || '').toLowerCase();
-    var blocks = [];
-    try{ blocks = (Array.isArray(slide.leftBlocks) ? slide.leftBlocks : []).concat(Array.isArray(slide.rightBlocks) ? slide.rightBlocks : []); }catch(_err){ blocks = []; }
-    return engine.indexOf('all-image') >= 0 || engine.indexOf('visual-blob') >= 0 || source.indexOf('visual-blob') >= 0 || blocks.some(function(b){
-      var sub = String(b && b.importSubmode || '').toLowerCase();
-      var role = String(b && b.importRole || '').toLowerCase();
-      return sub.indexOf('visual-blob') >= 0 || role === 'text-image';
-    });
-  }
-  function stage43ahIsImageBlobBatch(slides){
-    return (slides || []).some(stage43ahIsImageBlobImportSlide);
-  }
-  function stage43ahSanitizeImageBlobSlide(slide, index){
-    var out = cloneJsonSafe(slide || {});
-    var pageNumber = stage43ahSlidePageNumber(out, index);
-    var isImageBlob = stage43ahIsImageBlobImportSlide(out);
-    if(isImageBlob){
-      out.slideType = 'freeform-import';
-      out.__stage43jPreviewLocked = true;
-      out.__stage43ahImageBlobProtected = true;
-      out.importMeta = Object.assign({}, out.importMeta || {}, { freeform:true, stage43jPreviewLocked:true, stage43ahImageBlobProtected:true, sourcePageNumber:pageNumber });
-      if(pageNumber > 1 && stage43ahLooksLikeCoverTitle(out.title)) out.title = 'Page ' + pageNumber;
-      if(pageNumber > 1 && stage43ahLooksLikeCoverTitle(out.kicker)) out.kicker = 'Imported PDF page';
-      if(pageNumber > 1 && stage43ahLooksLikeCoverTitle(out.lede)) out.lede = '';
-    }
-    ['leftBlocks','rightBlocks'].forEach(function(column){
-      var arr = Array.isArray(out[column]) ? out[column] : [];
-      out[column] = arr.filter(function(block){
-        if(!isImageBlob || pageNumber <= 1) return true;
-        var hint = [block && block.sourceTextHint, block && block.mathImageSourceText, block && block.title].filter(Boolean).join(' ');
-        if(stage43ahLooksLikeCoverTitle(hint)){
-          try{
-            global.__LUMINA_STAGE43AH_DROPPED_COVER_IMAGE_BLOB_BLOCKS = global.__LUMINA_STAGE43AH_DROPPED_COVER_IMAGE_BLOB_BLOCKS || [];
-            global.__LUMINA_STAGE43AH_DROPPED_COVER_IMAGE_BLOB_BLOCKS.push({ slideIndex:index, pageNumber:pageNumber, column:column, blockTitle:block && block.title || '', hint:stage43ahCompactText(hint).slice(0,160), at:new Date().toISOString() });
-          }catch(_err){}
-          return false;
-        }
-        return true;
-      });
-    });
-    if(isImageBlob){
-      try{ global.__LUMINA_STAGE43AH_IMAGE_BLOB_IMPORT_LOCK = Object.assign({}, global.__LUMINA_STAGE43AH_IMAGE_BLOB_IMPORT_LOCK || {}, { ok:true, lastSlideIndex:index, lastPageNumber:pageNumber, at:new Date().toISOString() }); }catch(_err){}
-    }
-    return out;
-  }
-  function stage43ahSanitizeImageBlobBatch(slides){
-    var list = (slides || []).map(function(slide, index){ return stage43ahSanitizeImageBlobSlide(slide, index); });
-    try{
-      global.__LUMINA_STAGE43AH_IMAGE_BLOB_BATCH_SANITIZED = { ok:true, inputSlides:(slides||[]).length, outputSlides:list.length, imageBlobSlides:list.filter(stage43ahIsImageBlobImportSlide).length, backgroundAiDisabledForImageBlob:stage43ahIsImageBlobBatch(list), at:new Date().toISOString() };
-    }catch(_err){}
-    return list;
-  }
-
   function stripImportReviewInternals(slide){
     var out;
     try { out = clone ? clone(slide) : JSON.parse(JSON.stringify(slide || {})); }
@@ -1750,7 +1676,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage43ah-image-blob-import-lock-no-title-leak-20260515-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1849,13 +1775,9 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   }
   function applyImportedSlides(importedSlides, opts) {
     opts = opts || {};
-    var incoming = stage43ahSanitizeImageBlobBatch((importedSlides || []).map(stage43gPrepareImportedSlide).filter(Boolean));
+    var incoming = (importedSlides || []).map(stage43gPrepareImportedSlide).filter(Boolean);
     try { globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF = { requestedSlides:(importedSlides||[]).length, importedSlides:incoming.length, mode:opts && opts.mode || 'append', exactFreeformSlides:incoming.filter(stage43gIsFreeformReviewSlide).length, previewLockedSlides:incoming.filter(function(s){return !!(s&&s.__stage43jPreviewLocked);}).length, firstSlides:incoming.slice(0,6).map(function(s,i){return {i:i,title:s&&s.title||'',sourcePageNumber:s&&s.importMeta&&(s.importMeta.sourcePageNumber||s.importMeta.pageNumber)||null,previewLocked:!!(s&&s.__stage43jPreviewLocked),blockCount:(s&&s.leftBlocks?s.leftBlocks.length:0)+(s&&s.rightBlocks?s.rightBlocks.length:0),firstHint:(s&&s.leftBlocks&&s.leftBlocks[0]&&(s.leftBlocks[0].sourceTextHint||s.leftBlocks[0].title||'')||'').slice(0,120)};}), at:new Date().toISOString() }; globalThis.__LUMINA_STAGE43J_IMPORT_PREVIEW_LOCKED_BATCH = { ok:true, lockedSlides:incoming.filter(function(s){ return !!(s && s.__stage43jPreviewLocked); }).length, totalSlides:incoming.length, at:new Date().toISOString() }; globalThis.__LUMINA_STAGE41M_LAST_IMPORT = globalThis.__LUMINA_STAGE43G_LAST_IMPORT_HANDOFF; } catch (_err) {}
     if (!incoming.length) throw new Error('No slides were imported.');
-    // Stage 43AH: clear old preview before any pre-import draft sync. In image-blob mode
-    // the old preview can contain the cover/title slide while the review modal is still open.
-    // Syncing from it before installing imported slides can inject stale cover content.
-    try{ var previewEl = doc().getElementById('preview'); if(previewEl) previewEl.innerHTML = ''; }catch(_err){}
     syncPreviewFiguresToDraft(false);
     saveCurrentBlockToDraft();
     saveCurrentSlideToDeck();
@@ -2121,6 +2043,17 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     else showToast('Mathpix patch repair completed; source slides stayed loaded because no patch changes were needed.');
     return true;
   }
+  function stage43ajIsAllImageVisualBlobImportedBatch(slides){
+      return (slides || []).some(function(slide){
+        var blocks = [];
+        try{ blocks = (Array.isArray(slide.leftBlocks) ? slide.leftBlocks : []).concat(Array.isArray(slide.rightBlocks) ? slide.rightBlocks : []); }catch(_err){ blocks = []; }
+        return blocks.some(function(block){
+          var role = String(block && block.importRole || '').toLowerCase();
+          var sub = String(block && block.importSubmode || '').toLowerCase();
+          return role === 'text-image' || sub.indexOf('visual-blob-patch') >= 0;
+        });
+      });
+    }
   function isDocAiSemanticImportedBatch(slides) {
     return (slides || []).some(function(slide){
       var meta = slide && slide.importMeta && typeof slide.importMeta === 'object' ? slide.importMeta : {};
@@ -2184,8 +2117,10 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
       if (!usedExtractionBackend) return importDeck;
       return reviewExtractedSlidesWithAlternates(imported, deckTitle).then(function(reviewedSlides){
         imported = reviewedSlides;
-        var skipBackgroundAiRepair = isDocAiSemanticImportedBatch(reviewedSlides);
-        if(skipBackgroundAiRepair) warnings.push(stage43ahIsImageBlobBatch(imported) ? 'PyMuPDF image-blob import loaded exact cropped image patches and skipped automatic Mathpix/background repair to avoid cover-title leakage. Use manual selected-block Mathpix on individual patches.' : 'Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits. Use the import review dialog to choose editable extraction or rendered page image per slide.');
+        var skipBackgroundAiRepair = isDocAiSemanticImportedBatch(reviewedSlides) || stage43ajIsAllImageVisualBlobImportedBatch(reviewedSlides);
+        if(isDocAiSemanticImportedBatch(reviewedSlides)) warnings.push('Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits. Use the import review dialog to choose editable extraction or rendered page image per slide.');
+        if(stage43ajIsAllImageVisualBlobImportedBatch(reviewedSlides)) warnings.push('PyMuPDF image-blob import kept visual text/math patches and skipped automatic background Mathpix repair. Use selected-block Mathpix/MinerU extraction manually on the patches you want to convert.');
+        try{ if(stage43ajIsAllImageVisualBlobImportedBatch(reviewedSlides)) globalThis.__LUMINA_STAGE43AJ_IMAGE_BLOB_BACKGROUND_REPAIR_DISABLED = { ok:true, slideCount:reviewedSlides.length, at:new Date().toISOString() }; }catch(_err){}
         return { deckTitle:deckTitle, slides:reviewedSlides, theme:null, presentationOptions:null, aiReviewed:skipBackgroundAiRepair, aiRepairPending:aiReviewAfterImportEnabled() && !skipBackgroundAiRepair };
       });
     }).then(function (importDeck) {
@@ -2265,7 +2200,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43ah-image-blob-import-lock-no-title-leak-20260515-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;

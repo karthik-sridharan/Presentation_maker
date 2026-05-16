@@ -142,6 +142,17 @@ export function createApi(deps) {
     snippetOutput.value = JSON.stringify(slideForSnippet(slide), null, 2);
     showToast('Formatted snippet.');
   }
+  function stage43ajClearPreviewBeforeSlideSwitch(nextIndex) {
+    try {
+      var p = document.getElementById('preview');
+      if (p) {
+        p.innerHTML = '';
+        p.removeAttribute('data-lumina-preview-active-index');
+        p.setAttribute('data-lumina-preview-switching-to', String(nextIndex));
+      }
+      window.__LUMINA_STAGE43AJ_SLIDE_SWITCH_PREVIEW_CLEARED = { nextIndex: nextIndex, at: new Date().toISOString() };
+    } catch (_err) {}
+  }
   function renderDeckList() {
     var slides = getSlides();
     var activeIndex = getActiveIndex();
@@ -166,6 +177,7 @@ export function createApi(deps) {
         saveCurrentBlockToDraft();
         saveCurrentSlideToDeck();
         var nextIndex = Number(btn.dataset.index);
+        stage43ajClearPreviewBeforeSlideSwitch(nextIndex);
         setActiveIndex(nextIndex);
         applySlideToForm(getSlides()[nextIndex]);
         buildPreview();

@@ -47,20 +47,12 @@ function required(deps, name){
     function blankBlock(mode='panel'){
       return { mode, title:'', content:'' };
     }
-    
-function stage43afRepairLatexTextCommands(value){
-  let s = String(value == null ? '' : value);
-  // Undo damage from earlier builds that decoded the leading "\\t" in "\\text" as a tab/space.
-  s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
-  s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
-  return s;
-}
-function decodeLiteralNewlines(value){
-      return stage43afRepairLatexTextCommands(String(value || '')
+    function decodeLiteralNewlines(value){
+      return String(value || '')
         .replace(/\\r\\n/g, '\n')
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\n')
-        .replace(/\\t(?![A-Za-z])/g, ' '));
+        .replace(/\\t(?![A-Za-z{])/g, ' ');
     }
     function cleanEditableContent(value, mode){
       const resolvedMode = String(mode || '').toLowerCase();
@@ -226,13 +218,37 @@ function decodeLiteralNewlines(value){
       }
       return nextBlock;
     }
+    function stage43ajPreviewBelongsToActiveSlide(){
+      try{
+        if(!preview || !preview.querySelector) return true;
+        var hasRenderedSlide = !!preview.querySelector('.slide');
+        if(!hasRenderedSlide) return true;
+        var owner = preview.getAttribute('data-lumina-preview-active-index');
+        var active = String(getActiveIndex());
+        if(owner === active) return true;
+        try{
+          window.__LUMINA_STAGE43AJ_PREVIEW_SYNC_GUARD = {
+            ok:false,
+            skipped:true,
+            reason:'Skipped figure sync from stale preview DOM while active slide was changing.',
+            ownerIndex:owner,
+            activeIndex:active,
+            renderedSlideClass:(preview.querySelector('.slide') && preview.querySelector('.slide').className) || '',
+            at:new Date().toISOString()
+          };
+        }catch(_err){}
+        return false;
+      }catch(_err){ return false; }
+    }
     function syncPreviewFiguresToDraft(updateSnippet = true){
       if(isSyncingPreviewFigures()) return;
+      if(!stage43ajPreviewBelongsToActiveSlide()) return;
       setSyncingPreviewFigures(true);
       try{
         Array.from((preview || document).querySelectorAll('.figure-embed[data-column]')).forEach(embed=>saveFigureEmbedToDraft(embed));
         if(updateSnippet){
-          snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2);
+          var draftForSnippet = currentDraftSlide();
+          snippetOutput.value = JSON.stringify(slideForSnippet(draftForSnippet), null, 2);
         }
       } finally {
         setSyncingPreviewFigures(false);
