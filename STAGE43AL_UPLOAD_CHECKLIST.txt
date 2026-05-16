@@ -1,0 +1,16 @@
+Upload contents of this folder to the repo root:
+
+index.html  -> repo root index.html
+js/         -> repo root js/
+
+Open:
+index.html?v=stage43al-selected-block-mathpix-raster-fallback-20260516-1&clearLuminaStorage=1
+
+Browser checks:
+window.LUMINA_STAGE
+await fetch('js/legacy-app-stage24c.js?v=check-' + Date.now()).then(r=>r.text()).then(t=>t.includes('stage43alResolveSelectedBlockImageDataUrl'))
+
+After using Mathpix selected-block extraction:
+window.__LUMINA_STAGE43K_LAST_SELECTED_BLOCK_MATHPIX
+
+`imageSource` should be one of: block-data-src, loaded-src, fetch-src, visible-raster.
