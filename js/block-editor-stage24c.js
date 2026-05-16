@@ -51,20 +51,12 @@
     function blankBlock(mode='panel'){
       return { mode, title:'', content:'' };
     }
-    
-function stage43afRepairLatexTextCommands(value){
-  let s = String(value == null ? '' : value);
-  // Undo damage from earlier builds that decoded the leading "\\t" in "\\text" as a tab/space.
-  s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
-  s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
-  return s;
-}
-function decodeLiteralNewlines(value){
-      return stage43afRepairLatexTextCommands(String(value || '')
+    function decodeLiteralNewlines(value){
+      return String(value || '')
         .replace(/\\r\\n/g, '\n')
         .replace(/\\n/g, '\n')
         .replace(/\\r/g, '\n')
-        .replace(/\\t(?![A-Za-z])/g, ' '));
+        .replace(/\\t(?![A-Za-z{])/g, ' ');
     }
     function cleanEditableContent(value, mode){
       const resolvedMode = String(mode || '').toLowerCase();
@@ -95,20 +87,6 @@ function decodeLiteralNewlines(value){
       if(existing.layout && !nextBlock.layout) nextBlock.layout = clone(existing.layout);
       return nextBlock;
     }
-
-    function stage43ahLooksLikeCoverTitle(value){
-      var s = String(value == null ? '' : value).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      return !!s && /\bIntroduction\s+to\s+Machine\s+Learning\b|\bAttention\s+and\s+Transformers\b|\bCS\s*3780\s*\/\s*CS\s*5780\b|\bInstructors?\s*:\s*Sarah\s+Dean\b|\bThorsten\s+Joachims\b|\bJohn\s+Thickstun\b/i.test(s);
-    }
-    function stage43ahIsProtectedImageBlobSlide(slide){
-      var s = slide || {};
-      var meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
-      if(s.__stage43ahImageBlobProtected || meta.stage43ahImageBlobProtected) return true;
-      var blocks = [];
-      try{ blocks = (Array.isArray(s.leftBlocks) ? s.leftBlocks : []).concat(Array.isArray(s.rightBlocks) ? s.rightBlocks : []); }catch(_err){ blocks = []; }
-      return blocks.some(function(b){ var sub=String(b&&b.importSubmode||'').toLowerCase(); var role=String(b&&b.importRole||'').toLowerCase(); return sub.indexOf('visual-blob')>=0 || role==='text-image'; });
-    }
-
     function stage43jIsImportPreviewLocked(slide){
       const s = slide || {};
       const meta = s.importMeta && typeof s.importMeta === 'object' ? s.importMeta : {};
@@ -121,15 +99,9 @@ function decodeLiteralNewlines(value){
       // so manual edits such as fixing ext{...} -> \text{...} could disappear.
       if(Array.isArray(editedLeftBlocks)) out.leftBlocks = clone(editedLeftBlocks);
       if(Array.isArray(editedRightBlocks)) out.rightBlocks = clone(editedRightBlocks);
-      if(stage43ahIsProtectedImageBlobSlide(out) && stage43ahLooksLikeCoverTitle(fields.title.value) && !(out.importMeta && Number(out.importMeta.sourcePageNumber || 1) === 1)){
-        out.title = out.title || ('Page ' + (out.importMeta && (out.importMeta.sourcePageNumber || out.importMeta.pageNumber) || ''));
-        out.kicker = out.kicker || 'Imported PDF page';
-        out.lede = out.lede || '';
-      }else{
-        out.title = fields.title.value || out.title || '';
-        out.kicker = fields.kicker.value || out.kicker || '';
-        out.lede = fields.lede.value || out.lede || '';
-      }
+      out.title = fields.title.value || out.title || '';
+      out.kicker = fields.kicker.value || out.kicker || '';
+      out.lede = fields.lede.value || out.lede || '';
       out.notesTitle = fields.notesTitle.value || out.notesTitle || 'Speaker notes';
       out.notesBody = fields.notesBody.value || out.notesBody || '';
       out.__stage43jPreviewLockPreserved = true;
@@ -317,13 +289,37 @@ function decodeLiteralNewlines(value){
       }
       return nextBlock;
     }
+    function stage43ajPreviewBelongsToActiveSlide(){
+      try{
+        if(!preview || !preview.querySelector) return true;
+        var hasRenderedSlide = !!preview.querySelector('.slide');
+        if(!hasRenderedSlide) return true;
+        var owner = preview.getAttribute('data-lumina-preview-active-index');
+        var active = String(getActiveIndex());
+        if(owner === active) return true;
+        try{
+          window.__LUMINA_STAGE43AJ_PREVIEW_SYNC_GUARD = {
+            ok:false,
+            skipped:true,
+            reason:'Skipped figure sync from stale preview DOM while active slide was changing.',
+            ownerIndex:owner,
+            activeIndex:active,
+            renderedSlideClass:(preview.querySelector('.slide') && preview.querySelector('.slide').className) || '',
+            at:new Date().toISOString()
+          };
+        }catch(_err){}
+        return false;
+      }catch(_err){ return false; }
+    }
     function syncPreviewFiguresToDraft(updateSnippet = true){
       if(isSyncingPreviewFigures()) return;
+      if(!stage43ajPreviewBelongsToActiveSlide()) return;
       setSyncingPreviewFigures(true);
       try{
         Array.from((preview || document).querySelectorAll('.figure-embed[data-column]')).forEach(embed=>saveFigureEmbedToDraft(embed));
         if(updateSnippet){
-          snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2);
+          var draftForSnippet = currentDraftSlide();
+          snippetOutput.value = JSON.stringify(slideForSnippet(draftForSnippet), null, 2);
         }
       } finally {
         setSyncingPreviewFigures(false);

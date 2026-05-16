@@ -36,20 +36,12 @@ function safeNum(value, fallback){
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 }
-
-function stage43afRepairLatexTextCommands(value){
-  let s = String(value == null ? '' : value);
-  // Undo damage from earlier builds that decoded the leading "\\t" in "\\text" as a tab/space.
-  s = s.replace(/\t(?=ext\s*\{)/g, '\\t');
-  s = s.replace(/(^|[^\\A-Za-z])ext\s*\{/g, '$1\\text{');
-  return s;
-}
 function decodeLiteralNewlines(value){
-  return stage43afRepairLatexTextCommands(String(value || '')
+  return String(value || '')
     .replace(/\\r\\n/g, '\n')
     .replace(/\\n/g, '\n')
     .replace(/\\r/g, '\n')
-    .replace(/\\t(?![A-Za-z])/g, ' '));
+    .replace(/\\t/g, ' ');
 }
 function normalizeLayout(layout){
   const l = layout || {};

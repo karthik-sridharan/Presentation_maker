@@ -820,8 +820,16 @@ const {
 } = editorSelectionApi;
 
 function buildPreview(){
-  preview.innerHTML = buildSlideMarkup(currentDraftSlide());
-  snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2);
+  const draftForPreview = currentDraftSlide();
+  preview.innerHTML = buildSlideMarkup(draftForPreview);
+  try{
+    preview.setAttribute('data-lumina-preview-active-index', String(activeIndex));
+    preview.setAttribute('data-lumina-preview-rendered-at', new Date().toISOString());
+    const meta = draftForPreview && draftForPreview.importMeta || {};
+    preview.setAttribute('data-lumina-preview-source-page', String(meta.sourcePageNumber || meta.pageNumber || meta.sourcePageIndex || ''));
+    window.__LUMINA_STAGE43AJ_PREVIEW_OWNER = { activeIndex:activeIndex, sourcePage:meta.sourcePageNumber || meta.pageNumber || meta.sourcePageIndex || null, at:new Date().toISOString() };
+  }catch(_err){}
+  snippetOutput.value = JSON.stringify(slideForSnippet(draftForPreview), null, 2);
   initPreviewBlockSelection();
   updatePreviewScale();
   updatePreviewGuides();
@@ -2167,7 +2175,7 @@ function stage43lRefreshFloatingBlockActions(){
     btn.style.cursor = info.hasBlock ? 'pointer' : 'not-allowed';
   });
   try{
-    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43ah-image-blob-import-lock-no-title-leak-20260515-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
+    window.__LUMINA_STAGE43L_FLOATING_BLOCK_ACTIONS = { ready:true, stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', mineruButton:true, hasBlock:info.hasBlock, column:info.column, index:info.index, mode:info.block && info.block.mode || null, title:info.block && info.block.title || '', hasImageSrc:!!info.imageSrc, fromFigureBox:!!info.fromFigureBox, fromPreviewTarget:!!info.fromPreviewTarget, at:new Date().toISOString() };
   }catch(_err){}
 }
 setTimeout(stage43lEnsureFloatingBlockActions, 800);
