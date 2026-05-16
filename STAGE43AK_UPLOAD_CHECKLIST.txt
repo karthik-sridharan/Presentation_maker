@@ -1,0 +1,16 @@
+Stage 43AK frontend overlay upload checklist
+
+Upload the CONTENTS of this folder to the GitHub repo root:
+- index.html -> repo root index.html
+- js/ -> repo root js/
+
+Do not upload the outer folder itself.
+
+After upload, open:
+index.html?v=stage43ak-verified-image-blob-source-guard-text-fix-20260516-1&clearLuminaStorage=1
+
+Browser checks:
+window.LUMINA_STAGE
+window.__LUMINA_STAGE43AK_IMAGE_BLOB_SOURCE_GUARD
+window.__LUMINA_STAGE43AK_PREVIEW_SYNC_GUARD
+window.__LUMINA_STAGE43AK_PREVIEW_OWNER
