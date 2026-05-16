@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43v-block-edit-mathpix-selection-fix-20260514-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1336,7 +1336,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1676,7 +1676,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -2043,17 +2043,6 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     else showToast('Mathpix patch repair completed; source slides stayed loaded because no patch changes were needed.');
     return true;
   }
-  function stage43ajIsAllImageVisualBlobImportedBatch(slides){
-      return (slides || []).some(function(slide){
-        var blocks = [];
-        try{ blocks = (Array.isArray(slide.leftBlocks) ? slide.leftBlocks : []).concat(Array.isArray(slide.rightBlocks) ? slide.rightBlocks : []); }catch(_err){ blocks = []; }
-        return blocks.some(function(block){
-          var role = String(block && block.importRole || '').toLowerCase();
-          var sub = String(block && block.importSubmode || '').toLowerCase();
-          return role === 'text-image' || sub.indexOf('visual-blob-patch') >= 0;
-        });
-      });
-    }
   function isDocAiSemanticImportedBatch(slides) {
     return (slides || []).some(function(slide){
       var meta = slide && slide.importMeta && typeof slide.importMeta === 'object' ? slide.importMeta : {};
@@ -2117,10 +2106,8 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
       if (!usedExtractionBackend) return importDeck;
       return reviewExtractedSlidesWithAlternates(imported, deckTitle).then(function(reviewedSlides){
         imported = reviewedSlides;
-        var skipBackgroundAiRepair = isDocAiSemanticImportedBatch(reviewedSlides) || stage43ajIsAllImageVisualBlobImportedBatch(reviewedSlides);
-        if(isDocAiSemanticImportedBatch(reviewedSlides)) warnings.push('Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits. Use the import review dialog to choose editable extraction or rendered page image per slide.');
-        if(stage43ajIsAllImageVisualBlobImportedBatch(reviewedSlides)) warnings.push('PyMuPDF image-blob import kept visual text/math patches and skipped automatic background Mathpix repair. Use selected-block Mathpix/MinerU extraction manually on the patches you want to convert.');
-        try{ if(stage43ajIsAllImageVisualBlobImportedBatch(reviewedSlides)) globalThis.__LUMINA_STAGE43AJ_IMAGE_BLOB_BACKGROUND_REPAIR_DISABLED = { ok:true, slideCount:reviewedSlides.length, at:new Date().toISOString() }; }catch(_err){}
+        var skipBackgroundAiRepair = isDocAiSemanticImportedBatch(reviewedSlides);
+        if(skipBackgroundAiRepair) warnings.push('Google Document AI fast import used layout/OCR fallback and skipped backend/background AI rebuild to avoid long waits. Use the import review dialog to choose editable extraction or rendered page image per slide.');
         return { deckTitle:deckTitle, slides:reviewedSlides, theme:null, presentationOptions:null, aiReviewed:skipBackgroundAiRepair, aiRepairPending:aiReviewAfterImportEnabled() && !skipBackgroundAiRepair };
       });
     }).then(function (importDeck) {
@@ -2200,7 +2187,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43aj-image-blob-preview-sync-guard-text-fix-20260516-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;

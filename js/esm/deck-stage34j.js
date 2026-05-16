@@ -142,7 +142,7 @@ export function createApi(deps) {
     snippetOutput.value = JSON.stringify(slideForSnippet(slide), null, 2);
     showToast('Formatted snippet.');
   }
-  function stage43ajClearPreviewBeforeSlideSwitch(nextIndex) {
+  function stage43akClearPreviewBeforeSlideSwitch(nextIndex) {
     try {
       var p = document.getElementById('preview');
       if (p) {
@@ -150,7 +150,7 @@ export function createApi(deps) {
         p.removeAttribute('data-lumina-preview-active-index');
         p.setAttribute('data-lumina-preview-switching-to', String(nextIndex));
       }
-      window.__LUMINA_STAGE43AJ_SLIDE_SWITCH_PREVIEW_CLEARED = { nextIndex: nextIndex, at: new Date().toISOString() };
+      window.__LUMINA_STAGE43AK_SLIDE_SWITCH_PREVIEW_CLEARED = { nextIndex:nextIndex, at:new Date().toISOString() };
     } catch (_err) {}
   }
   function renderDeckList() {
@@ -177,7 +177,7 @@ export function createApi(deps) {
         saveCurrentBlockToDraft();
         saveCurrentSlideToDeck();
         var nextIndex = Number(btn.dataset.index);
-        stage43ajClearPreviewBeforeSlideSwitch(nextIndex);
+        stage43akClearPreviewBeforeSlideSwitch(nextIndex);
         setActiveIndex(nextIndex);
         applySlideToForm(getSlides()[nextIndex]);
         buildPreview();

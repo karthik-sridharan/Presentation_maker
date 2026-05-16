@@ -64,7 +64,7 @@ export function createApi(deps){
       .replace(/\\r\\n/g, '\n')
       .replace(/\\n/g, '\n')
       .replace(/\\r/g, '\n')
-      .replace(/\\t/g, ' ');
+      .replace(/\\t(?![A-Za-z{])/g, ' ');
   }
   function normalizeLayout(layout){
     var l = layout || {};

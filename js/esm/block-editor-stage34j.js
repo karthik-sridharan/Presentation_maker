@@ -218,37 +218,26 @@ function required(deps, name){
       }
       return nextBlock;
     }
-    function stage43ajPreviewBelongsToActiveSlide(){
+    function stage43akPreviewBelongsToActiveSlide(){
       try{
         if(!preview || !preview.querySelector) return true;
-        var hasRenderedSlide = !!preview.querySelector('.slide');
-        if(!hasRenderedSlide) return true;
-        var owner = preview.getAttribute('data-lumina-preview-active-index');
-        var active = String(getActiveIndex());
+        if(!preview.querySelector('.slide')) return true;
+        const owner = preview.getAttribute('data-lumina-preview-active-index');
+        if(owner == null || owner === '') return true;
+        const active = String(getActiveIndex());
         if(owner === active) return true;
-        try{
-          window.__LUMINA_STAGE43AJ_PREVIEW_SYNC_GUARD = {
-            ok:false,
-            skipped:true,
-            reason:'Skipped figure sync from stale preview DOM while active slide was changing.',
-            ownerIndex:owner,
-            activeIndex:active,
-            renderedSlideClass:(preview.querySelector('.slide') && preview.querySelector('.slide').className) || '',
-            at:new Date().toISOString()
-          };
-        }catch(_err){}
+        try{ window.__LUMINA_STAGE43AK_PREVIEW_SYNC_GUARD = { ok:false, skipped:true, ownerIndex:owner, activeIndex:active, reason:'Skipped automatic preview figure sync from stale preview DOM.', at:new Date().toISOString() }; }catch(_err){}
         return false;
       }catch(_err){ return false; }
     }
     function syncPreviewFiguresToDraft(updateSnippet = true){
       if(isSyncingPreviewFigures()) return;
-      if(!stage43ajPreviewBelongsToActiveSlide()) return;
+      if(!stage43akPreviewBelongsToActiveSlide()) return;
       setSyncingPreviewFigures(true);
       try{
         Array.from((preview || document).querySelectorAll('.figure-embed[data-column]')).forEach(embed=>saveFigureEmbedToDraft(embed));
         if(updateSnippet){
-          var draftForSnippet = currentDraftSlide();
-          snippetOutput.value = JSON.stringify(slideForSnippet(draftForSnippet), null, 2);
+          snippetOutput.value = JSON.stringify(slideForSnippet(currentDraftSlide()), null, 2);
         }
       } finally {
         setSyncingPreviewFigures(false);

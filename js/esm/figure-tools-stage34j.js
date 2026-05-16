@@ -210,6 +210,39 @@ function applySerializedImageState(box){
   img.style.maxHeight = 'none';
   return true;
 }
+
+function stage43akFigureSrcFromHtml(html){
+  try{
+    const m = String(html || '').match(/<img\b[^>]*\bsrc=["']([^"']+)["']/i);
+    return m ? String(m[1] || '') : '';
+  }catch(_err){ return ''; }
+}
+function stage43akImportedFigureSourceGuard(existingBlock, serializedFigure, embed){
+  try{
+    const block = existingBlock || {};
+    const isImported = String(block.mode || '').toLowerCase() === 'import-image' || !!block.importRole || !!block.importSubmode || !!block.importSourceLayout;
+    if(!isImported) return true;
+    const beforeSrc = stage43akFigureSrcFromHtml(block.content || '');
+    const afterSrc = stage43akFigureSrcFromHtml(serializedFigure || '');
+    if(!beforeSrc || !afterSrc) return true;
+    if(beforeSrc === afterSrc) return true;
+    try{
+      window.__LUMINA_STAGE43AK_IMAGE_BLOB_SOURCE_GUARD = {
+        ok:false,
+        skipped:true,
+        reason:'Blocked stale preview figure sync because imported image src did not match the target block.',
+        column:embed && embed.dataset ? embed.dataset.column || '' : '',
+        blockIndex:embed && embed.dataset ? embed.dataset.blockIndex || '' : '',
+        figureIndex:embed && embed.dataset ? embed.dataset.figureIndex || '' : '',
+        beforePreview:beforeSrc.slice(0,96),
+        afterPreview:afterSrc.slice(0,96),
+        at:new Date().toISOString()
+      };
+    }catch(_err){}
+    return false;
+  }catch(_err){ return true; }
+}
+
 function isManualFigureEmbed(embed){
   const box = embed ? embed.querySelector('.figure-box') : null;
   if(!box) return false;
@@ -224,6 +257,7 @@ function saveFigureEmbedToDraft(embed){
   const box = embed.querySelector('.figure-box');
   if(!box) return;
   const serialized = serializeFigureBox(box);
+  if(!stage43akImportedFigureSourceGuard(arr[blockIndex], serialized, embed)) return;
   arr[blockIndex].content = replaceNthFigureHtml(arr[blockIndex].content, figureIndex, serialized);
   if(currentColumnName() === column && selectedIndex(column) === blockIndex){
     blockFields.content.value = arr[blockIndex].content;
