@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43v-block-edit-mathpix-selection-fix-20260514-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43am-chunked-image-blob-extract-20260516-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage43am-chunked-image-blob-extract-20260516-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1336,7 +1336,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43am-chunked-image-blob-extract-20260516-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1676,7 +1676,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage43am-chunked-image-blob-extract-20260516-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1688,35 +1688,30 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     catch(_err){ return String(endpoint || '').slice(0, 180); }
   }
 
-  function extractPresentationFile(file) {
-    if (typeof fetch !== 'function' || typeof FormData !== 'function') return Promise.reject(new Error('This browser does not support fetch/FormData upload.'));
-    var engine = extractionEngineValue();
-    var endpoint = effectiveExtractionEndpointForEngine(extractionEndpointValue(), engine);
-    if (!endpoint) return Promise.reject(new Error('Set an extraction backend endpoint first.'));
+  function stage43amBuildExtractionForm(file, attempt) {
     var form = new FormData();
     form.append('file', file, file.name || 'presentation');
     var kind = fileKind(file);
     if (kind) form.append('kind', kind);
-    // Stage 41J: explicitly request all pages/slides so a stale Cloud Run env
-    // such as LUMINA_EXTRACT_MAX_PDF_PAGES=1 cannot silently limit imports.
-    form.append('maxPdfPages', String(DEFAULT_MAX_IMPORT_PAGES));
+    form.append('maxPdfPages', String(attempt.maxPdfPages || DEFAULT_MAX_IMPORT_PAGES));
+    if (attempt.pageStart) form.append('pageStart', String(attempt.pageStart));
+    if (attempt.pageCount) form.append('pageCount', String(attempt.pageCount));
     form.append('maxPptxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
     form.append('maxSlides', String(DEFAULT_MAX_IMPORT_SLIDES));
-    // Stage 41J: import PDF images as individual image blocks; do not include a full-page
-    // background bitmap unless explicitly added later.
-    form.append('includePdfBackground', '0');
-    form.append('includePdfReviewAlternates', '1');
-    form.append('includePdfRender', '1');
-    form.append('extractEngine', engine === 'docai' ? 'docai-semantic' : engine);
-    if (engine.indexOf('all-image') >= 0) {
+    form.append('maxImagesPerSlide', String(attempt.maxImagesPerSlide || 24));
+    form.append('includePdfBackground', String(attempt.includePdfBackground || '0'));
+    form.append('includePdfReviewAlternates', String(attempt.includePdfReviewAlternates || '0'));
+    form.append('includePdfRender', String(attempt.includePdfRender || '0'));
+    form.append('extractEngine', String(attempt.extractEngine || extractionEngineValue()));
+    if (String(attempt.extractEngine || '').indexOf('all-image') >= 0) {
       form.append('allTextAsImage', '1');
-      form.append('textImageZoom', '2.25');
+      form.append('textImageZoom', String(attempt.textImageZoom || '2.25'));
     }
-    if (engine.indexOf('math-image') >= 0) {
+    if (String(attempt.extractEngine || '').indexOf('math-image') >= 0) {
       form.append('mathAsImage', '1');
-      form.append('mathImageZoom', '2.25');
+      form.append('mathImageZoom', String(attempt.mathImageZoom || '2.25'));
     }
-    if (engine === 'docai') {
+    if (String(attempt.extractEngine || '') === 'docai-semantic' || String(attempt.extractEngine || '') === 'docai') {
       form.append('semanticAi', '0');
       form.append('semanticMode', 'docai-fast-no-ai-rebuild');
       form.append('preserveFigures', '0');
@@ -1725,39 +1720,135 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
       form.append('semanticProvider', aiReviewProviderValue());
       form.append('semanticModel', aiReviewModelValue());
     }
-    // Stage 42F: keep rendered review alternatives small enough for Safari/Cloud Run.
-    form.append('reviewRenderZoom', engine === 'docai' ? '0.36' : '0.45');
-    form.append('reviewJpegQuality', engine === 'docai' ? '48' : '48');
-    form.append('vectorRenderZoom', '0.95');
-    form.append('vectorJpegQuality', '58');
+    form.append('reviewRenderZoom', String(attempt.reviewRenderZoom || 0.30));
+    form.append('reviewJpegQuality', String(attempt.reviewJpegQuality || 42));
+    form.append('vectorRenderZoom', String(attempt.vectorRenderZoom || 0.70));
+    form.append('vectorJpegQuality', String(attempt.vectorJpegQuality || 48));
+    form.append('httpSafeMb', String(attempt.httpSafeMb || 8));
+    form.append('attemptLabel', String(attempt.label || 'extract'));
+    return form;
+  }
+  function stage43amExtractionAttempts(engine) {
+    if (engine === 'pymupdf-all-image') {
+      return [
+        { label:'PyMuPDF image-patch import: keep all PDF text and math as real cropped image blocks for later extraction', extractEngine:'pymupdf-all-image', includePdfReviewAlternates:'1', includePdfRender:'1', includePdfBackground:'0', maxImagesPerSlide:48, reviewRenderZoom:0.45, reviewJpegQuality:48, vectorRenderZoom:0.95, vectorJpegQuality:58, textImageZoom:2.25, httpSafeMb:16, maxPdfPages:DEFAULT_MAX_IMPORT_PAGES },
+        { label:'lean retry: PyMuPDF image-patch import without rendered review alternates', extractEngine:'pymupdf-all-image', includePdfReviewAlternates:'0', includePdfRender:'1', includePdfBackground:'0', maxImagesPerSlide:36, reviewRenderZoom:0.30, reviewJpegQuality:42, vectorRenderZoom:0.70, vectorJpegQuality:48, textImageZoom:2.0, httpSafeMb:10, maxPdfPages:DEFAULT_MAX_IMPORT_PAGES }
+      ];
+    }
+    if (engine === 'docai') {
+      return [{ label:'Google Document AI editable import with review choices', extractEngine:'docai-semantic', includePdfReviewAlternates:'1', includePdfRender:'1', includePdfBackground:'0', maxImagesPerSlide:0, reviewRenderZoom:0.36, reviewJpegQuality:48, vectorRenderZoom:0.70, vectorJpegQuality:50, httpSafeMb:22, maxPdfPages:DEFAULT_MAX_IMPORT_PAGES }];
+    }
+    return [{ label:'backend extraction', extractEngine:engine, includePdfReviewAlternates:'1', includePdfRender:'1', includePdfBackground:'0', maxImagesPerSlide:24, reviewRenderZoom:0.45, reviewJpegQuality:48, vectorRenderZoom:0.95, vectorJpegQuality:58, httpSafeMb:16, maxPdfPages:DEFAULT_MAX_IMPORT_PAGES }];
+  }
+  function stage43amRetryable(msg) {
+    msg = String(msg || '');
+    if (/Unauthorized proxy request|Set an extraction backend endpoint|Unsupported extraction file type/i.test(msg)) return false;
+    return /Load failed|Failed to fetch|NetworkError|response.*too large|too large|413|429|500|502|503|504|timeout|socket|interrupted|Empty response/i.test(msg) || !msg;
+  }
+  async function stage43amPostAttempt(endpoint, headers, file, attempt, allowEmpty) {
+    var startedAt = Date.now();
+    stage42sPublishImportStatus({ phase:attempt.pageStart ? 'chunked-extract-attempt' : 'extract-attempt', message:(attempt.pageStart ? ('Chunked image-blob extraction: pages ' + attempt.pageStart + '-' + (attempt.pageStart + attempt.pageCount - 1)) : ('Running extraction: ' + attempt.label)), attempt:attempt.label, extractEngine:attempt.extractEngine, pageStart:attempt.pageStart || null, pageCount:attempt.pageCount || null, pending:true });
+    var res;
+    try { res = await fetch(endpoint, { method:'POST', headers:headers, body:stage43amBuildExtractionForm(file, attempt), cache:'no-store', mode:'cors' }); }
+    catch (fetchErr) { throw new Error(await describeExtractionFetchFailure(endpoint, fetchErr)); }
+    stage42sPublishImportStatus({ phase:'reading-backend-response', message:'Backend responded; reading extracted slides…', httpStatus:res.status, elapsedMs:Date.now()-startedAt, pending:true });
+    var text = await res.text();
+    var payload = null;
+    try { payload = text ? JSON.parse(text) : null; }
+    catch (_err) { throw new Error(text ? text.slice(0, 500) : 'Empty response from extraction backend.'); }
+    if (!res.ok || !payload || payload.ok === false) {
+      var msg = payload && payload.error && payload.error.message ? payload.error.message : ('Extraction backend failed with HTTP ' + res.status + '.');
+      throw new Error(msg);
+    }
+    if ((!Array.isArray(payload.slides) || !payload.slides.length) && !allowEmpty) throw new Error('Extraction backend returned no slides.');
+    payload.warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
+    payload.meta = Object.assign({}, payload.meta || {}, { stage43amAttempt:attempt.label, elapsedMs:Date.now()-startedAt });
+    return payload;
+  }
+  function stage43amMergeChunkPayloads(chunks, previousErrors) {
+    var slides = [];
+    var warnings = ['Stage 43AM used chunked PyMuPDF image-blob extraction to avoid browser/Cloud Run response-size failures.'];
+    var first = chunks[0] || null;
+    var pageCount = 0;
+    chunks.forEach(function (payload) {
+      if (payload && payload.source && payload.source.pageCount) pageCount = Math.max(pageCount, Number(payload.source.pageCount) || 0);
+      if (Array.isArray(payload && payload.slides)) payload.slides.forEach(function (s) { slides.push(s); });
+      if (Array.isArray(payload && payload.warnings)) payload.warnings.forEach(function (w) { warnings.push(w); });
+    });
+    if (previousErrors && previousErrors.length) warnings.push('Initial full extraction attempts failed before chunking: ' + previousErrors.join(' | ').slice(0, 1600));
+    return { ok:true, deckTitle:(first && first.deckTitle) || 'Imported PDF', source:Object.assign({}, (first && first.source) || {}, { importedPages:slides.length, pageCount:pageCount || slides.length, importMode:'pymupdf-all-image-chunked' }), slides:slides, warnings:warnings, meta:Object.assign({}, (first && first.meta) || {}, { stage43amChunkedImageBlob:true, chunkCount:chunks.length, previousErrors:previousErrors || [] }) };
+  }
+  async function stage43amExtractChunks(file, endpoint, headers, previousErrors) {
+    var chunks = [];
+    var pageStart = 1;
+    var pageCountKnown = 0;
+    var maxPages = DEFAULT_MAX_IMPORT_PAGES;
+    var chunkSize = 2;
+    while (pageStart <= maxPages) {
+      var attempt = { label:'Stage 43AM chunked PyMuPDF image-patch import pages ' + pageStart + '-' + Math.min(maxPages, pageStart + chunkSize - 1), extractEngine:'pymupdf-all-image', includePdfReviewAlternates:'0', includePdfRender:'0', includePdfBackground:'0', maxImagesPerSlide:64, reviewRenderZoom:0.20, reviewJpegQuality:36, vectorRenderZoom:0.62, vectorJpegQuality:42, textImageZoom:1.65, httpSafeMb:6, maxPdfPages:chunkSize, pageStart:pageStart, pageCount:chunkSize };
+      try {
+        var payload = await stage43amPostAttempt(endpoint, headers, file, attempt, true);
+        var slides = Array.isArray(payload.slides) ? payload.slides : [];
+        if (!slides.length) break;
+        chunks.push(payload);
+        if (payload.source && payload.source.pageCount) pageCountKnown = Math.max(pageCountKnown, Number(payload.source.pageCount) || 0);
+        pageStart += slides.length;
+        if (pageCountKnown && pageStart > Math.min(pageCountKnown, maxPages)) break;
+      } catch (err) {
+        var msg = err && err.message ? err.message : String(err || 'Chunk failed.');
+        if (pageStart > 1 && /No pages|no slides|out of range|beyond/i.test(msg)) break;
+        var rescuedAny = false;
+        for (var singleStart = pageStart; singleStart < pageStart + chunkSize && singleStart <= maxPages; singleStart++) {
+          var single = Object.assign({}, attempt, { label:'Stage 43AM single-page rescue image-patch import page ' + singleStart, maxPdfPages:1, pageStart:singleStart, pageCount:1, maxImagesPerSlide:72, textImageZoom:1.45, vectorRenderZoom:0.52, vectorJpegQuality:38, httpSafeMb:4 });
+          var p = await stage43amPostAttempt(endpoint, headers, file, single, true);
+          var ss = Array.isArray(p.slides) ? p.slides : [];
+          if (!ss.length) { if (rescuedAny) break; throw new Error('No slides in single-page rescue.'); }
+          chunks.push(p);
+          rescuedAny = true;
+          if (p.source && p.source.pageCount) pageCountKnown = Math.max(pageCountKnown, Number(p.source.pageCount) || 0);
+        }
+        pageStart += chunkSize;
+        if (pageCountKnown && pageStart > Math.min(pageCountKnown, maxPages)) break;
+      }
+    }
+    if (!chunks.length) throw new Error('Chunked image-blob extraction did not return any slides.');
+    var merged = stage43amMergeChunkPayloads(chunks, previousErrors);
+    stage42sPublishImportStatus({ phase:'chunked-extract-complete', message:'Chunked extraction finished with ' + merged.slides.length + ' slides.', slideCount:merged.slides.length, chunkCount:chunks.length, pending:true, ok:true });
+    try { globalThis.__LUMINA_STAGE43AM_CHUNKED_IMAGE_BLOB_EXTRACTION = { ok:true, slides:merged.slides.length, chunks:chunks.length, previousErrors:previousErrors || [], at:new Date().toISOString() }; } catch (_err) {}
+    return merged;
+  }
+  async function extractPresentationFile(file) {
+    if (typeof fetch !== 'function' || typeof FormData !== 'function') throw new Error('This browser does not support fetch/FormData upload.');
+    var engine = extractionEngineValue();
+    var endpoint = effectiveExtractionEndpointForEngine(extractionEndpointValue(), engine);
+    if (!endpoint) throw new Error('Set an extraction backend endpoint first.');
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
-    var startedAt = Date.now();
-    stage42sPublishImportStatus({ phase:'waiting-for-backend', message:'Uploaded file; waiting for extraction backend… ' + (engine === 'docai' ? 'Document AI fast mode is on: backend AI rebuild is skipped, but rendered review choices are requested.' : (engine.indexOf('mineru') >= 0 ? 'MinerU + PyMuPDF mode is on: MinerU semantic parsing runs with PyMuPDF review alternatives.' : (engine.indexOf('all-image') >= 0 ? 'PyMuPDF image-patch mode is on: every text or math region is kept as a real cropped image block for later extraction.' : (engine.indexOf('math-image') >= 0 ? 'PyMuPDF math-image hybrid is on: prose stays editable and math-like regions are cropped as image blobs.' : 'Extraction is running.')))), endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, filename:file && file.name || '', fileSize:file && file.size || 0, pending:true, startedAt:new Date().toISOString() });
-    return fetch(endpoint, { method:'POST', headers:headers, body:form, cache:'no-store', mode:'cors' }).catch(function (fetchErr) {
-      stage42sPublishImportStatus({ phase:'backend-fetch-error', pending:false, ok:false, message:'Extraction backend request failed before a response was received.', error:fetchErr && fetchErr.message ? fetchErr.message : String(fetchErr || 'Fetch failed'), elapsedMs:Date.now()-startedAt });
-      return describeExtractionFetchFailure(endpoint, fetchErr).then(function (message) { throw new Error(message); });
-    }).then(function (res) {
-      stage42sPublishImportStatus({ phase:'reading-backend-response', message:'Backend responded; reading extracted slides…', httpStatus:res.status, elapsedMs:Date.now()-startedAt, pending:true });
-      return res.text().then(function (text) {
-        var payload = null;
-        try { payload = text ? JSON.parse(text) : null; }
-        catch (_err) { payload = { ok:false, error:{ message:text ? text.slice(0, 500) : 'Empty response from extraction backend.' } }; }
-        if (!res.ok || !payload || payload.ok === false) {
-          var msg = payload && payload.error && payload.error.message ? payload.error.message : ('Extraction backend failed with HTTP ' + res.status + '.');
-          stage42sPublishImportStatus({ phase:'backend-error', pending:false, ok:false, message:msg, httpStatus:res.status, responsePreview:text ? text.slice(0, 900) : '', elapsedMs:Date.now()-startedAt });
-          throw new Error(msg);
-        }
-        if (!Array.isArray(payload.slides) || !payload.slides.length) {
-          stage42sPublishImportStatus({ phase:'backend-empty', pending:false, ok:false, message:'Extraction backend returned no slides.', httpStatus:res.status, elapsedMs:Date.now()-startedAt });
-          throw new Error('Extraction backend returned no slides.');
-        }
-        stage42sPublishImportStatus({ phase:'backend-success', pending:true, ok:true, message:'Backend returned ' + payload.slides.length + ' slide' + (payload.slides.length === 1 ? '' : 's') + '; preparing import…', slideCount:payload.slides.length, httpStatus:res.status, elapsedMs:Date.now()-startedAt, meta:payload.meta || null, source:payload.source || null });
-        try { globalThis.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '' }; } catch (_err) {}
+    var attempts = stage43amExtractionAttempts(engine);
+    var errors = [];
+    stage42sPublishImportStatus({ phase:'extract-start', message:'Starting extraction for ' + (file && file.name || 'selected file') + ' using ' + engine + '…', filename:file && file.name || '', fileSize:file && file.size || 0, endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, attemptCount:attempts.length, pending:true, startedAt:new Date().toISOString() });
+    for (var i = 0; i < attempts.length; i++) {
+      var attempt = attempts[i];
+      try {
+        var payload = await stage43amPostAttempt(endpoint, headers, file, attempt, false);
+        stage42sPublishImportStatus({ phase:'extract-complete', message:'Extraction finished with ' + payload.slides.length + ' slides.', slideCount:payload.slides.length, pending:true, ok:true });
+        try { globalThis.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '', attempt:attempt.label, previousErrors:errors.slice() }; } catch (_err) {}
         return payload;
-      });
-    });
+      } catch (err) {
+        var msg = err && err.message ? err.message : String(err || 'Extraction failed.');
+        errors.push(attempt.label + ': ' + msg);
+        stage42sPublishImportStatus({ phase:'extract-attempt-error', message:'Extraction attempt failed: ' + msg, attempt:attempt.label, attemptIndex:i + 1, attemptCount:attempts.length, pending:i < attempts.length - 1, ok:false, error:msg });
+        if (i >= attempts.length - 1 || !stage43amRetryable(msg)) {
+          if (engine === 'pymupdf-all-image' && stage43amRetryable(msg)) {
+            try { return await stage43amExtractChunks(file, endpoint, headers, errors.slice()); }
+            catch (chunkErr) { errors.push('chunked image-blob retry: ' + (chunkErr && chunkErr.message ? chunkErr.message : String(chunkErr || 'failed'))); }
+          }
+          throw new Error(msg + (errors.length > 1 ? '\n\nTried extraction modes:\n- ' + errors.join('\n- ') : ''));
+        }
+      }
+    }
+    throw new Error(errors.join('\n'));
   }
   function stage43gIsFreeformReviewSlide(slide) {
     return !!(slide && slide.importMeta && (slide.importMeta.freeform || slide.importMeta.coordinateSystem || slide.importMeta.sourcePageNumber || slide.importMeta.sourcePageIndex));
@@ -2187,7 +2278,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43v-block-edit-mathpix-selection-fix-20260514-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43am-chunked-image-blob-extract-20260516-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
