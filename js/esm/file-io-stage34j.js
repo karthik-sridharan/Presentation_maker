@@ -410,7 +410,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43am-chunked-image-blob-extract-20260516-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43an-rate-limit-backoff-chunked-image-blob-20260517-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -566,7 +566,7 @@ Previous output to repair:
     if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
     addAiSourceIdsToSourceSlides(sourceSlides);
     const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-    const stats = { stage:'stage43am-chunked-image-blob-extract-20260516-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+    const stats = { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
     const outputSlides = [];
     const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
     for(let si = 0; si < maxSlides; si++){
@@ -1336,7 +1336,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43am-chunked-image-blob-extract-20260516-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1676,7 +1676,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
   function stage42sPublishImportStatus(update){
     try{
       var prev = globalThis.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-      var next = Object.assign({}, prev, update || {}, { stage:'stage43am-chunked-image-blob-extract-20260516-1', updatedAt:new Date().toISOString() });
+      var next = Object.assign({}, prev, update || {}, { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', updatedAt:new Date().toISOString() });
       if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
       globalThis.__LUMINA_STAGE42S_IMPORT_STATUS = next;
       globalThis.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1688,7 +1688,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     catch(_err){ return String(endpoint || '').slice(0, 180); }
   }
 
-  function stage43amBuildExtractionForm(file, attempt) {
+  function stage43anBuildExtractionForm(file, attempt) {
     var form = new FormData();
     form.append('file', file, file.name || 'presentation');
     var kind = fileKind(file);
@@ -1728,7 +1728,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     form.append('attemptLabel', String(attempt.label || 'extract'));
     return form;
   }
-  function stage43amExtractionAttempts(engine) {
+  function stage43anExtractionAttempts(engine) {
     if (engine === 'pymupdf-all-image') {
       return [
         { label:'PyMuPDF image-patch import: keep all PDF text and math as real cropped image blocks for later extraction', extractEngine:'pymupdf-all-image', includePdfReviewAlternates:'1', includePdfRender:'1', includePdfBackground:'0', maxImagesPerSlide:48, reviewRenderZoom:0.45, reviewJpegQuality:48, vectorRenderZoom:0.95, vectorJpegQuality:58, textImageZoom:2.25, httpSafeMb:16, maxPdfPages:DEFAULT_MAX_IMPORT_PAGES },
@@ -1740,16 +1740,54 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     }
     return [{ label:'backend extraction', extractEngine:engine, includePdfReviewAlternates:'1', includePdfRender:'1', includePdfBackground:'0', maxImagesPerSlide:24, reviewRenderZoom:0.45, reviewJpegQuality:48, vectorRenderZoom:0.95, vectorJpegQuality:58, httpSafeMb:16, maxPdfPages:DEFAULT_MAX_IMPORT_PAGES }];
   }
-  function stage43amRetryable(msg) {
+  function stage43anRetryable(msg) {
     msg = String(msg || '');
     if (/Unauthorized proxy request|Set an extraction backend endpoint|Unsupported extraction file type/i.test(msg)) return false;
     return /Load failed|Failed to fetch|NetworkError|response.*too large|too large|413|429|500|502|503|504|timeout|socket|interrupted|Empty response/i.test(msg) || !msg;
   }
-  async function stage43amPostAttempt(endpoint, headers, file, attempt, allowEmpty) {
+  function stage43anSleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, Math.max(0, Number(ms) || 0)); });
+  }
+  function stage43anRetryAfterMs(res, fallback) {
+    try {
+      var raw = res && res.headers && res.headers.get && res.headers.get('Retry-After');
+      if (raw) {
+        var n = Number(raw);
+        if (Number.isFinite(n) && n >= 0) return Math.min(45000, Math.max(1000, n * 1000));
+        var date = Date.parse(raw);
+        if (Number.isFinite(date)) return Math.min(45000, Math.max(1000, date - Date.now()));
+      }
+    } catch (_err) {}
+    return fallback;
+  }
+  async function stage43anFetchWithBackoff(endpoint, request, context) {
+    var waits = [0, 4500, 9000, 18000, 30000];
+    var lastErr = null;
+    for (var i = 0; i < waits.length; i++) {
+      if (waits[i] > 0) {
+        stage42sPublishImportStatus({ phase:'chunked-extract-rate-limit-wait', message:'Chunked image-blob extraction paused before retry ' + (i + 1) + ' for pages ' + (context && context.pageStart || '?') + '-' + ((context && context.pageStart && context.pageCount) ? (context.pageStart + context.pageCount - 1) : '?') + '…', pending:true, retryIndex:i + 1, pageStart:context && context.pageStart, pageCount:context && context.pageCount, waitMs:waits[i] });
+        await stage43anSleep(waits[i]);
+      }
+      var res;
+      try { res = await fetch(endpoint, request); }
+      catch (err) { lastErr = err; if (i >= waits.length - 1) throw err; continue; }
+      if (res && res.status === 429 && i < waits.length - 1) {
+        var waitMs = stage43anRetryAfterMs(res, waits[Math.min(i + 1, waits.length - 1)] || 9000);
+        try { await res.text(); } catch (_err) {}
+        stage42sPublishImportStatus({ phase:'chunked-extract-rate-limited', message:'Backend rate limited chunked extraction; waiting and retrying pages ' + (context && context.pageStart || '?') + '-' + ((context && context.pageStart && context.pageCount) ? (context.pageStart + context.pageCount - 1) : '?') + '…', pending:true, httpStatus:429, pageStart:context && context.pageStart, pageCount:context && context.pageCount, waitMs:waitMs });
+        await stage43anSleep(waitMs);
+        continue;
+      }
+      return res;
+    }
+    if (lastErr) throw lastErr;
+    throw new Error('Chunked extraction retry attempts exhausted.');
+  }
+  async function stage43anPostAttempt(endpoint, headers, file, attempt, allowEmpty) {
     var startedAt = Date.now();
     stage42sPublishImportStatus({ phase:attempt.pageStart ? 'chunked-extract-attempt' : 'extract-attempt', message:(attempt.pageStart ? ('Chunked image-blob extraction: pages ' + attempt.pageStart + '-' + (attempt.pageStart + attempt.pageCount - 1)) : ('Running extraction: ' + attempt.label)), attempt:attempt.label, extractEngine:attempt.extractEngine, pageStart:attempt.pageStart || null, pageCount:attempt.pageCount || null, pending:true });
     var res;
-    try { res = await fetch(endpoint, { method:'POST', headers:headers, body:stage43amBuildExtractionForm(file, attempt), cache:'no-store', mode:'cors' }); }
+    try { res = await stage43anFetchWithBackoff(endpoint, { method:'POST', headers:headers, body:stage43anBuildExtractionForm(file, attempt), cache:'no-store', mode:'cors' }, attempt); }
     catch (fetchErr) { throw new Error(await describeExtractionFetchFailure(endpoint, fetchErr)); }
     stage42sPublishImportStatus({ phase:'reading-backend-response', message:'Backend responded; reading extracted slides…', httpStatus:res.status, elapsedMs:Date.now()-startedAt, pending:true });
     var text = await res.text();
@@ -1762,12 +1800,12 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     }
     if ((!Array.isArray(payload.slides) || !payload.slides.length) && !allowEmpty) throw new Error('Extraction backend returned no slides.');
     payload.warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
-    payload.meta = Object.assign({}, payload.meta || {}, { stage43amAttempt:attempt.label, elapsedMs:Date.now()-startedAt });
+    payload.meta = Object.assign({}, payload.meta || {}, { stage43anAttempt:attempt.label, elapsedMs:Date.now()-startedAt });
     return payload;
   }
-  function stage43amMergeChunkPayloads(chunks, previousErrors) {
+  function stage43anMergeChunkPayloads(chunks, previousErrors) {
     var slides = [];
-    var warnings = ['Stage 43AM used chunked PyMuPDF image-blob extraction to avoid browser/Cloud Run response-size failures.'];
+    var warnings = ['Stage 43AN used chunked PyMuPDF image-blob extraction to avoid browser/Cloud Run response-size failures.'];
     var first = chunks[0] || null;
     var pageCount = 0;
     chunks.forEach(function (payload) {
@@ -1776,22 +1814,24 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
       if (Array.isArray(payload && payload.warnings)) payload.warnings.forEach(function (w) { warnings.push(w); });
     });
     if (previousErrors && previousErrors.length) warnings.push('Initial full extraction attempts failed before chunking: ' + previousErrors.join(' | ').slice(0, 1600));
-    return { ok:true, deckTitle:(first && first.deckTitle) || 'Imported PDF', source:Object.assign({}, (first && first.source) || {}, { importedPages:slides.length, pageCount:pageCount || slides.length, importMode:'pymupdf-all-image-chunked' }), slides:slides, warnings:warnings, meta:Object.assign({}, (first && first.meta) || {}, { stage43amChunkedImageBlob:true, chunkCount:chunks.length, previousErrors:previousErrors || [] }) };
+    return { ok:true, deckTitle:(first && first.deckTitle) || 'Imported PDF', source:Object.assign({}, (first && first.source) || {}, { importedPages:slides.length, pageCount:pageCount || slides.length, importMode:'pymupdf-all-image-chunked' }), slides:slides, warnings:warnings, meta:Object.assign({}, (first && first.meta) || {}, { stage43anChunkedImageBlob:true, chunkCount:chunks.length, previousErrors:previousErrors || [] }) };
   }
-  async function stage43amExtractChunks(file, endpoint, headers, previousErrors) {
+  async function stage43anExtractChunks(file, endpoint, headers, previousErrors) {
     var chunks = [];
     var pageStart = 1;
     var pageCountKnown = 0;
     var maxPages = DEFAULT_MAX_IMPORT_PAGES;
     var chunkSize = 2;
     while (pageStart <= maxPages) {
-      var attempt = { label:'Stage 43AM chunked PyMuPDF image-patch import pages ' + pageStart + '-' + Math.min(maxPages, pageStart + chunkSize - 1), extractEngine:'pymupdf-all-image', includePdfReviewAlternates:'0', includePdfRender:'0', includePdfBackground:'0', maxImagesPerSlide:64, reviewRenderZoom:0.20, reviewJpegQuality:36, vectorRenderZoom:0.62, vectorJpegQuality:42, textImageZoom:1.65, httpSafeMb:6, maxPdfPages:chunkSize, pageStart:pageStart, pageCount:chunkSize };
+      var attempt = { label:'Stage 43AN chunked PyMuPDF image-patch import pages ' + pageStart + '-' + Math.min(maxPages, pageStart + chunkSize - 1), extractEngine:'pymupdf-all-image', includePdfReviewAlternates:'0', includePdfRender:'0', includePdfBackground:'0', maxImagesPerSlide:64, reviewRenderZoom:0.20, reviewJpegQuality:36, vectorRenderZoom:0.62, vectorJpegQuality:42, textImageZoom:1.65, httpSafeMb:6, maxPdfPages:chunkSize, pageStart:pageStart, pageCount:chunkSize };
       try {
-        var payload = await stage43amPostAttempt(endpoint, headers, file, attempt, true);
+        var payload = await stage43anPostAttempt(endpoint, headers, file, attempt, true);
         var slides = Array.isArray(payload.slides) ? payload.slides : [];
         if (!slides.length) break;
         chunks.push(payload);
         if (payload.source && payload.source.pageCount) pageCountKnown = Math.max(pageCountKnown, Number(payload.source.pageCount) || 0);
+        try { globalThis.__LUMINA_STAGE43AN_CHUNK_RATE_LIMIT_BACKOFF = { ok:true, lastPageStart:pageStart, lastPageCount:chunkSize, chunks:chunks.length, at:new Date().toISOString() }; } catch (_err) {}
+        await stage43anSleep(Number(globalThis.__LUMINA_STAGE43AN_CHUNK_DELAY_MS || 1200));
         pageStart += slides.length;
         if (pageCountKnown && pageStart > Math.min(pageCountKnown, maxPages)) break;
       } catch (err) {
@@ -1799,22 +1839,24 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
         if (pageStart > 1 && /No pages|no slides|out of range|beyond/i.test(msg)) break;
         var rescuedAny = false;
         for (var singleStart = pageStart; singleStart < pageStart + chunkSize && singleStart <= maxPages; singleStart++) {
-          var single = Object.assign({}, attempt, { label:'Stage 43AM single-page rescue image-patch import page ' + singleStart, maxPdfPages:1, pageStart:singleStart, pageCount:1, maxImagesPerSlide:72, textImageZoom:1.45, vectorRenderZoom:0.52, vectorJpegQuality:38, httpSafeMb:4 });
-          var p = await stage43amPostAttempt(endpoint, headers, file, single, true);
+          var single = Object.assign({}, attempt, { label:'Stage 43AN single-page rescue image-patch import page ' + singleStart, maxPdfPages:1, pageStart:singleStart, pageCount:1, maxImagesPerSlide:72, textImageZoom:1.45, vectorRenderZoom:0.52, vectorJpegQuality:38, httpSafeMb:4 });
+          var p = await stage43anPostAttempt(endpoint, headers, file, single, true);
           var ss = Array.isArray(p.slides) ? p.slides : [];
           if (!ss.length) { if (rescuedAny) break; throw new Error('No slides in single-page rescue.'); }
           chunks.push(p);
           rescuedAny = true;
           if (p.source && p.source.pageCount) pageCountKnown = Math.max(pageCountKnown, Number(p.source.pageCount) || 0);
+          try { globalThis.__LUMINA_STAGE43AN_CHUNK_RATE_LIMIT_BACKOFF = { ok:true, singlePageRescue:true, lastPageStart:singleStart, chunks:chunks.length, at:new Date().toISOString() }; } catch (_err) {}
+          await stage43anSleep(Number(globalThis.__LUMINA_STAGE43AN_CHUNK_DELAY_MS || 1200));
         }
         pageStart += chunkSize;
         if (pageCountKnown && pageStart > Math.min(pageCountKnown, maxPages)) break;
       }
     }
     if (!chunks.length) throw new Error('Chunked image-blob extraction did not return any slides.');
-    var merged = stage43amMergeChunkPayloads(chunks, previousErrors);
+    var merged = stage43anMergeChunkPayloads(chunks, previousErrors);
     stage42sPublishImportStatus({ phase:'chunked-extract-complete', message:'Chunked extraction finished with ' + merged.slides.length + ' slides.', slideCount:merged.slides.length, chunkCount:chunks.length, pending:true, ok:true });
-    try { globalThis.__LUMINA_STAGE43AM_CHUNKED_IMAGE_BLOB_EXTRACTION = { ok:true, slides:merged.slides.length, chunks:chunks.length, previousErrors:previousErrors || [], at:new Date().toISOString() }; } catch (_err) {}
+    try { globalThis.__LUMINA_STAGE43AN_CHUNKED_IMAGE_BLOB_EXTRACTION = { ok:true, slides:merged.slides.length, chunks:chunks.length, previousErrors:previousErrors || [], at:new Date().toISOString() }; } catch (_err) {}
     return merged;
   }
   async function extractPresentationFile(file) {
@@ -1825,13 +1867,13 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     var headers = {};
     var token = extractionTokenValue();
     if (token) headers.Authorization = 'Bearer ' + token;
-    var attempts = stage43amExtractionAttempts(engine);
+    var attempts = stage43anExtractionAttempts(engine);
     var errors = [];
     stage42sPublishImportStatus({ phase:'extract-start', message:'Starting extraction for ' + (file && file.name || 'selected file') + ' using ' + engine + '…', filename:file && file.name || '', fileSize:file && file.size || 0, endpoint:stage42sCompactEndpoint(endpoint), extractEngine:engine, attemptCount:attempts.length, pending:true, startedAt:new Date().toISOString() });
     for (var i = 0; i < attempts.length; i++) {
       var attempt = attempts[i];
       try {
-        var payload = await stage43amPostAttempt(endpoint, headers, file, attempt, false);
+        var payload = await stage43anPostAttempt(endpoint, headers, file, attempt, false);
         stage42sPublishImportStatus({ phase:'extract-complete', message:'Extraction finished with ' + payload.slides.length + ' slides.', slideCount:payload.slides.length, pending:true, ok:true });
         try { globalThis.__LUMINA_STAGE41M_LAST_EXTRACTION = { ok:true, slideCount:payload.slides.length, source:payload.source || null, meta:payload.meta || null, warnings:payload.warnings || [], endpoint:endpoint, filename:file && file.name || '', attempt:attempt.label, previousErrors:errors.slice() }; } catch (_err) {}
         return payload;
@@ -1839,9 +1881,9 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
         var msg = err && err.message ? err.message : String(err || 'Extraction failed.');
         errors.push(attempt.label + ': ' + msg);
         stage42sPublishImportStatus({ phase:'extract-attempt-error', message:'Extraction attempt failed: ' + msg, attempt:attempt.label, attemptIndex:i + 1, attemptCount:attempts.length, pending:i < attempts.length - 1, ok:false, error:msg });
-        if (i >= attempts.length - 1 || !stage43amRetryable(msg)) {
-          if (engine === 'pymupdf-all-image' && stage43amRetryable(msg)) {
-            try { return await stage43amExtractChunks(file, endpoint, headers, errors.slice()); }
+        if (i >= attempts.length - 1 || !stage43anRetryable(msg)) {
+          if (engine === 'pymupdf-all-image' && stage43anRetryable(msg)) {
+            try { return await stage43anExtractChunks(file, endpoint, headers, errors.slice()); }
             catch (chunkErr) { errors.push('chunked image-blob retry: ' + (chunkErr && chunkErr.message ? chunkErr.message : String(chunkErr || 'failed'))); }
           }
           throw new Error(msg + (errors.length > 1 ? '\n\nTried extraction modes:\n- ' + errors.join('\n- ') : ''));
@@ -2278,7 +2320,7 @@ function parseAiPatchOrDeckResponseText(text, fallbackTitle, sourceSlides){
     global.__LUMINA_STAGE41V_FILE_IO_API = api;
     global.LuminaStage41TFileIoApi = api;
     global.LuminaStage41VFileIoApi = api;
-    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43am-chunked-image-blob-extract-20260516-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+    global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
     global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
   } catch (_err) {}
   return api;
