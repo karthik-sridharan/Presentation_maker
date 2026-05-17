@@ -453,7 +453,7 @@ Previous output to repair:
       if(!key || typeof fetch !== 'function') return editableAiPromptCache[key] || fallbackText;
       try{
         const sep = key.indexOf('?') >= 0 ? '&' : '?';
-        const url = editablePromptUrl(key + sep + 'stage=stage43am-chunked-image-blob-extract-20260516-1&promptCacheBust=' + Date.now());
+        const url = editablePromptUrl(key + sep + 'stage=stage43an-rate-limit-backoff-chunked-image-blob-20260517-1&promptCacheBust=' + Date.now());
         const res = await fetch(url, { cache:'no-store' });
         if(!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
@@ -607,7 +607,7 @@ Previous output to repair:
       if(!deck || !Array.isArray(deck.slides) || !Array.isArray(sourceSlides)) return deck;
       addAiSourceIdsToSourceSlides(sourceSlides);
       const sourceMap = sourceBlockMapForSimpleRepair(sourceSlides);
-      const stats = { stage:'stage43am-chunked-image-blob-extract-20260516-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
+      const stats = { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', sourceSlides:sourceSlides.length, outputSlides:deck.slides.length, imageAssetsRestored:0, layoutsPreserved:0, blocksRestored:0, slidesRestored:0, mathFieldsRepaired:0, at:new Date().toISOString() };
       const outputSlides = [];
       const maxSlides = Math.max(sourceSlides.length, deck.slides.length);
       for(let si = 0; si < maxSlides; si++){
@@ -1377,7 +1377,7 @@ Previous output to repair:
     const source = addAiSourceIdsToSourceSlides(cloneJsonSafe(sourceSlides || []) || []);
     const patches = patchResult && Array.isArray(patchResult.patches) ? patchResult.patches : [];
     const deck = { deckTitle:String(deckTitle || 'Imported deck'), theme:null, presentationOptions:null, summary:'AI patch-repaired imported deck.', slides:source.map(function(slide){ return normalizeSlide(slide); }) };
-    const stats = { stage:'stage43am-chunked-image-blob-extract-20260516-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
+    const stats = { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', patchMode:true, sourceSlides:source.length, patchesReceived:patches.length, patchesApplied:0, contentPatches:0, titlePatches:0, layoutPatches:0, stylePatches:0, slideFieldPatches:0, ignoredImageContentPatches:0, invalidPatches:0, localMathFieldsRepaired:0, changedSlides:[], changedSlideCount:0, changeSummary:'', at:new Date().toISOString() };
     patches.forEach(function(patch){
       if(!patch || typeof patch !== 'object'){ stats.invalidPatches += 1; return; }
       const target = findPatchTarget(deck.slides, patch);
@@ -1715,7 +1715,7 @@ Previous output to repair:
     function stage42sPublishImportStatus(update){
       try{
         var prev = global.__LUMINA_STAGE42S_IMPORT_STATUS || {};
-        var next = Object.assign({}, prev, update || {}, { stage:'stage43am-chunked-image-blob-extract-20260516-1', updatedAt:new Date().toISOString() });
+        var next = Object.assign({}, prev, update || {}, { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', updatedAt:new Date().toISOString() });
         if(!next.startedAt) next.startedAt = prev.startedAt || next.updatedAt;
         global.__LUMINA_STAGE42S_IMPORT_STATUS = next;
         global.__LUMINA_STAGE42R_IMPORT_STATUS = next;
@@ -1949,7 +1949,7 @@ Previous output to repair:
       return payload;
     }
 
-    function stage43amMergeChunkPayloads(chunks, previousErrors){
+    function stage43anMergeChunkPayloads(chunks, previousErrors){
       chunks = Array.isArray(chunks) ? chunks.filter(Boolean) : [];
       const slides = [];
       const warnings = [];
@@ -1961,7 +1961,7 @@ Previous output to repair:
         if(Array.isArray(payload && payload.slides)) payload.slides.forEach(function(s){ slides.push(s); });
         if(Array.isArray(payload && payload.warnings)) payload.warnings.forEach(function(w){ warnings.push(w); });
       });
-      warnings.unshift('Stage 43AM used chunked PyMuPDF image-blob extraction to avoid browser/Cloud Run response-size failures.');
+      warnings.unshift('Stage 43AN used chunked PyMuPDF image-blob extraction to avoid browser/Cloud Run response-size failures.');
       if(Array.isArray(previousErrors) && previousErrors.length) warnings.push('Initial full extraction attempts failed before chunking: ' + previousErrors.join(' | ').slice(0, 1600));
       return {
         ok:true,
@@ -1969,15 +1969,57 @@ Previous output to repair:
         source:Object.assign({}, (first && first.source) || {}, { importedPages:slides.length, pageCount:pageCount || ((first && first.source && first.source.pageCount) || slides.length), importMode:'pymupdf-all-image-chunked' }),
         slides:slides,
         warnings:warnings,
-        meta:Object.assign({}, (first && first.meta) || {}, { stage43amChunkedImageBlob:true, chunkCount:chunks.length, previousErrors:previousErrors || [] })
+        meta:Object.assign({}, (first && first.meta) || {}, { stage43anChunkedImageBlob:true, chunkCount:chunks.length, previousErrors:previousErrors || [] })
       };
     }
-    async function stage43amPostExtractionChunk(endpoint, headers, file, attempt){
+    function stage43anSleep(ms){
+      return new Promise(function(resolve){ setTimeout(resolve, Math.max(0, Number(ms) || 0)); });
+    }
+    function stage43anRetryAfterMs(res, fallback){
+      try{
+        const raw = res && res.headers && res.headers.get && res.headers.get('Retry-After');
+        if(raw){
+          const n = Number(raw);
+          if(Number.isFinite(n) && n >= 0) return Math.min(45000, Math.max(1000, n * 1000));
+          const date = Date.parse(raw);
+          if(Number.isFinite(date)) return Math.min(45000, Math.max(1000, date - Date.now()));
+        }
+      }catch(_err){}
+      return fallback;
+    }
+    async function stage43anFetchWithBackoff(endpoint, request, context){
+      const attempts = [0, 4500, 9000, 18000, 30000];
+      let lastErr = null;
+      for(let i=0;i<attempts.length;i++){
+        if(attempts[i] > 0){
+          stage42sPublishImportStatus({ phase:'chunked-extract-rate-limit-wait', message:'Chunked image-blob extraction paused before retry ' + (i + 1) + ' for pages ' + (context && context.pageStart || '?') + '-' + ((context && context.pageStart && context.pageCount) ? (context.pageStart + context.pageCount - 1) : '?') + '…', pending:true, retryIndex:i + 1, pageStart:context && context.pageStart, pageCount:context && context.pageCount, waitMs:attempts[i] });
+          await stage43anSleep(attempts[i]);
+        }
+        let res;
+        try{ res = await fetch(endpoint, request); }
+        catch(err){
+          lastErr = err;
+          if(i >= attempts.length - 1) throw err;
+          continue;
+        }
+        if(res && res.status === 429 && i < attempts.length - 1){
+          const waitMs = stage43anRetryAfterMs(res, attempts[Math.min(i + 1, attempts.length - 1)] || 9000);
+          try{ await res.text(); }catch(_err){}
+          stage42sPublishImportStatus({ phase:'chunked-extract-rate-limited', message:'Backend rate limited chunked extraction; waiting and retrying pages ' + (context && context.pageStart || '?') + '-' + ((context && context.pageStart && context.pageCount) ? (context.pageStart + context.pageCount - 1) : '?') + '…', pending:true, httpStatus:429, pageStart:context && context.pageStart, pageCount:context && context.pageCount, waitMs:waitMs });
+          await stage43anSleep(waitMs);
+          continue;
+        }
+        return res;
+      }
+      if(lastErr) throw lastErr;
+      throw new Error('Chunked extraction retry attempts exhausted.');
+    }
+    async function stage43anPostExtractionChunk(endpoint, headers, file, attempt){
       const form = buildExtractionForm(file, attempt);
       let res;
       const startedAt = Date.now();
       stage42sPublishImportStatus({ phase:'chunked-extract-attempt', message:'Chunked image-blob extraction: pages ' + attempt.pageStart + '-' + (attempt.pageStart + attempt.pageCount - 1) + '…', endpoint:stage42sCompactEndpoint(endpoint), attempt:attempt.label, extractEngine:attempt.extractEngine, pageStart:attempt.pageStart, pageCount:attempt.pageCount, pending:true });
-      try{ res = await fetch(endpoint, { method:'POST', headers, body:form, cache:'no-store', mode:'cors' }); }
+      try{ res = await stage43anFetchWithBackoff(endpoint, { method:'POST', headers, body:form, cache:'no-store', mode:'cors' }, attempt); }
       catch(fetchErr){ throw new Error(await describeExtractionFetchFailure(endpoint, fetchErr)); }
       const text = await res.text();
       let payload = null;
@@ -1988,10 +2030,10 @@ Previous output to repair:
         throw new Error(msg);
       }
       payload.warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
-      payload.meta = Object.assign({}, payload.meta || {}, { stage43amChunkAttempt:attempt.label, stage43amPageStart:attempt.pageStart, elapsedMs:Date.now()-startedAt });
+      payload.meta = Object.assign({}, payload.meta || {}, { stage43anChunkAttempt:attempt.label, stage43anPageStart:attempt.pageStart, elapsedMs:Date.now()-startedAt });
       return payload;
     }
-    async function stage43amExtractPresentationFileInChunks(file, endpoint, headers, previousErrors){
+    async function stage43anExtractPresentationFileInChunks(file, endpoint, headers, previousErrors){
       const chunks = [];
       let pageStart = 1;
       let pageCountKnown = 0;
@@ -1999,7 +2041,7 @@ Previous output to repair:
       const chunkSize = 2;
       while(pageStart <= maxPages){
         const baseAttempt = {
-          label:'Stage 43AM chunked PyMuPDF image-patch import pages ' + pageStart + '-' + Math.min(maxPages, pageStart + chunkSize - 1),
+          label:'Stage 43AN chunked PyMuPDF image-patch import pages ' + pageStart + '-' + Math.min(maxPages, pageStart + chunkSize - 1),
           extractEngine:'pymupdf-all-image',
           includePdfReviewAlternates:'0',
           includePdfRender:'0',
@@ -2016,11 +2058,13 @@ Previous output to repair:
           pageCount:chunkSize
         };
         try{
-          const payload = await stage43amPostExtractionChunk(endpoint, headers, file, baseAttempt);
+          const payload = await stage43anPostExtractionChunk(endpoint, headers, file, baseAttempt);
           const slides = Array.isArray(payload.slides) ? payload.slides : [];
           if(!slides.length) break;
           chunks.push(payload);
           if(payload.source && payload.source.pageCount) pageCountKnown = Math.max(pageCountKnown, Number(payload.source.pageCount) || 0);
+          try{ global.__LUMINA_STAGE43AN_CHUNK_RATE_LIMIT_BACKOFF = { ok:true, lastPageStart:pageStart, lastPageCount:chunkSize, chunks:chunks.length, at:new Date().toISOString() }; }catch(_err){}
+          await stage43anSleep(Number(global.__LUMINA_STAGE43AN_CHUNK_DELAY_MS || 1200));
           pageStart += slides.length;
           if(pageCountKnown && pageStart > Math.min(pageCountKnown, maxPages)) break;
         }catch(err){
@@ -2030,14 +2074,16 @@ Previous output to repair:
             // Rescue this 2-page chunk one page at a time at lower crop zoom.
             let rescuedAny = false;
             for(let singleStart = pageStart; singleStart < pageStart + chunkSize && singleStart <= maxPages; singleStart++){
-              const singleAttempt = Object.assign({}, baseAttempt, { label:'Stage 43AM single-page rescue image-patch import page ' + singleStart, maxPdfPages:1, pageStart:singleStart, pageCount:1, maxImagesPerSlide:72, textImageZoom:1.45, vectorRenderZoom:0.52, vectorJpegQuality:38, httpSafeMb:4 });
+              const singleAttempt = Object.assign({}, baseAttempt, { label:'Stage 43AN single-page rescue image-patch import page ' + singleStart, maxPdfPages:1, pageStart:singleStart, pageCount:1, maxImagesPerSlide:72, textImageZoom:1.45, vectorRenderZoom:0.52, vectorJpegQuality:38, httpSafeMb:4 });
               try{
-                const payload = await stage43amPostExtractionChunk(endpoint, headers, file, singleAttempt);
+                const payload = await stage43anPostExtractionChunk(endpoint, headers, file, singleAttempt);
                 const slides = Array.isArray(payload.slides) ? payload.slides : [];
                 if(!slides.length){ if(rescuedAny) break; throw new Error('No slides in single-page rescue.'); }
                 chunks.push(payload);
                 rescuedAny = true;
                 if(payload.source && payload.source.pageCount) pageCountKnown = Math.max(pageCountKnown, Number(payload.source.pageCount) || 0);
+                try{ global.__LUMINA_STAGE43AN_CHUNK_RATE_LIMIT_BACKOFF = { ok:true, singlePageRescue:true, lastPageStart:singleStart, chunks:chunks.length, at:new Date().toISOString() }; }catch(_err){}
+                await stage43anSleep(Number(global.__LUMINA_STAGE43AN_CHUNK_DELAY_MS || 1200));
               }catch(singleErr){
                 const singleMsg = singleErr && singleErr.message ? singleErr.message : String(singleErr || 'Single-page chunk failed.');
                 if(rescuedAny && /No pages|no slides|out of range|beyond/i.test(singleMsg)) break;
@@ -2052,9 +2098,9 @@ Previous output to repair:
         }
       }
       if(!chunks.length) throw new Error('Chunked image-blob extraction did not return any slides.');
-      const merged = stage43amMergeChunkPayloads(chunks, previousErrors);
+      const merged = stage43anMergeChunkPayloads(chunks, previousErrors);
       stage42sPublishImportStatus({ phase:'chunked-extract-complete', message:'Chunked extraction finished with ' + merged.slides.length + ' slides.', slideCount:merged.slides.length, chunkCount:chunks.length, pending:true, ok:true });
-      try{ global.__LUMINA_STAGE43AM_CHUNKED_IMAGE_BLOB_EXTRACTION = { ok:true, slides:merged.slides.length, chunks:chunks.length, previousErrors:previousErrors || [], at:new Date().toISOString() }; }catch(_err){}
+      try{ global.__LUMINA_STAGE43AN_CHUNKED_IMAGE_BLOB_EXTRACTION = { ok:true, slides:merged.slides.length, chunks:chunks.length, previousErrors:previousErrors || [], at:new Date().toISOString() }; }catch(_err){}
       return merged;
     }
 
@@ -2087,7 +2133,7 @@ Previous output to repair:
             if(engine === 'pymupdf-all-image' && extractionErrorLooksRetryable(msg)){
               try{
                 stage42sPublishImportStatus({ phase:'chunked-extract-start', message:'Full image-blob extraction failed; retrying in small page chunks to keep each response under browser/Cloud Run limits…', pending:true, previousErrors:errors.slice() });
-                return await stage43amExtractPresentationFileInChunks(file, endpoint, headers, errors.slice());
+                return await stage43anExtractPresentationFileInChunks(file, endpoint, headers, errors.slice());
               }catch(chunkErr){
                 errors.push('chunked image-blob retry: ' + (chunkErr && chunkErr.message ? chunkErr.message : String(chunkErr || 'failed')));
               }
@@ -2548,7 +2594,7 @@ Previous output to repair:
       global.LuminaStage41TFileIoApi = api;
       global.LuminaStage41UFileIoApi = api;
       global.LuminaStage41VFileIoApi = api;
-      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43am-chunked-image-blob-extract-20260516-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
+      global.__LUMINA_STAGE41V_FILE_IO_READY = { stage:'stage43an-rate-limit-backoff-chunked-image-blob-20260517-1', ready:true, at:new Date().toISOString(), apiKeys:Object.keys(api) };
       global.__LUMINA_STAGE41U_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
       global.__LUMINA_STAGE41T_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY; global.__LUMINA_STAGE41S_FILE_IO_READY = global.__LUMINA_STAGE41V_FILE_IO_READY;
     }catch(_err){}
